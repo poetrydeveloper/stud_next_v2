@@ -2,8 +2,38 @@
 
 import { useEffect, useState } from "react"
 
+interface Product {
+  id: number;
+  code: string;
+  name: string;
+  description?: string | null;
+  categoryId?: number | null;
+  category?: Category;
+  createdAt: Date;
+  updatedAt: Date;
+  images?: ProductImage[];
+}
+
+interface ProductImage {
+  id: number;
+  // добавьте поля из вашей модели ProductImage
+  url: string;
+  productId: number;
+}
+
+// Интерфейс прямо в файле
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  parentId: number | null;
+  parent?: Category;
+  children?: Category[];
+  products?: Product[]; // если нужно работать с продуктами
+}
+
 export default function NewProductPage() {
-  const [categories, setCategories] = useState<any[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [categoryId, setCategoryId] = useState<number | null>(null)
   const [code, setCode] = useState("")
   const [name, setName] = useState("")

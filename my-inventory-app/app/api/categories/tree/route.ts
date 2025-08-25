@@ -1,7 +1,17 @@
+// app/api/categories/tree/routes.ts
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+//import prisma from "@/lib/prisma";
+import prisma from "../../../lib/prisma";
 
-async function getCategoryTree(parentId: number | null = null) {
+type CategoryTree = {
+  id: number;
+  name: string;
+  slug: string;
+  parentId: number | null;
+  children: CategoryTree[];
+};
+
+async function getCategoryTree(parentId: number | null = null): Promise<CategoryTree[]> {
   const categories = await prisma.category.findMany({
     where: { parentId },
     include: { children: true },
