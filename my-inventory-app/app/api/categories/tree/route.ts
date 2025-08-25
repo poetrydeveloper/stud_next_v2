@@ -6,7 +6,7 @@ import prisma from "../../../lib/prisma";
 type CategoryTree = {
   id: number;
   name: string;
-  slug: string;
+  slug: string | null;
   parentId: number | null;
   children: CategoryTree[];
 };

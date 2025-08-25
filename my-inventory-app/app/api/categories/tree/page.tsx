@@ -2,7 +2,38 @@
 
 import { useEffect, useState } from "react"
 
-function renderTree(categories: any[]) {
+// ProductImage интерфейс (добавьте нужные поля)
+interface ProductImage {
+  id: number;
+  url: string;
+  productId: number;
+}
+
+// Product интерфейс
+interface Product {
+  id: number;
+  code: string;
+  name: string;
+  description?: string | null;
+  categoryId?: number | null;
+  category?: Category;
+  createdAt: Date;
+  updatedAt: Date;
+  images: ProductImage[];
+}
+
+// Category интерфейс
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  parentId: number | null;
+  parent?: Category;
+  children?: Category[];
+  products: Product[];
+}
+
+function renderTree(categories: Category[]) {
   return (
     <ul className="ml-4">
       {categories.map(cat => (
@@ -16,7 +47,7 @@ function renderTree(categories: any[]) {
 }
 
 export default function CategoriesTreePage() {
-  const [categories, setCategories] = useState<any[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
 
   useEffect(() => {
     fetch("/api/categories/tree")

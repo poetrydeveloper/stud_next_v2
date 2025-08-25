@@ -2,10 +2,41 @@
 
 import { useState, useEffect } from "react"
 
+// ProductImage интерфейс (добавьте нужные поля)
+interface ProductImage {
+  id: number;
+  url: string;
+  productId: number;
+}
+
+// Product интерфейс
+interface Product {
+  id: number;
+  code: string;
+  name: string;
+  description?: string | null;
+  categoryId?: number | null;
+  category?: Category;
+  createdAt: Date;
+  updatedAt: Date;
+  images: ProductImage[];
+}
+
+// Category интерфейс
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  parentId: number | null;
+  parent?: Category;
+  children?: Category[];
+  products: Product[];
+}
+
 export default function NewCategoryPage() {
   const [name, setName] = useState("")
   const [parentId, setParentId] = useState<number | null>(null)
-  const [categories, setCategories] = useState<any[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
 
   useEffect(() => {
     fetch("/api/categories/tree")
@@ -13,13 +44,27 @@ export default function NewCategoryPage() {
       .then(data => setCategories(data))
   }, [])
 
+  const generateSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]+/g, '')
+      .replace(/--+/g, '-')
+      .replace(/^-+/, '')
+      .replace(/-+$/, '');
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    const slug = generateSlug(name)
+    
     const res = await fetch("/api/categories", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, parentId })
+      body: JSON.stringify({ name, slug, parentId })
     })
+    
     if (res.ok) {
       alert("Категория создана!")
       setName("")
@@ -38,6 +83,7 @@ export default function NewCategoryPage() {
           placeholder="Название категории"
           value={name}
           onChange={e => setName(e.target.value)}
+          required
         />
         <select
           className="border p-2 rounded"

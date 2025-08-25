@@ -1,7 +1,7 @@
 // app/api/products/route.ts
 import { NextResponse } from "next/server";
 //import prisma from "@/lib/prisma";
-import prisma from "../../lib/prisma"
+import prisma from "@/app/lib/prisma";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 
