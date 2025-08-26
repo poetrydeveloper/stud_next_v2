@@ -26,6 +26,8 @@ export async function POST(req: Request) {
 
     // 3. Загружаем картинки
     const files = formData.getAll("images") as File[];
+    const imagePromises = [];
+    
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const bytes = await file.arrayBuffer();
@@ -36,20 +38,40 @@ export async function POST(req: Request) {
 
       await writeFile(filepath, buffer);
 
-      await prisma.productImage.create({
-        data: {
-          productId: product.id,
-          filename,
-          path: `/img/products/${code}/${filename}`,
-          isMain: i === 0,
-        },
-      });
+      imagePromises.push(
+        prisma.productImage.create({
+          data: {
+            productId: product.id,
+            filename,
+            path: `/img/products/${code}/${filename}`,
+            isMain: i === 0,
+          },
+        })
+      );
     }
 
-    return NextResponse.json({ message: "Товар успешно создан", product }, { status: 201 });
+    // Ждем завершения всех загрузок изображений
+    await Promise.all(imagePromises);
+
+    // 4. Получаем продукт с изображениями для ответа
+    const productWithImages = await prisma.product.findUnique({
+      where: { id: product.id },
+      include: {
+        images: true,
+        category: true,
+      },
+    });
+
+    return NextResponse.json(
+      { message: "Товар успешно создан", product: productWithImages },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Ошибка при создании продукта:", error);
-    return NextResponse.json({ error: "Не удалось создать товар" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Не удалось создать товар" },
+      { status: 500 }
+    );
   }
 }
 
