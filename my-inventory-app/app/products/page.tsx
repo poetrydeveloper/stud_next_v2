@@ -61,11 +61,7 @@ export default function ProductsPage() {
           <div key={product.id} className="border rounded-lg p-4 shadow-md">
             {/* Главное изображение */}
             {product.images.length > 0 ? (
-              <img
-                src={product.images[0].path}
-                alt={product.name}
-                className="w-full h-48 object-cover rounded mb-4"
-              />
+              <img src={product.images[0].path} alt={product.name} className="w-full h-48 object-contain"/>
             ) : (
               <div className="w-full h-48 bg-gray-200 rounded mb-4 flex items-center justify-center">
                 <span className="text-gray-500">Нет изображения</span>
