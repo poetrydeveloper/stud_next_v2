@@ -1,33 +1,60 @@
+// app/api/request-items/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 
 // POST /api/request-items
-// body: { productId: number, quantity?: number, pricePerUnit?: string|number, supplier?: string, customer?: string }
+// body: { productId: number, status?: string, quantity?: number, pricePerUnit?: string|number, supplier?: string, customer?: string }
 export async function POST(req: Request) {
   try {
-    const { productId, quantity = 1, pricePerUnit = "0", supplier, customer } = await req.json();
+    const { productId, status = "CANDIDATE", quantity = 1, pricePerUnit = "0", supplier, customer } = await req.json();
 
-    // проверим, что товар существует
+    // Проверим, что товар существует
     const product = await prisma.product.findUnique({ where: { id: Number(productId) } });
     if (!product) return NextResponse.json({ error: "Продукт не найден" }, { status: 404 });
 
-    const item = await prisma.requestItem.create({
-      data: {
-        productId: product.id,
-        quantity: Number(quantity) || 1,
-        pricePerUnit: pricePerUnit?.toString() ?? "0",
-        supplier: supplier || "неизвестный поставщик",
-        customer: customer || "покупатель",
-        status: "CANDIDATE",
-        requestId: null, // в начале всегда null
-      },
-      include: { product: true },
+    // Проверим существующий item
+    const existingItem = await prisma.requestItem.findFirst({
+      where: { 
+        productId: Number(productId),
+        status: { in: ["CANDIDATE", "IN_REQUEST", "EXTRA"] }
+      }
     });
+
+    let item;
+    
+    if (existingItem) {
+      // Обновляем существующий
+      item = await prisma.requestItem.update({
+        where: { id: existingItem.id },
+        data: {
+          status: status.toUpperCase(),
+          quantity: Number(quantity) || 1,
+          pricePerUnit: pricePerUnit?.toString() ?? "0",
+          supplier: supplier || existingItem.supplier,
+          customer: customer || existingItem.customer,
+        },
+        include: { product: true },
+      });
+    } else {
+      // Создаем новый
+      item = await prisma.requestItem.create({
+        data: {
+          productId: product.id,
+          status: status.toUpperCase(),
+          quantity: Number(quantity) || 1,
+          pricePerUnit: pricePerUnit?.toString() ?? "0",
+          supplier: supplier || "неизвестный поставщик",
+          customer: customer || "покупатель",
+          requestId: null,
+        },
+        include: { product: true },
+      });
+    }
 
     return NextResponse.json(item, { status: 201 });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Не удалось создать кандидата" }, { status: 500 });
+    return NextResponse.json({ error: "Не удалось обновить позицию" }, { status: 500 });
   }
 }
 
