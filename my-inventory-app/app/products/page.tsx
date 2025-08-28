@@ -31,6 +31,7 @@ interface Product {
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState<number | null>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -45,6 +46,27 @@ export default function ProductsPage() {
       console.error('Ошибка загрузки продуктов:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const addToRequest = async (productId: number) => {
+    try {
+      setAdding(productId);
+      const res = await fetch('/api/request-items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId }),
+      });
+
+      if (!res.ok) {
+        console.error('Ошибка добавления в заявку');
+      } else {
+        console.log('Добавлено в кандидаты');
+      }
+    } catch (e) {
+      console.error('Ошибка:', e);
+    } finally {
+      setAdding(null);
     }
   };
 
@@ -80,6 +102,14 @@ export default function ProductsPage() {
                 Категория: {product.category.name}
               </p>
             )}
+
+            <button
+              onClick={() => addToRequest(product.id)}
+              disabled={adding === product.id}
+              className="mt-3 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:bg-gray-400"
+            >
+              {adding === product.id ? 'Добавляем...' : 'В заявку'}
+            </button>
 
             {/* Все изображения продукта */}
             {product.images.length > 1 && (
