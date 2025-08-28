@@ -20,14 +20,14 @@ model User {
 }
 
 model Category {
-  id        Int        @id @default(autoincrement())
-  name      String
-  slug      String     @unique
-  parentId  Int? 
-  parent    Category?  @relation("CategoryToChildren", fields: [parentId], references: [id])
-  children  Category[] @relation("CategoryToChildren")
+  id       Int        @id @default(autoincrement())
+  name     String
+  slug     String     @unique
+  parentId Int?
+  parent   Category?  @relation("CategoryToChildren", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryToChildren")
 
-  products  Product[]
+  products Product[]
 
   @@map("categories") // чтобы таблица называлась categories
 }
@@ -39,24 +39,58 @@ model Product {
   description String?
   categoryId  Int?
   category    Category? @relation(fields: [categoryId], references: [id])
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
 
-  images      ProductImage[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  images       ProductImage[]
+  requestItems RequestItem[] // 🔥 обратная связь
 
   @@map("products")
 }
 
 model ProductImage {
-  id        Int      @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   productId Int
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
 
-  filename  String   // реальное имя файла (rf-75510_main.jpg)
-  path      String   // полный путь или относительный ("img/products/rf-75510/rf-75510_main.jpg")
+  filename  String // реальное имя файла (rf-75510_main.jpg)
+  path      String // полный путь или относительный ("img/products/rf-75510/rf-75510_main.jpg")
   isMain    Boolean  @default(false)
   createdAt DateTime @default(now())
 
   @@map("product_images")
+}
+
+model Request {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  notes     String?
+
+  items RequestItem[]
+
+  @@map("requests")
+}
+
+model RequestItem {
+  id                Int        @id @default(autoincrement())
+  requestId         Int?
+  request           Request?   @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  productId         Int
+  product           Product    @relation(fields: [productId], references: [id], onDelete: Restrict)
+  status            ItemStatus @default(CANDIDATE)
+  quantity          Int        @default(1)
+  deliveredQuantity Int        @default(0)
+  isCompleted       Boolean    @default(false)
+  pricePerUnit      Decimal    @default(0.00)
+  supplier          String     @default("неизвестный поставщик")
+  customer          String     @default("покупатель")
+
+  @@map("request_items")
+}
+
+enum ItemStatus {
+  CANDIDATE // кандидат на заявку
+  IN_REQUEST // в заявке
+  EXTRA // экстра заявка
 }
