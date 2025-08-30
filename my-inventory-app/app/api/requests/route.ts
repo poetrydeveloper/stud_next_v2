@@ -15,7 +15,16 @@ export async function GET() {
   const requests = await prisma.request.findMany({
     include: {
       items: {
-        include: { product: true },
+        include: { 
+          product: {
+            include: {
+              images: {
+                where: { isMain: true }, // Берем только главное изображение
+                take: 1 // Только одно изображение
+              }
+            }
+          } 
+        },
       },
     },
     orderBy: { createdAt: "desc" },

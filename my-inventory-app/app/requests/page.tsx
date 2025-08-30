@@ -4,17 +4,27 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
+// ОБНОВЛЕННЫЕ ИНТЕРФЕЙСЫ
+interface ProductImage {
+  id: number;
+  path: string;
+  isMain: boolean;
+  filename: string;
+}
+
+interface Product {
+  id: number; 
+  code: string; 
+  name: string;
+  images: ProductImage[]; // ЗАМЕНИЛИ imageUrl на images
+}
+
 interface Item {
   id: number;
   status: "IN_REQUEST" | "EXTRA" | "CANDIDATE";
   quantity: number;
   pricePerUnit: string;
-  product: { 
-    id: number; 
-    code: string; 
-    name: string;
-    imageUrl?: string; // Добавим поле для изображения
-  };
+  product: Product; // Используем обновленный Product
   requestId: number | null;
 }
 
@@ -23,7 +33,7 @@ interface Request {
   status: "IN_REQUEST" | "EXTRA" | "CANDIDATE";
   notes: string | null;
   items: Item[];
-  createdAt: string; // Добавим дату создания заявки
+  createdAt: string;
 }
 
 export default function RequestsPage() {
@@ -127,15 +137,18 @@ export default function RequestsPage() {
   );
 }
 
-// Компонент для отображения отдельного item
+// ОБНОВЛЕННЫЙ КОМПОНЕНТ RequestItem
 function RequestItem({ item }: { item: Item }) {
+  // Получаем главное изображение или первое доступное
+  const mainImage = item.product.images.find(img => img.isMain) || item.product.images[0];
+  
   return (
     <div className="flex items-center p-2 border rounded-md bg-gray-50 hover:bg-gray-100">
-      {/* Миниатюра товара */}
+      {/* Миниатюра товара - ОБНОВЛЕНО */}
       <div className="flex-shrink-0 mr-3">
-        {item.product.imageUrl ? (
+        {mainImage ? (
           <Image
-            src={item.product.imageUrl}
+            src={`${mainImage.path}`} // ПУТЬ К ИЗОБРАЖЕНИЮ ИЗ БД
             alt={item.product.name}
             width={48}
             height={48}
@@ -148,7 +161,7 @@ function RequestItem({ item }: { item: Item }) {
         )}
       </div>
       
-      {/* Информация о товаре */}
+      {/* Информация о товаре - БЕЗ ИЗМЕНЕНИЙ */}
       <div className="flex-grow">
         <div className="font-medium">{item.product.name}</div>
         <div className="text-sm text-gray-600">
@@ -156,7 +169,7 @@ function RequestItem({ item }: { item: Item }) {
         </div>
       </div>
       
-      {/* Итоговая стоимость */}
+      {/* Итоговая стоимость - БЕЗ ИЗМЕНЕНИЙ */}
       <div className="flex-shrink-0 ml-2 text-right">
         <div className="font-semibold">
           {Math.round(item.quantity * parseFloat(item.pricePerUnit))} ₽
