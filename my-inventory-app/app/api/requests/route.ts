@@ -19,16 +19,18 @@ export async function GET() {
           product: {
             include: {
               images: {
-                where: { isMain: true }, // Берем только главное изображение
-                take: 1 // Только одно изображение
+                where: { isMain: true },
+                take: 1
               }
             }
-          } 
+          },
+          supplier: true, // Добавляем поставщика
+          customer: true  // Добавляем заказчика
         },
       },
     },
     orderBy: { createdAt: "desc" },
   });
-
+  
   return NextResponse.json(requests);
 }

@@ -13,6 +13,34 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model Supplier {
+  id            Int      @id @default(autoincrement())
+  name          String
+  contactPerson String?  @map("contact_person")
+  phone         String?
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  requestItems RequestItem[]
+
+  @@map("suppliers")
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  phone     String
+  email     String?
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  requestItems RequestItem[]
+
+  @@map("customers")
+}
+
 model User {
   id    Int     @id @default(autoincrement())
   email String  @unique
@@ -83,8 +111,13 @@ model RequestItem {
   deliveredQuantity Int        @default(0)
   isCompleted       Boolean    @default(false)
   pricePerUnit      Decimal    @default(0.00)
-  supplier          String     @default("неизвестный поставщик")
-  customer          String     @default("покупатель")
+  
+  // 🔥 ОБНОВЛЕНО: Заменяем текстовые поля на связи с моделями
+  supplierId        Int?       // Связь с поставщиком
+  supplier          Supplier?  @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  
+  customerId        Int?       // Связь с заказчиком
+  customer          Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
 
   @@map("request_items")
 }

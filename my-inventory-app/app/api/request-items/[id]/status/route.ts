@@ -1,3 +1,4 @@
+// app/api/request-items/[id]/status/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 
@@ -17,7 +18,12 @@ export async function PATCH(
 
     const item = await prisma.requestItem.findUnique({
       where: { id },
-      include: { request: true },
+      include: { 
+        request: true,
+        // НОВОЕ: включаем поставщика и заказчика для сохранения данных
+        supplier: true,
+        customer: true
+      },
     });
     if (!item) return NextResponse.json({ error: "Позиция не найдена" }, { status: 404 });
 
@@ -43,11 +49,28 @@ export async function PATCH(
       data: {
         status,
         requestId: requestToUseId, // null если снова кандидат
+        // НОВОЕ: сохраняем связи с поставщиком и заказчиком при смене статуса
+        supplierId: item.supplierId, // сохраняем текущего поставщика
+        customerId: item.customerId  // сохраняем текущего заказчика
       },
-      include: { request: true, product: true },
+      include: { 
+        request: true, 
+        product: true,
+        // НОВОЕ: включаем поставщика и заказчика в ответ
+        supplier: true,
+        customer: true
+      },
     });
 
-    return NextResponse.json(updated);
+    // НОВОЕ: добавляем вычисляемые поля для обратной совместимости
+    const responseWithComputed = {
+      ...updated,
+      // Для обратной совместимости со старыми клиентами
+      supplier: updated.supplier?.name || updated.supplier, // имя поставщика или старое текстовое поле
+      customer: updated.customer?.name || updated.customer  // имя заказчика или старое текстовое поле
+    };
+
+    return NextResponse.json(responseWithComputed);
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Не удалось обновить статус" }, { status: 500 });
