@@ -2,22 +2,19 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 
+// ТОЛЬКО GET - получение поставщиков
 export async function GET() {
-  const suppliers = await prisma.supplier.findMany({
-    orderBy: { name: 'asc' }
-  });
-  return NextResponse.json(suppliers);
+  try {
+    const suppliers = await prisma.supplier.findMany({
+      orderBy: { name: 'asc' }
+    });
+    return NextResponse.json(suppliers);
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Ошибка при получении поставщиков" },
+      { status: 500 }
+    );
+  }
 }
 
-export async function POST(request: Request) {
-  const body = await request.json();
-  const supplier = await prisma.supplier.create({
-    data: {
-      name: body.name,
-      contactPerson: body.contactPerson,
-      phone: body.phone,
-      notes: body.notes
-    }
-  });
-  return NextResponse.json(supplier, { status: 201 });
-}
+// УДАЛИТЬ POST метод отсюда!
