@@ -1,4 +1,4 @@
-//app/api/categories/new/page.tsx
+//app/categories/new/page.tsx
 "use client"
 
 import { useState, useEffect } from "react"

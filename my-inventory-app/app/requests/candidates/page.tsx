@@ -5,33 +5,43 @@ import { useEffect, useState } from "react";
 
 type Status = "CANDIDATE" | "IN_REQUEST" | "EXTRA";
 
-// ОБНОВЛЕННЫЙ ИНТЕРФЕЙС: Заменяем текстовые поля на объекты связей
+interface Supplier {
+  id: number;
+  name: string;
+  contactPerson: string | null;
+  phone: string | null;
+}
+
+interface Customer {
+  id: number;
+  name: string;
+  phone: string;
+  email: string | null;
+}
+
+interface ProductImage {
+  path: string;
+  isMain: boolean;
+}
+
+interface Product {
+  id: number;
+  code: string;
+  name: string;
+  images: ProductImage[];
+}
+
 interface Item {
   id: number;
   status: Status;
   quantity: number;
   deliveredQuantity: number;
-  pricePerUnit: string; // Prisma Decimal сериализуется строкой
-  supplierId: number | null;     // ID поставщика вместо текста
-  supplier: {                    // Объект поставщика
-    id: number;
-    name: string;
-    contactPerson: string | null;
-    phone: string | null;
-  } | null;
-  customerId: number | null;     // ID заказчика вместо текста
-  customer: {                    // Объект заказчика
-    id: number;
-    name: string;
-    phone: string;
-    email: string | null;
-  } | null;
-  product: {
-    id: number; 
-    code: string; 
-    name: string;
-    images: { path: string; isMain: boolean }[];
-  };
+  pricePerUnit: string;
+  supplierId: number | null;
+  supplier: Supplier | null;
+  customerId: number | null;
+  customer: Customer | null;
+  product: Product;
   deliveryProgress: string;
   remainingQuantity: number;
   totalCost: string;
@@ -39,64 +49,156 @@ interface Item {
 
 export default function CandidatesPage() {
   const [items, setItems] = useState<Item[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
-  const [suppliers, setSuppliers] = useState<any[]>([]);
-  const [customers, setCustomers] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [updatingIds, setUpdatingIds] = useState<number[]>([]);
 
-  // Загрузка кандидатов, поставщиков и заказчиков
-  const loadData = () => {
-    // Загружаем кандидатов
-    fetch("/api/request-items?status=candidate")
-      .then((r) => r.json())
-      .then((d) => { setItems(d); setLoading(false); });
-    
-    // Загружаем поставщиков
-    fetch("/api/suppliers")
-      .then((r) => r.json())
-      .then(setSuppliers);
-    
-    // Загружаем заказчиков
-    fetch("/api/customers")
-      .then((r) => r.json())
-      .then(setCustomers);
+  // Загрузка всех данных
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const [itemsRes, suppliersRes, customersRes] = await Promise.all([
+        fetch("/api/request-items?status=candidate"),
+        fetch("/api/suppliers"),
+        fetch("/api/customers")
+      ]);
+
+      // Проверка статусов ответов
+      if (!itemsRes.ok) throw new Error(`Ошибка загрузки кандидатов: ${itemsRes.status}`);
+      if (!suppliersRes.ok) throw new Error(`Ошибка загрузки поставщиков: ${suppliersRes.status}`);
+      if (!customersRes.ok) throw new Error(`Ошибка загрузки заказчиков: ${customersRes.status}`);
+
+      const [itemsData, suppliersData, customersData] = await Promise.all([
+        itemsRes.json(),
+        suppliersRes.json(),
+        customersRes.json()
+      ]);
+
+      setItems(itemsData);
+      setSuppliers(suppliersData);
+      setCustomers(customersData);
+    } catch (err) {
+      console.error("Ошибка загрузки данных:", err);
+      setError(err instanceof Error ? err.message : "Не удалось загрузить данные");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(loadData, []);
+  useEffect(() => {
+    loadData();
+  }, []);
 
   // Изменение статуса товара
   const moveTo = async (id: number, status: Status) => {
-    const res = await fetch(`/api/request-items/${id}/status`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    if (res.ok) loadData();
-    else alert("Не удалось изменить статус");
+    try {
+      setUpdatingIds(prev => [...prev, id]);
+      
+      const res = await fetch(`/api/request-items/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Не удалось изменить статус");
+      }
+
+      await loadData(); // Перезагружаем данные
+    } catch (err) {
+      console.error("Ошибка при изменении статуса:", err);
+      alert(err instanceof Error ? err.message : "Не удалось изменить статус");
+    } finally {
+      setUpdatingIds(prev => prev.filter(itemId => itemId !== id));
+    }
   };
 
   // Обновление поставщика для товара
   const updateSupplier = async (itemId: number, supplierId: number | null) => {
-    const res = await fetch(`/api/request-items/${itemId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ supplierId }),
-    });
-    if (res.ok) loadData();
-    else alert("Не удалось обновить поставщика");
+    try {
+      setUpdatingIds(prev => [...prev, itemId]);
+      
+      // Валидация: проверяем что supplierId существует в списке поставщиков
+      if (supplierId !== null && !suppliers.some(s => s.id === supplierId)) {
+        throw new Error("Неверный ID поставщика");
+      }
+
+      const res = await fetch(`/api/request-items/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ supplierId }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Не удалось обновить поставщика");
+      }
+
+      await loadData(); // Перезагружаем данные
+    } catch (err) {
+      console.error("Ошибка при обновлении поставщика:", err);
+      alert(err instanceof Error ? err.message : "Не удалось обновить поставщика");
+    } finally {
+      setUpdatingIds(prev => prev.filter(id => id !== itemId));
+    }
   };
 
   // Обновление заказчика для товара
   const updateCustomer = async (itemId: number, customerId: number | null) => {
-    const res = await fetch(`/api/request-items/${itemId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ customerId }),
-    });
-    if (res.ok) loadData();
-    else alert("Не удалось обновить заказчика");
+    try {
+      setUpdatingIds(prev => [...prev, itemId]);
+      
+      // Валидация: проверяем что customerId существует в списке заказчиков
+      if (customerId !== null && !customers.some(c => c.id === customerId)) {
+        throw new Error("Неверный ID заказчика");
+      }
+
+      const res = await fetch(`/api/request-items/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customerId }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Не удалось обновить заказчика");
+      }
+
+      await loadData(); // Перезагружаем данные
+    } catch (err) {
+      console.error("Ошибка при обновлении заказчика:", err);
+      alert(err instanceof Error ? err.message : "Не удалось обновить заказчика");
+    } finally {
+      setUpdatingIds(prev => prev.filter(id => id !== itemId));
+    }
   };
 
-  if (loading) return <div className="p-4">Загрузка…</div>;
+  if (loading) {
+    return (
+      <div className="p-4">
+        <div className="text-center text-gray-500">Загрузка данных...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4">
+        <div className="text-center text-red-500 mb-4">{error}</div>
+        <button
+          onClick={loadData}
+          className="bg-blue-600 text-white px-4 py-2 rounded mx-auto block"
+        >
+          Попробовать снова
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4">
@@ -108,7 +210,8 @@ export default function CandidatesPage() {
         </div>
         <button 
           onClick={loadData}
-          className="bg-blue-600 text-white px-3 py-1 rounded text-sm"
+          disabled={loading}
+          className="bg-blue-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Обновить
         </button>
@@ -129,71 +232,79 @@ export default function CandidatesPage() {
             </tr>
           </thead>
           <tbody>
-            {items.map((it) => (
-              <tr key={it.id} className="hover:bg-gray-50">
-                <td className="p-2 border">{it.product.name}</td>
-                <td className="p-2 border">{it.product.code}</td>
-                <td className="p-2 border">{it.quantity}</td>
-                <td className="p-2 border">{it.pricePerUnit} ₽</td>
-                <td className="p-2 border font-semibold">{it.totalCost} ₽</td>
-                
-                {/* Выбор поставщика */}
-                <td className="p-2 border">
-                  <select
-                    value={it.supplierId || ""}
-                    onChange={(e) => updateSupplier(
-                      it.id, 
-                      e.target.value ? parseInt(e.target.value) : null
-                    )}
-                    className="w-full p-1 border rounded text-sm"
-                  >
-                    <option value="">Неизвестный поставщик</option>
-                    {suppliers.map((supplier) => (
-                      <option key={supplier.id} value={supplier.id}>
-                        {supplier.name}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                
-                {/* Выбор заказчика */}
-                <td className="p-2 border">
-                  <select
-                    value={it.customerId || ""}
-                    onChange={(e) => updateCustomer(
-                      it.id,
-                      e.target.value ? parseInt(e.target.value) : null
-                    )}
-                    className="w-full p-1 border rounded text-sm"
-                  >
-                    <option value="">Выберите заказчика</option>
-                    {customers.map((customer) => (
-                      <option key={customer.id} value={customer.id}>
-                        {customer.name}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                
-                {/* Кнопки действий */}
-                <td className="p-2 border space-x-2">
-                  <button
-                    onClick={() => moveTo(it.id, "IN_REQUEST")}
-                    className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
-                    title="Добавить в основную заявку"
-                  >
-                    В заявку
-                  </button>
-                  <button
-                    onClick={() => moveTo(it.id, "EXTRA")}
-                    className="bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700"
-                    title="Добавить в EXTRA-заявку"
-                  >
-                    В EXTRA
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {items.map((it) => {
+              const isUpdating = updatingIds.includes(it.id);
+              
+              return (
+                <tr key={it.id} className={`hover:bg-gray-50 ${isUpdating ? 'opacity-50' : ''}`}>
+                  <td className="p-2 border">{it.product.name}</td>
+                  <td className="p-2 border">{it.product.code}</td>
+                  <td className="p-2 border">{it.quantity}</td>
+                  <td className="p-2 border">{it.pricePerUnit} ₽</td>
+                  <td className="p-2 border font-semibold">{it.totalCost} ₽</td>
+                  
+                  {/* Выбор поставщика */}
+                  <td className="p-2 border">
+                    <select
+                      value={it.supplierId || ""}
+                      onChange={(e) => updateSupplier(
+                        it.id, 
+                        e.target.value ? parseInt(e.target.value) : null
+                      )}
+                      disabled={isUpdating}
+                      className="w-full p-1 border rounded text-sm disabled:opacity-50"
+                    >
+                      <option value="">Неизвестный поставщик</option>
+                      {suppliers.map((supplier) => (
+                        <option key={supplier.id} value={supplier.id}>
+                          {supplier.name}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  
+                  {/* Выбор заказчика */}
+                  <td className="p-2 border">
+                    <select
+                      value={it.customerId || ""}
+                      onChange={(e) => updateCustomer(
+                        it.id,
+                        e.target.value ? parseInt(e.target.value) : null
+                      )}
+                      disabled={isUpdating}
+                      className="w-full p-1 border rounded text-sm disabled:opacity-50"
+                    >
+                      <option value="">Выберите заказчика</option>
+                      {customers.map((customer) => (
+                        <option key={customer.id} value={customer.id}>
+                          {customer.name}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  
+                  {/* Кнопки действий */}
+                  <td className="p-2 border space-x-2">
+                    <button
+                      onClick={() => moveTo(it.id, "IN_REQUEST")}
+                      disabled={isUpdating}
+                      className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Добавить в основную заявку"
+                    >
+                      {isUpdating ? "..." : "В заявку"}
+                    </button>
+                    <button
+                      onClick={() => moveTo(it.id, "EXTRA")}
+                      disabled={isUpdating}
+                      className="bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Добавить в EXTRA-заявку"
+                    >
+                      {isUpdating ? "..." : "В EXTRA"}
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
             
             {items.length === 0 && (
               <tr>

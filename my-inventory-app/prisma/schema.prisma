@@ -1,8 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+//peisma/schema,prisma
+// This is your Prisma schema file
+// Docs: https://pris.ly/d/prisma-schema
 
 datasource db {
   provider = "postgresql"
@@ -57,7 +55,7 @@ model Category {
 
   products Product[]
 
-  @@map("categories") // чтобы таблица называлась categories
+  @@map("categories")
 }
 
 model Product {
@@ -72,7 +70,8 @@ model Product {
   updatedAt DateTime @updatedAt
 
   images       ProductImage[]
-  requestItems RequestItem[] // 🔥 обратная связь
+  requestItems RequestItem[]
+  deliveries   Delivery[] // 🔥 связь с поставками
 
   @@map("products")
 }
@@ -82,8 +81,8 @@ model ProductImage {
   productId Int
   product   Product @relation(fields: [productId], references: [id])
 
-  filename  String // реальное имя файла (rf-75510_main.jpg)
-  path      String // полный путь или относительный ("img/products/rf-75510/rf-75510_main.jpg")
+  filename  String
+  path      String
   isMain    Boolean  @default(false)
   createdAt DateTime @default(now())
 
@@ -101,23 +100,27 @@ model Request {
 }
 
 model RequestItem {
-  id                Int        @id @default(autoincrement())
-  requestId         Int?
-  request           Request?   @relation(fields: [requestId], references: [id], onDelete: SetNull)
-  productId         Int
-  product           Product    @relation(fields: [productId], references: [id], onDelete: Restrict)
+  id        Int      @id @default(autoincrement())
+  requestId Int?
+  request   Request? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
   status            ItemStatus @default(CANDIDATE)
   quantity          Int        @default(1)
   deliveredQuantity Int        @default(0)
   isCompleted       Boolean    @default(false)
   pricePerUnit      Decimal    @default(0.00)
-  
-  // 🔥 ОБНОВЛЕНО: Заменяем текстовые поля на связи с моделями
-  supplierId        Int?       // Связь с поставщиком
-  supplier          Supplier?  @relation(fields: [supplierId], references: [id], onDelete: SetNull)
-  
-  customerId        Int?       // Связь с заказчиком
-  customer          Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  supplierId Int?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+
+  customerId Int?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  // 🔥 связь с поставками
+  deliveries Delivery[]
 
   @@map("request_items")
 }
@@ -126,4 +129,44 @@ enum ItemStatus {
   CANDIDATE // кандидат на заявку
   IN_REQUEST // в заявке
   EXTRA // экстра заявка
+}
+
+model Delivery {
+  id Int @id @default(autoincrement())
+
+  // связь с RequestItem
+  requestItemId Int
+  requestItem   RequestItem @relation(fields: [requestItemId], references: [id], onDelete: Cascade)
+
+  deliveryDate DateTime @default(now()) @map("delivery_date")
+  quantity     Int
+
+  // Автоматический статус поставки
+  status DeliveryStatus @default(PARTIAL)
+
+  extraShipment Boolean @default(false) @map("extra_shipment")
+  notes         String? @map("notes")
+
+  // Кэшируемые поля для истории
+  supplierName String
+  customerName String
+
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  requestDate  DateTime
+  extraRequest Boolean  @default(false)
+  pricePerUnit Decimal  @default(0.00)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("deliveries")
+}
+
+enum DeliveryStatus {
+  PARTIAL // Частично
+  OVER // Переполучено
+  FULL // Полностью
+  EXTRA // Экстра
 }

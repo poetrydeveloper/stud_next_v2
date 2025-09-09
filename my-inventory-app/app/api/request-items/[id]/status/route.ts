@@ -12,31 +12,58 @@ export async function PATCH(
     const id = Number(params.id);
     const { status, requestId, notes } = await req.json();
 
-    if (!["CANDIDATE", "IN_REQUEST", "EXTRA"].includes(String(status))) {
-      return NextResponse.json({ error: "Неверный статус" }, { status: 400 });
+    // Валидация статуса
+    type ItemStatus = "CANDIDATE" | "IN_REQUEST" | "EXTRA";
+    if (!["CANDIDATE", "IN_REQUEST", "EXTRA"].includes(status as ItemStatus)) {
+      return NextResponse.json(
+        { error: "Неверный статус" }, 
+        { status: 400 }
+      );
+    }
+
+    // Валидация requestId
+    if (requestId && isNaN(Number(requestId))) {
+      return NextResponse.json(
+        { error: "Неверный ID заявки" },
+        { status: 400 }
+      );
     }
 
     const item = await prisma.requestItem.findUnique({
       where: { id },
       include: { 
         request: true,
-        // НОВОЕ: включаем поставщика и заказчика для сохранения данных
         supplier: true,
         customer: true
       },
     });
-    if (!item) return NextResponse.json({ error: "Позиция не найдена" }, { status: 404 });
+    
+    if (!item) {
+      return NextResponse.json(
+        { error: "Позиция не найдена" }, 
+        { status: 404 }
+      );
+    }
 
     let requestToUseId: number | null = null;
 
     if (status === "IN_REQUEST" || status === "EXTRA") {
       if (requestId) {
-        // привяжем к существующей заявке
-        const reqExist = await prisma.request.findUnique({ where: { id: Number(requestId) } });
-        if (!reqExist) return NextResponse.json({ error: "Заявка не найдена" }, { status: 404 });
+        // Привяжем к существующей заявке
+        const reqExist = await prisma.request.findUnique({ 
+          where: { id: Number(requestId) } 
+        });
+        
+        if (!reqExist) {
+          return NextResponse.json(
+            { error: "Заявка не найдена" },
+            { status: 404 }
+          );
+        }
+        
         requestToUseId = reqExist.id;
       } else {
-        // создадим новую заявку на лету
+        // Создадим новую заявку
         const newReq = await prisma.request.create({
           data: { notes: notes || null },
         });
@@ -48,31 +75,24 @@ export async function PATCH(
       where: { id },
       data: {
         status,
-        requestId: requestToUseId, // null если снова кандидат
-        // НОВОЕ: сохраняем связи с поставщиком и заказчиком при смене статуса
-        supplierId: item.supplierId, // сохраняем текущего поставщика
-        customerId: item.customerId  // сохраняем текущего заказчика
+        requestId: requestToUseId,
+        supplierId: item.supplierId,
+        customerId: item.customerId
       },
       include: { 
         request: true, 
         product: true,
-        // НОВОЕ: включаем поставщика и заказчика в ответ
         supplier: true,
         customer: true
       },
     });
 
-    // НОВОЕ: добавляем вычисляемые поля для обратной совместимости
-    const responseWithComputed = {
-      ...updated,
-      // Для обратной совместимости со старыми клиентами
-      supplier: updated.supplier?.name || updated.supplier, // имя поставщика или старое текстовое поле
-      customer: updated.customer?.name || updated.customer  // имя заказчика или старое текстовое поле
-    };
-
-    return NextResponse.json(responseWithComputed);
+    return NextResponse.json(updated);
   } catch (e) {
-    console.error(e);
-    return NextResponse.json({ error: "Не удалось обновить статус" }, { status: 500 });
+    console.error("Ошибка при обновлении статуса:", e);
+    return NextResponse.json(
+      { error: "Не удалось обновить статус" }, 
+      { status: 500 }
+    );
   }
 }

@@ -1,6 +1,7 @@
 // app/api/request-items/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 // PATCH /api/request-items/:id - обновление товара
 export async function PATCH(
@@ -9,8 +10,37 @@ export async function PATCH(
 ) {
   try {
     const id = parseInt(params.id);
+    
+    // Проверяем существование позиции
+    const existingItem = await prisma.requestItem.findUnique({ 
+      where: { id } 
+    });
+    
+    if (!existingItem) {
+      return NextResponse.json(
+        { error: "Позиция не найдена" },
+        { status: 404 }
+      );
+    }
+
     const body = await request.json();
     
+    // Валидация quantity
+    if (body.quantity && body.quantity <= 0) {
+      return NextResponse.json(
+        { error: "Количество должно быть больше 0" },
+        { status: 400 }
+      );
+    }
+
+    // Валидация pricePerUnit
+    if (body.pricePerUnit && Number(body.pricePerUnit) < 0) {
+      return NextResponse.json(
+        { error: "Цена не может быть отрицательной" },
+        { status: 400 }
+      );
+    }
+
     const updatedItem = await prisma.requestItem.update({
       where: { id },
       data: {
@@ -18,7 +48,9 @@ export async function PATCH(
         ...(body.supplierId !== undefined && { supplierId: body.supplierId }),
         ...(body.customerId !== undefined && { customerId: body.customerId }),
         ...(body.quantity && { quantity: body.quantity }),
-        ...(body.pricePerUnit && { pricePerUnit: body.pricePerUnit })
+        ...(body.pricePerUnit && { 
+          pricePerUnit: new Prisma.Decimal(body.pricePerUnit).toString() 
+        })
       },
       include: {
         product: {
@@ -52,6 +84,18 @@ export async function DELETE(
   try {
     const id = parseInt(params.id);
     
+    // Проверяем существование позиции перед удалением
+    const existingItem = await prisma.requestItem.findUnique({ 
+      where: { id } 
+    });
+    
+    if (!existingItem) {
+      return NextResponse.json(
+        { error: "Позиция не найдена" },
+        { status: 404 }
+      );
+    }
+
     await prisma.requestItem.delete({
       where: { id }
     });

@@ -1,7 +1,7 @@
-// app/api/categories/tree/routes.ts
+// app/api/categories/tree/route.ts
 import { NextResponse } from "next/server";
 //import prisma from "@/lib/prisma";
-import prisma from "../../../lib/prisma";
+import prisma from "../../lib/prisma";
 
 type CategoryTree = {
   id: number;

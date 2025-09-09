@@ -1,6 +1,7 @@
 // app/api/request-items/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 // POST /api/request-items
 // body: { productId: number, status?: string, quantity?: number, pricePerUnit?: string|number, supplierId?: number, customerId?: number }
@@ -14,6 +15,24 @@ export async function POST(req: Request) {
       supplierId,
       customerId
     } = await req.json();
+
+    // Валидация quantity
+    const quantityNumber = Number(quantity);
+    if (quantityNumber <= 0) {
+      return NextResponse.json(
+        { error: "Количество должно быть больше 0" },
+        { status: 400 }
+      );
+    }
+
+    // Валидация pricePerUnit
+    const priceNumber = Number(pricePerUnit);
+    if (priceNumber < 0) {
+      return NextResponse.json(
+        { error: "Цена не может быть отрицательной" },
+        { status: 400 }
+      );
+    }
 
     // Проверим, что товар существует
     const product = await prisma.product.findUnique({
@@ -62,8 +81,8 @@ export async function POST(req: Request) {
         where: { id: existingItem.id },
         data: {
           status: status.toUpperCase(),
-          quantity: Number(quantity) || 1,
-          pricePerUnit: pricePerUnit?.toString() ?? "0",
+          quantity: quantityNumber,
+          pricePerUnit: new Prisma.Decimal(priceNumber).toString(),
           supplierId: finalSupplierId,
           customerId: customerId || null,
         },
@@ -79,8 +98,8 @@ export async function POST(req: Request) {
         data: {
           productId: product.id,
           status: status.toUpperCase(),
-          quantity: Number(quantity) || 1,
-          pricePerUnit: pricePerUnit?.toString() ?? "0",
+          quantity: quantityNumber,
+          pricePerUnit: new Prisma.Decimal(priceNumber).toString(),
           supplierId: finalSupplierId,
           customerId: customerId || null,
           requestId: null,

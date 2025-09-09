@@ -16,7 +16,7 @@ interface Product {
   id: number; 
   code: string; 
   name: string;
-  images: ProductImage[]; // ЗАМЕНИЛИ imageUrl на images
+  images: ProductImage[];
 }
 
 interface Item {
@@ -24,7 +24,7 @@ interface Item {
   status: "IN_REQUEST" | "EXTRA" | "CANDIDATE";
   quantity: number;
   pricePerUnit: string;
-  product: Product; // Используем обновленный Product
+  product: Product;
   requestId: number | null;
 }
 
@@ -36,20 +36,57 @@ interface Request {
   createdAt: string;
 }
 
+interface ApiResponse {
+  requests: Request[];
+  pagination: {
+    page: number;
+    limit: number;
+    totalCount: number;
+    totalPages: number;
+  };
+}
+
 export default function RequestsPage() {
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/requests")
-      .then((r) => r.json())
-      .then((data) => {
-        setRequests(data);
+    const fetchRequests = async () => {
+      try {
+        const response = await fetch("/api/requests");
+        if (!response.ok) {
+          throw new Error(`Ошибка HTTP: ${response.status}`);
+        }
+        
+        const data: ApiResponse = await response.json();
+        setRequests(data.requests);
+      } catch (err) {
+        console.error("Ошибка при загрузке заявок:", err);
+        setError("Не удалось загрузить заявки");
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchRequests();
   }, []);
 
-  if (loading) return <div className="p-4">Загрузка…</div>;
+  if (loading) {
+    return (
+      <div className="p-4">
+        <div className="text-center text-gray-500">Загрузка заявок...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4">
+        <div className="text-center text-red-500">{error}</div>
+      </div>
+    );
+  }
 
   // Сортируем заявки по дате (новые сверху)
   const sortedRequests = [...requests].sort(
@@ -144,11 +181,11 @@ function RequestItem({ item }: { item: Item }) {
   
   return (
     <div className="flex items-center p-2 border rounded-md bg-gray-50 hover:bg-gray-100">
-      {/* Миниатюра товара - ОБНОВЛЕНО */}
+      {/* Миниатюра товара */}
       <div className="flex-shrink-0 mr-3">
         {mainImage ? (
           <Image
-            src={`${mainImage.path}`} // ПУТЬ К ИЗОБРАЖЕНИЮ ИЗ БД
+            src={mainImage.path}
             alt={item.product.name}
             width={48}
             height={48}
@@ -161,7 +198,7 @@ function RequestItem({ item }: { item: Item }) {
         )}
       </div>
       
-      {/* Информация о товаре - БЕЗ ИЗМЕНЕНИЙ */}
+      {/* Информация о товаре */}
       <div className="flex-grow">
         <div className="font-medium">{item.product.name}</div>
         <div className="text-sm text-gray-600">
@@ -169,7 +206,7 @@ function RequestItem({ item }: { item: Item }) {
         </div>
       </div>
       
-      {/* Итоговая стоимость - БЕЗ ИЗМЕНЕНИЙ */}
+      {/* Итоговая стоимость */}
       <div className="flex-shrink-0 ml-2 text-right">
         <div className="font-semibold">
           {Math.round(item.quantity * parseFloat(item.pricePerUnit))} ₽
