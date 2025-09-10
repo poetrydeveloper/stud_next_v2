@@ -24,7 +24,7 @@ export default function CustomersPage() {
         if (!res.ok) throw new Error("Ошибка при загрузке данных");
 
         const data = await res.json();
-        setCustomers(data);
+        setCustomers(data.customers || data);
       } catch (err) {
         setError("Не удалось загрузить покупателей");
       } finally {

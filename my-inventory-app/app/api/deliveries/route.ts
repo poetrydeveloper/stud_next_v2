@@ -38,18 +38,18 @@ export async function POST(req: Request) {
     let status: "PARTIAL" | "FULL" | "OVER" | "EXTRA" = "PARTIAL";
     if (extraShipment) {
       status = "EXTRA";
-    } else if (quantity < requestItem.quantity) {
+    } else if (quantity < remaining) {
       status = "PARTIAL";
-    } else if (quantity === requestItem.quantity) {
+    } else if (quantity === remaining) {
       status = "FULL";
-    } else if (quantity > requestItem.quantity) {
+    } else if (quantity > remaining) {
       status = "OVER";
     }
 
     // 4. Создаем запись поставки
     const delivery = await prisma.delivery.create({
       data: {
-        requestItemId,
+        requestItemId: Number(requestItemId),
         deliveryDate: new Date(),
         quantity,
         extraShipment,
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
 
     // 5. Обновляем deliveredQuantity в RequestItem
     await prisma.requestItem.update({
-      where: { id: requestItemId },
+      where: { id: Number(requestItemId) },
       data: {
         deliveredQuantity: requestItem.deliveredQuantity + quantity,
         isCompleted: requestItem.deliveredQuantity + quantity >= requestItem.quantity,
@@ -79,7 +79,10 @@ export async function POST(req: Request) {
     return NextResponse.json(delivery, { status: 201 });
   } catch (error) {
     console.error("Ошибка при создании поставки:", error);
-    return NextResponse.json({ error: "Ошибка при создании поставки" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Внутренняя ошибка сервера при создании поставки" },
+      { status: 500 }
+    );
   }
 }
 
@@ -87,13 +90,12 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const date = searchParams.get("date");
+    
+    // Сделать дату необязательной - показывать сегодня по умолчанию
+    const targetDate = date || new Date().toISOString().split('T')[0];
 
-    if (!date) {
-      return NextResponse.json({ error: "Дата обязательна" }, { status: 400 });
-    }
-
-    const startOfDay = new Date(`${date}T00:00:00.000Z`);
-    const endOfDay = new Date(`${date}T23:59:59.999Z`);
+    const startOfDay = new Date(`${targetDate}T00:00:00.000Z`);
+    const endOfDay = new Date(`${targetDate}T23:59:59.999Z`);
 
     const deliveries = await prisma.delivery.findMany({
       where: {
@@ -104,6 +106,12 @@ export async function GET(req: Request) {
       },
       include: {
         product: true,
+        requestItem: {
+          include: {
+            supplier: true,
+            customer: true,
+          }
+        }
       },
       orderBy: { deliveryDate: "asc" },
     });
@@ -113,9 +121,16 @@ export async function GET(req: Request) {
       0
     );
 
-    return NextResponse.json({ deliveries, totalSum });
+    return NextResponse.json({ 
+      deliveries, 
+      totalSum,
+      date: targetDate 
+    });
   } catch (error) {
     console.error("Ошибка при получении поставок:", error);
-    return NextResponse.json({ error: "Ошибка при получении поставок" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Внутренняя ошибка сервера при получении поставок" },
+      { status: 500 }
+    );
   }
 }

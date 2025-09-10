@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function NewCustomerPage() {
   const router = useRouter();
@@ -23,7 +24,8 @@ export default function NewCustomerPage() {
     setMessage("");
 
     try {
-      const res = await fetch("/api/customers/new", {
+      // ИСПРАВЛЕННЫЙ URL - убрал /new
+      const res = await fetch("/api/customers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -57,6 +59,15 @@ export default function NewCustomerPage() {
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
+      <div className="mb-6">
+        <Link 
+          href="/customers" 
+          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+        >
+          ← Назад к списку покупателей
+        </Link>
+      </div>
+
       <h1 className="text-2xl font-bold mb-6">Создать покупателя</h1>
 
       {message && (
@@ -89,6 +100,7 @@ export default function NewCustomerPage() {
             onChange={handleChange}
             className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
             required
+            disabled={loading}
           />
         </div>
 
@@ -106,6 +118,7 @@ export default function NewCustomerPage() {
             onChange={handleChange}
             className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
             required
+            disabled={loading}
           />
         </div>
 
@@ -122,6 +135,7 @@ export default function NewCustomerPage() {
             value={formData.email}
             onChange={handleChange}
             className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            disabled={loading}
           />
         </div>
 
@@ -138,21 +152,31 @@ export default function NewCustomerPage() {
             onChange={handleChange}
             rows={4}
             className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+            disabled={loading}
           />
         </div>
 
-        {/* Кнопка отправки */}
-        <button
-          type="submit"
-          disabled={loading}
-          className={`mt-4 p-3 rounded-lg text-white font-medium transition ${
-            loading
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700"
-          }`}
-        >
-          {loading ? "Сохранение..." : "Создать"}
-        </button>
+        {/* Кнопки */}
+        <div className="flex gap-3 mt-4">
+          <button
+            type="submit"
+            disabled={loading}
+            className={`p-3 rounded-lg text-white font-medium transition flex-1 ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
+          >
+            {loading ? "Сохранение..." : "Создать покупателя"}
+          </button>
+          
+          <Link
+            href="/customers"
+            className="p-3 rounded-lg border border-gray-300 text-gray-700 font-medium transition hover:bg-gray-50 text-center"
+          >
+            Отмена
+          </Link>
+        </div>
       </form>
     </div>
   );
