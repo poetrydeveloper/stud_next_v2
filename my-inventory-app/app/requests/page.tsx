@@ -19,11 +19,12 @@ interface Product {
   images: ProductImage[];
 }
 
+// ОБНОВЛЕННЫЙ ИНТЕРФЕЙС Item - ДОБАВЛЕНО deliveredQuantity
 interface Item {
   id: number;
   status: "IN_REQUEST" | "EXTRA" | "CANDIDATE";
   quantity: number;
-  deliveredQuantity: number;
+  deliveredQuantity: number; // ← ДОБАВИЛИ ЭТО ПОЛЕ
   pricePerUnit: string;
   product: Product;
   requestId: number | null;
@@ -76,11 +77,20 @@ export default function RequestsPage() {
   // ОБНОВЛЕННЫЙ КОМПОНЕНТ RequestItem - ВНУТРИ RequestsPage
   function RequestItem({ item }: { item: Item }) {
     const mainImage = item.product.images.find(img => img.isMain) || item.product.images[0];
-    const [deliveryQuantity, setDeliveryQuantity] = useState(item.quantity);
+    const [deliveryQuantity, setDeliveryQuantity] = useState(1);
     const [salePrice, setSalePrice] = useState("");
     const [isCreating, setIsCreating] = useState(false);
 
+    // ВЫЧИСЛЯЕМ ОСТАТОК ДЛЯ ПОСТАВКИ
+    const remainingQuantity = item.quantity - item.deliveredQuantity;
+    const isFullyDelivered = remainingQuantity <= 0;
+
     const handleCreateDelivery = async (isSale: boolean) => {
+      if (isFullyDelivered) {
+        alert("❌ Товар уже полностью поставлен!");
+        return;
+      }
+
       setIsCreating(true);
       try {
         // 1. Создаем поставку
@@ -129,7 +139,6 @@ export default function RequestsPage() {
     };
 
     const totalPrice = Number(salePrice || item.pricePerUnit) * deliveryQuantity;
-    const remainingQuantity = item.quantity - item.deliveredQuantity;
 
     return (
       <div className="flex items-center p-4 border rounded-md bg-white hover:bg-gray-50">
@@ -154,69 +163,82 @@ export default function RequestsPage() {
         <div className="flex-grow">
           <div className="font-medium text-lg">{item.product.name}</div>
           <div className="text-sm text-gray-600 mb-2">
-            Код: {item.product.code} | Заказано: {item.quantity} шт. | 
+            Код: {item.product.code} | Заказано: {item.quantity} шт.
+          </div>
+          <div className="text-sm text-gray-600 mb-2">
             Поставлено: {item.deliveredQuantity} шт. | 
-            Осталось: {remainingQuantity} шт.
+            Осталось: <span className={isFullyDelivered ? "text-green-600 font-semibold" : "text-orange-600 font-semibold"}>
+              {remainingQuantity} шт.
+            </span>
           </div>
           <div className="text-sm text-gray-600 mb-2">
             Цена закупки: {item.pricePerUnit} ₽
           </div>
 
-          {/* Поля для поставки */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3 p-3 bg-gray-50 rounded">
-            <div>
-              <label className="block text-sm font-medium mb-1">Количество *</label>
-              <input
-                type="number"
-                min="1"
-                max={remainingQuantity}
-                value={deliveryQuantity}
-                onChange={(e) => setDeliveryQuantity(Math.max(1, Math.min(remainingQuantity, Number(e.target.value))))}
-                className="w-full border rounded p-2 text-sm"
-                disabled={isCreating || remainingQuantity <= 0}
-              />
-              <span className="text-xs text-gray-500">
-                Макс: {remainingQuantity} шт.
-              </span>
+          {/* Сообщение о полной поставке */}
+          {isFullyDelivered && (
+            <div className="bg-green-100 text-green-800 p-2 rounded mb-3">
+              ✅ Товар полностью поставлен
             </div>
+          )}
 
-            <div>
-              <label className="block text-sm font-medium mb-1">Цена продажи</label>
-              <input
-                type="text"
-                value={salePrice}
-                onChange={(e) => setSalePrice(e.target.value.replace(/[^\d.]/g, ''))}
-                placeholder={item.pricePerUnit}
-                className="w-full border rounded p-2 text-sm"
-                disabled={isCreating}
-              />
-              <span className="text-xs text-gray-500">
-                По умолчанию: {item.pricePerUnit} ₽
-              </span>
-            </div>
+          {/* Поля для поставки - ТОЛЬКО ЕСЛИ ЕСТЬ ОСТАТОК */}
+          {!isFullyDelivered && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3 p-3 bg-gray-50 rounded">
+              <div>
+                <label className="block text-sm font-medium mb-1">Количество *</label>
+                <input
+                  type="number"
+                  min="1"
+                  max={remainingQuantity}
+                  value={deliveryQuantity}
+                  onChange={(e) => setDeliveryQuantity(Math.max(1, Math.min(remainingQuantity, Number(e.target.value))))}
+                  className="w-full border rounded p-2 text-sm"
+                  disabled={isCreating}
+                />
+                <span className="text-xs text-gray-500">
+                  Макс: {remainingQuantity} шт.
+                </span>
+              </div>
 
-            <div className="flex flex-col justify-end">
-              <div className="text-sm font-semibold mb-2">
-                Итого: {totalPrice.toFixed(2)} ₽
+              <div>
+                <label className="block text-sm font-medium mb-1">Цена продажи</label>
+                <input
+                  type="text"
+                  value={salePrice}
+                  onChange={(e) => setSalePrice(e.target.value.replace(/[^\d.]/g, ''))}
+                  placeholder={item.pricePerUnit}
+                  className="w-full border rounded p-2 text-sm"
+                  disabled={isCreating}
+                />
+                <span className="text-xs text-gray-500">
+                  По умолчанию: {item.pricePerUnit} ₽
+                </span>
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleCreateDelivery(false)}
-                  disabled={isCreating || remainingQuantity <= 0}
-                  className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isCreating ? "..." : "Фиксация"}
-                </button>
-                <button
-                  onClick={() => handleCreateDelivery(true)}
-                  disabled={isCreating || remainingQuantity <= 0}
-                  className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isCreating ? "..." : "Фикс + Реализация"}
-                </button>
+
+              <div className="flex flex-col justify-end">
+                <div className="text-sm font-semibold mb-2">
+                  Итого: {totalPrice.toFixed(2)} ₽
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleCreateDelivery(false)}
+                    disabled={isCreating}
+                    className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isCreating ? "..." : "Фиксация"}
+                  </button>
+                  <button
+                    onClick={() => handleCreateDelivery(true)}
+                    disabled={isCreating}
+                    className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isCreating ? "..." : "Фикс + Реализация"}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     );

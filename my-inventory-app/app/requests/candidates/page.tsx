@@ -55,6 +55,21 @@ export default function CandidatesPage() {
   const [error, setError] = useState<string | null>(null);
   const [updatingIds, setUpdatingIds] = useState<number[]>([]);
 
+  // Функция для безопасного преобразования данных в массив
+  const ensureArray = <T,>(data: any): T[] => {
+    if (Array.isArray(data)) return data;
+    if (data && typeof data === 'object') return Object.values(data);
+    return [];
+  };
+
+  // Функция для генерации уникального ключа
+  const generateUniqueKey = (item: any, index: number): string => {
+    if (item && item.id !== undefined && item.id !== null) {
+      return `customer-${item.id}`;
+    }
+    return `customer-index-${index}`;
+  };
+
   // Загрузка всех данных
   const loadData = async () => {
     try {
@@ -78,9 +93,30 @@ export default function CandidatesPage() {
         customersRes.json()
       ]);
 
-      setItems(itemsData);
-      setSuppliers(suppliersData);
-      setCustomers(customersData);
+      // Безопасное преобразование данных в массивы
+      setItems(ensureArray<Item>(itemsData));
+      setSuppliers(ensureArray<Supplier>(suppliersData));
+      
+      // Обработка customers с проверкой уникальности ID
+      const customersArray = ensureArray<Customer>(customersData);
+      console.log('Customers data:', customersArray);
+      
+      // Проверяем наличие дубликатов ID
+      const uniqueIds = new Set();
+      const customersWithUniqueIds = customersArray.map((customer, index) => {
+        let customerId = customer.id;
+        
+        // Если ID отсутствует или дублируется, создаем временный уникальный ID
+        if (customerId === undefined || customerId === null || uniqueIds.has(customerId)) {
+          customerId = -index - 1; // Отрицательные ID для временных значений
+        }
+        
+        uniqueIds.add(customerId);
+        return { ...customer, id: customerId };
+      });
+      
+      setCustomers(customersWithUniqueIds);
+      
     } catch (err) {
       console.error("Ошибка загрузки данных:", err);
       setError(err instanceof Error ? err.message : "Не удалось загрузить данные");
@@ -154,14 +190,18 @@ export default function CandidatesPage() {
       setUpdatingIds(prev => [...prev, itemId]);
       
       // Валидация: проверяем что customerId существует в списке заказчиков
-      if (customerId !== null && !customers.some(c => c.id === customerId)) {
+      // Игнорируем временные отрицательные ID
+      if (customerId !== null && customerId > 0 && !customers.some(c => c.id === customerId)) {
         throw new Error("Неверный ID заказчика");
       }
+
+      // Для API отправляем только валидные положительные ID
+      const apiCustomerId = customerId && customerId > 0 ? customerId : null;
 
       const res = await fetch(`/api/request-items/${itemId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customerId }),
+        body: JSON.stringify({ customerId: apiCustomerId }),
       });
 
       if (!res.ok) {
@@ -255,8 +295,8 @@ export default function CandidatesPage() {
                       className="w-full p-1 border rounded text-sm disabled:opacity-50"
                     >
                       <option value="">Неизвестный поставщик</option>
-                      {suppliers.map((supplier) => (
-                        <option key={supplier.id} value={supplier.id}>
+                      {Array.isArray(suppliers) && suppliers.map((supplier) => (
+                        <option key={`supplier-${supplier.id}`} value={supplier.id}>
                           {supplier.name}
                         </option>
                       ))}
@@ -275,8 +315,8 @@ export default function CandidatesPage() {
                       className="w-full p-1 border rounded text-sm disabled:opacity-50"
                     >
                       <option value="">Выберите заказчика</option>
-                      {customers.map((customer) => (
-                        <option key={customer.id} value={customer.id}>
+                      {Array.isArray(customers) && customers.map((customer, index) => (
+                        <option key={generateUniqueKey(customer, index)} value={customer.id}>
                           {customer.name}
                         </option>
                       ))}
