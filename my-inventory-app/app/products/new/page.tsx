@@ -7,16 +7,22 @@ interface Category {
   name: string;
 }
 
+interface Brand {
+  id: number;
+  name: string;
+}
+
 export default function NewProductForm() {
   const [files, setFiles] = useState<FileList | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
+  const [brands, setBrands] = useState<Brand[]>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     console.log('Загружаем категории...')
     fetch('/api/categories')
       .then(res => {
-        console.log('Статус ответа:', res.status)
+        console.log('Статус ответа категорий:', res.status)
         return res.json()
       })
       .then(data => {
@@ -24,6 +30,18 @@ export default function NewProductForm() {
         setCategories(data)
       })
       .catch(error => console.error('Ошибка загрузки категорий:', error))
+
+    console.log('Загружаем бренды...')
+    fetch('/api/brands')
+      .then(res => {
+        console.log('Статус ответа брендов:', res.status)
+        return res.json()
+      })
+      .then(data => {
+        console.log('Получены бренды:', data)
+        setBrands(data)
+      })
+      .catch(error => console.error('Ошибка загрузки брендов:', error))
   }, [])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -89,6 +107,19 @@ export default function NewProductForm() {
         </select>
       </div>
 
+      {/* Выбор бренда */}
+      <div>
+        <label className="block mb-1">Бренд:</label>
+        <select name="brandId" className="border p-2 w-full">
+          <option value="">Без бренда</option>
+          {brands.map((brand) => (
+            <option key={brand.id} value={brand.id}>
+              {brand.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div>
         <label className="block mb-1">Изображения:</label>
         <input 
@@ -107,6 +138,15 @@ export default function NewProductForm() {
       >
         {loading ? 'Создание...' : 'Создать товар'}
       </button>
+
+      <div className="mt-4">
+        <a 
+          href="/brands/create" 
+          className="text-blue-500 hover:text-blue-700 text-sm"
+        >
+          + Создать новый бренд
+        </a>
+      </div>
     </form>
   )
 }

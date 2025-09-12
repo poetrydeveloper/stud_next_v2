@@ -31,8 +31,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             Создать товар
           </Link>
 
+          {/* --- Бренды --- */}
+          <Link href="/brands/create" className="hover:underline">
+            Создать бренд
+          </Link>
+
           {/* --- Категории --- */}
-          <Link href="/api/categories/new" className="hover:underline">
+          <Link href="/categories/new" className="hover:underline">
             Создать категорию
           </Link>
           <Link href="/api/categories/tree" className="hover:underline">
