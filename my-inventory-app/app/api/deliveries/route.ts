@@ -46,37 +46,55 @@ export async function POST(req: Request) {
       status = "OVER";
     }
 
-    // 4. Создаем запись поставки
-    const delivery = await prisma.delivery.create({
-      data: {
-        requestItemId: Number(requestItemId),
-        deliveryDate: new Date(),
-        quantity,
-        extraShipment,
-        notes,
+    // 4. Используем транзакцию для атомарности
+    const result = await prisma.$transaction(async (tx) => {
+      // Создаем запись поставки
+      const delivery = await tx.delivery.create({
+        data: {
+          requestItemId: Number(requestItemId),
+          deliveryDate: new Date(),
+          quantity,
+          extraShipment,
+          notes,
+          supplierName: requestItem.supplier?.name || "Неизвестный поставщик",
+          customerName: requestItem.customer?.name || "Неизвестный покупатель",
+          productId: requestItem.product.id,
+          requestDate: requestItem.request?.createdAt || new Date(),
+          extraRequest: requestItem.status === "EXTRA",
+          pricePerUnit: requestItem.pricePerUnit,
+          status,
+        },
+      });
 
-        // Автоматически копируем данные из заявки
-        supplierName: requestItem.supplier?.name || "Неизвестный поставщик",
-        customerName: requestItem.customer?.name || "Неизвестный покупатель",
-        productId: requestItem.product.id,
-        requestDate: requestItem.request?.createdAt || new Date(),
-        extraRequest: requestItem.status === "EXTRA",
-        pricePerUnit: requestItem.pricePerUnit,
+      // 5. СОЗДАЕМ PRODUCT_UNIT ДЛЯ КАЖДОЙ ЕДИНИЦЫ ТОВАРА
+      const productUnits = [];
+      for (let i = 0; i < quantity; i++) {
+        const serialNumber = generateSerialNumber(requestItem.product.code);
+        
+        const productUnit = await tx.productUnit.create({
+          data: {
+            serialNumber,
+            productId: requestItem.product.id,
+            deliveryId: delivery.id,
+            status: "IN_STORE",
+          },
+        });
+        productUnits.push(productUnit);
+      }
 
-        status,
-      },
+      // 6. Обновляем deliveredQuantity в RequestItem
+      await tx.requestItem.update({
+        where: { id: Number(requestItemId) },
+        data: {
+          deliveredQuantity: requestItem.deliveredQuantity + quantity,
+          isCompleted: requestItem.deliveredQuantity + quantity >= requestItem.quantity,
+        },
+      });
+
+      return { delivery, productUnits };
     });
 
-    // 5. Обновляем deliveredQuantity в RequestItem
-    await prisma.requestItem.update({
-      where: { id: Number(requestItemId) },
-      data: {
-        deliveredQuantity: requestItem.deliveredQuantity + quantity,
-        isCompleted: requestItem.deliveredQuantity + quantity >= requestItem.quantity,
-      },
-    });
-
-    return NextResponse.json(delivery, { status: 201 });
+    return NextResponse.json(result, { status: 201 });
   } catch (error) {
     console.error("Ошибка при создании поставки:", error);
     return NextResponse.json(
@@ -84,6 +102,13 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
+}
+
+// Функция генерации серийного номера
+function generateSerialNumber(productCode: string): string {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substr(2, 6).toUpperCase();
+  return `${productCode}-${timestamp}-${random}`;
 }
 
 export async function GET(req: Request) {
