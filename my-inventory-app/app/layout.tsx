@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <nav className="p-3 border-b flex gap-6 items-center bg-white shadow-sm relative flex-wrap">
           {/* --- Товары --- */}
           <Link href="/products" className="hover:underline">
-            Товары
+            Все товары
           </Link>
           <Link href="/products/new" className="hover:underline">
             Создать товар
