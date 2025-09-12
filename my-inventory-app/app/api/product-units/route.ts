@@ -1,99 +1,135 @@
-// app/api/product-units/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { generateSerialNumber } from "@/app/lib/serialGenerator";
+
+const MAX_SERIAL_RETRIES = 5;
 
 export async function POST(req: Request) {
   try {
     const { productId, deliveryId, quantity = 1 } = await req.json();
 
-    // Проверяем существование продукта и поставки
     const [product, delivery] = await Promise.all([
       prisma.product.findUnique({ where: { id: Number(productId) } }),
-      prisma.delivery.findUnique({ 
-        where: { id: Number(deliveryId) },
-        include: { product: true }
-      })
+      prisma.delivery.findUnique({ where: { id: Number(deliveryId) } }),
     ]);
 
     if (!product) {
-      return NextResponse.json(
-        { error: "Товар не найден" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Товар не найден" }, { status: 404 });
     }
-
     if (!delivery) {
+      return NextResponse.json({ error: "Поставка не найдена" }, { status: 404 });
+    }
+
+    // Проверяем, сколько единиц можно ещё создать
+    const existingCount = await prisma.productUnit.count({
+      where: { deliveryId: Number(deliveryId) },
+    });
+
+    const remaining = delivery.quantity - existingCount;
+    if (remaining <= 0) {
       return NextResponse.json(
-        { error: "Поставка не найдена" },
-        { status: 404 }
+        {
+          error: "Все единицы для этой поставки уже созданы",
+          deliveryQuantity: delivery.quantity,
+          existingCount,
+        },
+        { status: 400 }
       );
     }
 
-    const productUnits = [];
+    const finalQuantity = Math.min(quantity, remaining);
+    const createdUnits: any[] = [];
 
-    // Создаем указанное количество единиц товара
-    for (let i = 0; i < quantity; i++) {
-      const serialNumber = generateSerialNumber({
-        productCode: product.code,
-        deliveryPrice: delivery.pricePerUnit.toString()
-      });
+    // Транзакция: создаём все юниты или ничего
+    await prisma.$transaction(async (tx) => {
+      for (let i = 0; i < finalQuantity; i++) {
+        let unitCreated = false;
+        let attempts = 0;
 
-      const productUnit = await prisma.productUnit.create({
-        data: {
-          serialNumber,
-          productId: Number(productId),
-          deliveryId: Number(deliveryId)
+        while (!unitCreated && attempts < MAX_SERIAL_RETRIES) {
+          attempts++;
+          const serial = generateSerialNumber({
+            productCode: product.code,
+            deliveryPrice: delivery.pricePerUnit.toString(),
+          });
+
+          try {
+            const unit = await tx.productUnit.create({
+              data: {
+                serialNumber: serial,
+                productId: product.id,
+                deliveryId: delivery.id,
+                status: "IN_STORE",
+                salePrice: 0,
+              },
+              include: {
+                product: true,
+                delivery: true,
+              },
+            });
+            createdUnits.push(unit);
+            unitCreated = true;
+          } catch (err: any) {
+            if (err.code === "P2002" && err.meta?.target?.includes("serial_number")) {
+              // Конфликт серийника — пробуем заново
+              continue;
+            }
+            throw err;
+          }
         }
-      });
 
-      productUnits.push(productUnit);
-    }
+        if (!unitCreated) {
+          throw new Error(
+            `Не удалось создать уникальный серийный номер после ${MAX_SERIAL_RETRIES} попыток`
+          );
+        }
+      }
+    });
 
     return NextResponse.json(
-      { 
-        message: `Создано ${quantity} единиц товара`,
-        productUnits 
+      {
+        message: `Создано ${createdUnits.length} единиц товара`,
+        deliveryId: delivery.id,
+        productId: product.id,
+        createdCount: createdUnits.length,
+        productUnits: createdUnits,
       },
       { status: 201 }
     );
-
   } catch (error) {
     console.error("Ошибка создания единиц товара:", error);
     return NextResponse.json(
-      { error: "Внутренняя ошибка сервера" },
+      { error: "Внутренняя ошибка сервера", detail: String(error) },
       { status: 500 }
     );
   }
 }
 
-// GET - получение единиц товара
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const productId = searchParams.get('productId');
-    const deliveryId = searchParams.get('deliveryId');
+    const productId = searchParams.get("productId");
+    const deliveryId = searchParams.get("deliveryId");
+    const status = searchParams.get("status");
 
-    const whereClause = {
+    const where: any = {
       ...(productId && { productId: Number(productId) }),
-      ...(deliveryId && { deliveryId: Number(deliveryId) })
+      ...(deliveryId && { deliveryId: Number(deliveryId) }),
+      ...(status && { status }),
     };
 
-    const productUnits = await prisma.productUnit.findMany({
-      where: whereClause,
+    const units = await prisma.productUnit.findMany({
+      where,
       include: {
         product: true,
-        delivery: true
+        delivery: true,
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(productUnits);
+    return NextResponse.json(units);
   } catch (error) {
     console.error("Ошибка получения единиц товара:", error);
-    return NextResponse.json(
-      { error: "Внутренняя ошибка сервера" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Внутренняя ошибка сервера" }, { status: 500 });
   }
 }

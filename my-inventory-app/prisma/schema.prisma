@@ -72,6 +72,7 @@ model Product {
   images       ProductImage[]
   requestItems RequestItem[]
   deliveries   Delivery[] // 🔥 связь с поставками
+  productUnits ProductUnit[]
 
   @@map("products")
 }
@@ -161,6 +162,8 @@ model Delivery {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  productUnits ProductUnit[]
+
   @@map("deliveries")
 }
 
@@ -172,14 +175,23 @@ enum DeliveryStatus {
 }
 
 model ProductUnit {
-  id            Int      @id @default(autoincrement())
-  serialNumber  String   @unique @map("serial_number")
-  productId     Int
-  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  deliveryId    Int
-  delivery      Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id           Int               @id @default(autoincrement())
+  serialNumber String            @unique @map("serial_number")
+  productId    Int
+  product      Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  deliveryId   Int
+  delivery     Delivery          @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  status       ProductUnitStatus @default(IN_STORE)
+  salePrice    Float?            @map("sale_price") // Цена продажи
+  soldAt       DateTime?         @map("sold_at") // Дата и время продажи
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
 
   @@map("product_units")
+}
+
+enum ProductUnitStatus {
+  IN_STORE
+  SOLD
+  LOST
 }

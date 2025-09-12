@@ -9,18 +9,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const [isSuppliersOpen, setIsSuppliersOpen] = useState(false);
   const [isCustomersOpen, setIsCustomersOpen] = useState(false);
   const [isDeliveriesOpen, setIsDeliveriesOpen] = useState(false);
+  const [isUnitsOpen, setIsUnitsOpen] = useState(false);
 
   // Функция для закрытия всех меню, кроме текущего
   const closeAllMenus = () => {
     setIsSuppliersOpen(false);
     setIsCustomersOpen(false);
     setIsDeliveriesOpen(false);
+    setIsUnitsOpen(false);
   };
 
   return (
     <html lang="ru">
       <body>
-        <nav className="p-3 border-b flex gap-6 items-center bg-white shadow-sm relative">
+        <nav className="p-3 border-b flex gap-6 items-center bg-white shadow-sm relative flex-wrap">
           {/* --- Товары --- */}
           <Link href="/products" className="hover:underline">
             Товары
@@ -52,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 setIsDeliveriesOpen((prev) => !prev);
                 setIsSuppliersOpen(false);
                 setIsCustomersOpen(false);
+                setIsUnitsOpen(false);
               }}
               className="px-3 py-1 rounded hover:bg-gray-100 transition flex items-center gap-1"
             >
@@ -81,6 +84,64 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             )}
           </div>
 
+          {/* --- Product Units --- */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setIsUnitsOpen((prev) => !prev);
+                setIsSuppliersOpen(false);
+                setIsCustomersOpen(false);
+                setIsDeliveriesOpen(false);
+              }}
+              className="px-3 py-1 rounded hover:bg-gray-100 transition flex items-center gap-1"
+            >
+              Единицы товара
+              <span className={`transition-transform ${isUnitsOpen ? "rotate-180" : "rotate-0"}`}>
+                ▼
+              </span>
+            </button>
+
+            {isUnitsOpen && (
+              <div className="absolute mt-2 w-48 bg-white border rounded shadow-lg z-50">
+                <Link
+                  href="/product-units"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                  onClick={closeAllMenus}
+                >
+                  Все единицы
+                </Link>
+                <Link
+                  href="/product-units/in-store"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                  onClick={closeAllMenus}
+                >
+                  В магазине
+                </Link>
+                <Link
+                  href="/product-units/sold"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                  onClick={closeAllMenus}
+                >
+                  Проданные
+                </Link>
+                <Link
+                  href="/product-units/lost"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                  onClick={closeAllMenus}
+                >
+                  Утерянные
+                </Link>
+                <Link
+                  href="/deliveries/new-unit"
+                  className="block px-4 py-2 hover:bg-gray-100 border-t mt-1 pt-1"
+                  onClick={closeAllMenus}
+                >
+                  + Создать единицу
+                </Link>
+              </div>
+            )}
+          </div>
+
           {/* --- Поставщики --- */}
           <div className="relative">
             <button
@@ -88,6 +149,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 setIsSuppliersOpen((prev) => !prev);
                 setIsCustomersOpen(false);
                 setIsDeliveriesOpen(false);
+                setIsUnitsOpen(false);
               }}
               className="px-3 py-1 rounded hover:bg-gray-100 transition flex items-center gap-1"
             >
@@ -124,6 +186,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 setIsCustomersOpen((prev) => !prev);
                 setIsSuppliersOpen(false);
                 setIsDeliveriesOpen(false);
+                setIsUnitsOpen(false);
               }}
               className="px-3 py-1 rounded hover:bg-gray-100 transition flex items-center gap-1"
             >
