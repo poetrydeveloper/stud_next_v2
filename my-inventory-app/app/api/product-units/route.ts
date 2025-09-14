@@ -1,3 +1,4 @@
+//app/api/product-units/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { generateSerialNumber } from "@/app/lib/serialGenerator";
@@ -63,7 +64,11 @@ export async function POST(req: Request) {
                 salePrice: 0,
               },
               include: {
-                product: true,
+                product: {
+                  include: {
+                    category: true,
+                  }
+                },
                 delivery: true,
               },
             });
@@ -121,7 +126,11 @@ export async function GET(req: Request) {
     const units = await prisma.productUnit.findMany({
       where,
       include: {
-        product: true,
+        product: {
+          include: {
+            category: true,
+          }
+        },
         delivery: true,
       },
       orderBy: { createdAt: "desc" },

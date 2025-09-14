@@ -202,6 +202,7 @@ model ProductUnit {
   createdAt    DateTime          @default(now()) @map("created_at")
   updatedAt    DateTime          @updatedAt @map("updated_at")
 
+  cashEvents CashEvent[]
   @@map("product_units")
 }
 
@@ -209,4 +210,38 @@ enum ProductUnitStatus {
   IN_STORE
   SOLD
   LOST
+}
+
+model CashDay {
+  id        Int       @id @default(autoincrement())
+  date      DateTime  @unique @map("date")
+  isClosed  Boolean   @default(false) @map("is_closed")
+  total     Float     @default(0.00) @map("total")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  events CashEvent[]
+
+  @@map("cash_days")
+}
+
+model CashEvent {
+  id        Int           @id @default(autoincrement())
+  type      CashEventType @map("type")
+  amount    Float         @map("amount")
+  notes     String?       @map("notes")
+  cashDayId Int           @map("cash_day_id")
+  cashDay   CashDay       @relation(fields: [cashDayId], references: [id], onDelete: Cascade)
+  productUnitId Int?      @map("product_unit_id")
+  productUnit   ProductUnit? @relation(fields: [productUnitId], references: [id], onDelete: SetNull)
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  @@map("cash_events")
+}
+
+enum CashEventType {
+  SALE        // Продажа
+  RETURN      // Возврат
+  PRICE_QUERY // Запрос цены
+  ORDER       // Заказ
 }

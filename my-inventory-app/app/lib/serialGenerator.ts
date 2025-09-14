@@ -1,3 +1,4 @@
+//app/lib/serialGenerator.ts
 import { v4 as uuidv4 } from "uuid";
 
 interface GenerateSerialParams {

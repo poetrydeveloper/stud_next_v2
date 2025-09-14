@@ -1,3 +1,5 @@
+//app/compoments/ProductCard.tsx
+// возможно этот код не применяется в приложении
 'use client';
 
 import Link from 'next/link';
