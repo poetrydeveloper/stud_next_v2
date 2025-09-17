@@ -1,42 +1,39 @@
-// app/cash/[id]/add-event/page.tsx
+// app/cash-days/[id]/add-event/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { CashEventType } from '@/app/lib/types/cash';
+import ProductSearch from '@/app/components/ProductSearch';
+import { ProductUnit } from '@/app/lib/types/productUnit';
 
 export default function AddCashEventPage() {
   const params = useParams();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
-  const [formData, setFormData] = useState({
-    type: 'SALE' as CashEventType,
-    amount: '',
-    notes: '',
-    productUnitId: ''
-  });
+  const [error, setError] = useState('');
+  const [selectedProductUnit, setSelectedProductUnit] = useState<ProductUnit>();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    const formData = new FormData(e.currentTarget);
     
     try {
-      setLoading(true);
-      setError(null);
-
       const response = await fetch('/api/cash-events', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          type: formData.type,
-          amount: parseFloat(formData.amount) || 0,
-          notes: formData.notes || undefined,
+          type: formData.get('type') as CashEventType,
+          amount: parseFloat(formData.get('amount') as string),
+          notes: formData.get('notes') as string,
           cashDayId: parseInt(params.id as string),
-          productUnitId: formData.productUnitId ? parseInt(formData.productUnitId) : undefined
-        }),
+          productUnitId: selectedProductUnit?.id
+        })
       });
 
       if (!response.ok) {
@@ -44,26 +41,19 @@ export default function AddCashEventPage() {
         throw new Error(errorData.error || 'Ошибка создания события');
       }
 
-      router.push(`/cash/${params.id}`);
-      router.refresh();
+      router.push(`/cash-days/${params.id}`);
     } catch (err) {
-      console.error('Error:', err);
       setError(err instanceof Error ? err.message : 'Неизвестная ошибка');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
   return (
     <div className="p-6 max-w-md mx-auto">
       <div className="flex items-center gap-4 mb-6">
         <button
-          onClick={() => router.push(`/cash/${params.id}`)}
+          onClick={() => router.push(`/cash-days/${params.id}`)}
           className="bg-gray-500 text-white px-3 py-1 rounded text-sm hover:bg-gray-600"
         >
           ← Назад
@@ -72,15 +62,12 @@ export default function AddCashEventPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Тип события */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Тип события
           </label>
           <select
             name="type"
-            value={formData.type}
-            onChange={handleInputChange}
             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           >
@@ -92,50 +79,32 @@ export default function AddCashEventPage() {
           </select>
         </div>
 
-        {/* Сумма */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Сумма (руб.)
           </label>
           <input
             type="number"
-            name="amount"
-            value={formData.amount}
-            onChange={handleInputChange}
             step="0.01"
             min="0"
+            name="amount"
             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="0.00"
             required
           />
         </div>
 
-        {/* ID единицы товара (для продаж) */}
-        {formData.type === 'SALE' && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              ID единицы товара (опционально)
-            </label>
-            <input
-              type="number"
-              name="productUnitId"
-              value={formData.productUnitId}
-              onChange={handleInputChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="123"
-            />
-          </div>
-        )}
+        <ProductSearch
+          onSelect={setSelectedProductUnit}
+          selectedProductUnit={selectedProductUnit}
+        />
 
-        {/* Заметки */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Заметки (опционально)
           </label>
           <textarea
             name="notes"
-            value={formData.notes}
-            onChange={handleInputChange}
             rows={3}
             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Дополнительная информация..."
@@ -143,9 +112,7 @@ export default function AddCashEventPage() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-            <p className="text-red-800 text-sm">{error}</p>
-          </div>
+          <div className="text-red-500 text-sm">{error}</div>
         )}
 
         <div className="flex gap-4">
@@ -156,10 +123,9 @@ export default function AddCashEventPage() {
           >
             {loading ? 'Создание...' : 'Создать событие'}
           </button>
-          
           <button
             type="button"
-            onClick={() => router.push(`/cash/${params.id}`)}
+            onClick={() => router.push(`/cash-days/${params.id}`)}
             className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
           >
             Отмена

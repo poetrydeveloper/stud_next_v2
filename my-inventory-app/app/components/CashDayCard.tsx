@@ -52,7 +52,7 @@ export default function CashDayCard({ cashDay }: CashDayCardProps) {
 
       <div className="flex justify-between items-center">
         <Link
-          href={`/cash/${cashDay.id}`}
+          href={`/cash-days/${cashDay.id}`}
           className="text-blue-500 hover:text-blue-700 text-sm"
         >
           Подробнее →
@@ -60,7 +60,7 @@ export default function CashDayCard({ cashDay }: CashDayCardProps) {
         
         {isToday && !isClosed && (
           <Link
-            href={`/cash/${cashDay.id}/add-event`}
+            href={`/cash-days/${cashDay.id}/add-event`}
             className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
           >
             Добавить событие

@@ -34,7 +34,15 @@ export async function POST(request: NextRequest) {
   try {
     const body: CreateCashDayRequest = await request.json();
     
-    // Проверяем, есть ли уже открытый день на эту дату
+    // Базовая валидация тела запроса
+    if (!body.date) {
+      return NextResponse.json(
+        { error: 'Поле date обязательно' },
+        { status: 400 }
+      );
+    }
+
+    // Проверяем, есть ли уже день на эту дату
     const existingDay = await prisma.cashDay.findUnique({
       where: { date: new Date(body.date) }
     });
@@ -46,14 +54,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Создаем кассовый день (isClosed и total проставятся автоматически)
     const cashDay = await prisma.cashDay.create({
       data: {
-        date: new Date(body.date),
-        isClosed: false,
-        total: 0
-      },
-      include: {
-        events: true
+        date: new Date(body.date)
       }
     });
 

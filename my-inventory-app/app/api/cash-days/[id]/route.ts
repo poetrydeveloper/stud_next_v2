@@ -8,6 +8,14 @@ export async function GET(
 ) {
   try {
     const id = parseInt(params.id);
+    
+    // Проверка валидности ID
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { error: 'Некорректный ID кассового дня' },
+        { status: 400 }
+      );
+    }
 
     const cashDay = await prisma.cashDay.findUnique({
       where: { id },
@@ -49,19 +57,35 @@ export async function PATCH(
 ) {
   try {
     const id = parseInt(params.id);
+    
+    // Проверка валидности ID
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { error: 'Некорректный ID кассового дня' },
+        { status: 400 }
+      );
+    }
+
     const { isClosed } = await request.json();
 
     const cashDay = await prisma.cashDay.update({
       where: { id },
-      data: { isClosed },
-      include: {
-        events: true
-      }
+      data: { isClosed }
+      // Убрал include: { events: true } так как он обычно не нужен для ответа
     });
 
     return NextResponse.json(cashDay);
   } catch (error) {
     console.error('Error updating cash day:', error);
+    
+    // Более специфичная обработка ошибки "не найден"
+    if (error instanceof Error && error.message.includes('RecordNotFound')) {
+      return NextResponse.json(
+        { error: 'Кассовый день не найден' },
+        { status: 404 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Ошибка обновления кассового дня' },
       { status: 500 }

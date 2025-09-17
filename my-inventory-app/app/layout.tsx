@@ -10,6 +10,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const [isCustomersOpen, setIsCustomersOpen] = useState(false);
   const [isDeliveriesOpen, setIsDeliveriesOpen] = useState(false);
   const [isUnitsOpen, setIsUnitsOpen] = useState(false);
+  const [isCashOpen, setIsCashOpen] = useState(false);
 
   // Функция для закрытия всех меню, кроме текущего
   const closeAllMenus = () => {
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     setIsCustomersOpen(false);
     setIsDeliveriesOpen(false);
     setIsUnitsOpen(false);
+    setIsCashOpen(false);
   };
 
   return (
@@ -44,6 +46,37 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             Дерево категорий
           </Link>
 
+          {/* --- Касса --- */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setIsCashOpen((prev) => !prev);
+                setIsSuppliersOpen(false);
+                setIsCustomersOpen(false);
+                setIsDeliveriesOpen(false);
+                setIsUnitsOpen(false);
+              }}
+              className="px-3 py-1 rounded hover:bg-gray-100 transition flex items-center gap-1"
+            >
+              Касса
+              <span className={`transition-transform ${isCashOpen ? "rotate-180" : "rotate-0"}`}>
+                ▼
+              </span>
+            </button>
+
+            {isCashOpen && (
+              <div className="absolute mt-2 w-48 bg-white border rounded shadow-lg z-50">
+                <Link
+                  href="/cash-days"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                  onClick={closeAllMenus}
+                >
+                  Кассовые дни
+                </Link>
+              </div>
+            )}
+          </div>
+
           {/* --- Заявки --- */}
           <Link href="/requests/candidates" className="hover:underline">
             Предзаявки
@@ -60,6 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 setIsSuppliersOpen(false);
                 setIsCustomersOpen(false);
                 setIsUnitsOpen(false);
+                setIsCashOpen(false);
               }}
               className="px-3 py-1 rounded hover:bg-gray-100 transition flex items-center gap-1"
             >
@@ -97,6 +131,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 setIsSuppliersOpen(false);
                 setIsCustomersOpen(false);
                 setIsDeliveriesOpen(false);
+                setIsCashOpen(false);
               }}
               className="px-3 py-1 rounded hover:bg-gray-100 transition flex items-center gap-1"
             >
@@ -155,6 +190,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 setIsCustomersOpen(false);
                 setIsDeliveriesOpen(false);
                 setIsUnitsOpen(false);
+                setIsCashOpen(false);
               }}
               className="px-3 py-1 rounded hover:bg-gray-100 transition flex items-center gap-1"
             >
@@ -192,6 +228,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 setIsSuppliersOpen(false);
                 setIsDeliveriesOpen(false);
                 setIsUnitsOpen(false);
+                setIsCashOpen(false);
               }}
               className="px-3 py-1 rounded hover:bg-gray-100 transition flex items-center gap-1"
             >

@@ -1,4 +1,4 @@
-// app/cash/[id]/page.tsx
+// app/cash-days/[id]/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -52,7 +52,7 @@ export default function CashDayDetailPage() {
         throw new Error('Ошибка закрытия кассового дня');
       }
 
-      router.push('/cash');
+      router.push('/cash-days');
       router.refresh();
     } catch (err) {
       console.error('Error:', err);
@@ -81,7 +81,7 @@ export default function CashDayDetailPage() {
       <div className="p-6">
         <div className="text-red-500 mb-4">{error || 'Кассовый день не найден'}</div>
         <button
-          onClick={() => router.push('/cash')}
+          onClick={() => router.push('/cash-days')}
           className="bg-blue-500 text-white px-4 py-2 rounded"
         >
           Назад к журналу
@@ -97,7 +97,7 @@ export default function CashDayDetailPage() {
     <div className="p-6">
       <div className="flex items-center gap-4 mb-6">
         <button
-          onClick={() => router.push('/cash')}
+          onClick={() => router.push('/cash-days')}
           className="bg-gray-500 text-white px-3 py-1 rounded text-sm hover:bg-gray-600"
         >
           ← Назад
@@ -138,7 +138,7 @@ export default function CashDayDetailPage() {
         {!cashDay.isClosed && (
           <>
             <Link
-              href={`/cash/${cashDay.id}/add-event`}
+              href={`/cash-days/${cashDay.id}/add-event`}
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
             >
               Добавить событие
