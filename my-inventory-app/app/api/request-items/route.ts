@@ -3,67 +3,46 @@ import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { Prisma } from "@prisma/client";
 
-// ==========================
-// КЭШ ДЛЯ БЫСТРОГО ДОСТУПА
-// ==========================
-
-// В кэше будем хранить позиции и время последнего обновления
-let requestItemsCache: any[] | null = null;
-let lastCacheUpdate: number | null = null;
-
-// Время жизни кэша (3 минуты)
-const CACHE_TTL = 3 * 60 * 1000; // 3 минуты в миллисекундах
-
-// Проверка, устарел ли кэш
-function isCacheExpired() {
-  if (!lastCacheUpdate) return true;
-  return Date.now() - lastCacheUpdate > CACHE_TTL;
-}
-
-// Обновление кэша из БД
-async function updateCacheFromDB() {
-  const items = await prisma.requestItem.findMany({
-    include: {
-      product: {
-        include: {
-          images: true,
-          category: true,
-        },
-      },
-      request: true,
-      supplier: true,
-      customer: true,
+// Функция для подсчёта статистики товара
+async function computeStatsForProduct(productId: number) {
+  // 1) В заявках
+  const reqAgg = await prisma.requestItem.aggregate({
+    _sum: { quantity: true },
+    where: {
+      productId,
+      status: { in: ["CANDIDATE", "IN_REQUEST"] },
     },
-    orderBy: { id: "desc" },
+  });
+  const inRequests = Number(reqAgg._sum.quantity ?? 0);
+
+  // 2) На складе
+  const inStore = await prisma.productUnit.count({
+    where: { productId, status: "IN_STORE" },
   });
 
-  // Добавляем вычисляемые поля
-  requestItemsCache = items.map((it) => ({
-    ...it,
-    totalCost: (Number(it.pricePerUnit) * it.quantity).toString(),
-    remainingQuantity: Math.max(0, it.quantity - (it.deliveredQuantity || 0)),
-    deliveryProgress: `${it.deliveredQuantity || 0}/${it.quantity}`,
-    supplierName: it.supplier?.name || null,
-    customerName: it.customer?.name || null,
-  }));
+  // 3) Продано сегодня
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+  const soldToday = await prisma.productUnit.count({
+    where: {
+      productId,
+      status: "SOLD",
+      soldAt: { gte: startOfDay },
+    },
+  });
 
-  lastCacheUpdate = Date.now();
-  return requestItemsCache;
+  return { inRequests, inStore, soldToday };
 }
 
-// ========================================
-// POST /api/request-items — Добавление/обновление позиции
-// ========================================
+// POST - создание новой позиции в заявке
 export async function POST(req: Request) {
   try {
-    const {
-      productId,
-      status = "CANDIDATE",
-      quantity = 1,
-      pricePerUnit = "0",
-      supplierId,
-      customerId
-    } = await req.json();
+    const body = await req.json();
+    const { productId, quantity, pricePerUnit, status = "CANDIDATE", supplierId, customerId } = body;
+
+    if (!productId || !quantity) {
+      return NextResponse.json({ error: "productId and quantity are required" }, { status: 400 });
+    }
 
     // Валидация quantity
     const quantityNumber = Number(quantity);
@@ -75,7 +54,7 @@ export async function POST(req: Request) {
     }
 
     // Валидация pricePerUnit
-    const priceNumber = Number(pricePerUnit);
+    const priceNumber = Number(pricePerUnit || 0);
     if (priceNumber < 0) {
       return NextResponse.json(
         { error: "Цена не может быть отрицательной" },
@@ -136,7 +115,12 @@ export async function POST(req: Request) {
           customerId: customerId || null,
         },
         include: {
-          product: true,
+          product: {
+            include: {
+              images: true,
+              category: true,
+            },
+          },
           supplier: true,
           customer: true,
         },
@@ -154,29 +138,44 @@ export async function POST(req: Request) {
           requestId: null,
         },
         include: {
-          product: true,
+          product: {
+            include: {
+              images: true,
+              category: true,
+            },
+          },
           supplier: true,
           customer: true,
         },
       });
     }
 
-    // После изменения — обновляем кэш, чтобы не ждать 3 минуты
-    await updateCacheFromDB();
+    // Считаем свежую статистику для продукта
+    const stats = await computeStatsForProduct(Number(productId));
 
-    return NextResponse.json(item, { status: 201 });
-  } catch (e) {
-    console.error("Ошибка в POST /api/request-items:", e);
-    return NextResponse.json(
-      { error: "Не удалось обновить позицию" },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      message: "Request item created successfully",
+      item: {
+        ...item,
+        totalCost: (Number(item.pricePerUnit) * item.quantity).toString(),
+        remainingQuantity: Math.max(0, item.quantity - (item.deliveredQuantity || 0)),
+        deliveryProgress: `${item.deliveredQuantity || 0}/${item.quantity}`,
+        supplierName: item.supplier?.name || null,
+        customerName: item.customer?.name || null,
+      },
+      stats: {
+        ...stats,
+        lastUpdated: new Date().toISOString(),
+      },
+    }, { status: 201 });
+
+  } catch (error) {
+    console.error("Error creating request item:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-// ========================================
-// GET /api/request-items?status=candidate|in_request|extra
-// ========================================
+// GET - получение позиций с фильтрацией по статусу
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -185,19 +184,113 @@ export async function GET(req: Request) {
     const allowed = ["CANDIDATE", "IN_REQUEST", "EXTRA"];
     const status = allowed.includes(statusParam) ? statusParam : "CANDIDATE";
 
-    // Если кэш пустой или устарел — обновляем его
-    if (!requestItemsCache || isCacheExpired()) {
-      await updateCacheFromDB();
-    }
+    const items = await prisma.requestItem.findMany({
+      where: { status },
+      include: {
+        product: {
+          include: {
+            images: true,
+            category: true,
+          },
+        },
+        supplier: true,
+        customer: true,
+      },
+      orderBy: { id: "desc" },
+    });
 
-    // Возвращаем данные только с нужным статусом
-    const filteredItems = requestItemsCache.filter(item => item.status === status);
+    // Добавляем вычисляемые поля
+    const itemsWithComputed = items.map((it) => ({
+      ...it,
+      totalCost: (Number(it.pricePerUnit) * it.quantity).toString(),
+      remainingQuantity: Math.max(0, it.quantity - (it.deliveredQuantity || 0)),
+      deliveryProgress: `${it.deliveredQuantity || 0}/${it.quantity}`,
+      supplierName: it.supplier?.name || null,
+      customerName: it.customer?.name || null,
+    }));
 
-    return NextResponse.json(filteredItems);
+    return NextResponse.json(itemsWithComputed);
+
   } catch (e) {
     console.error("Ошибка в GET /api/request-items:", e);
     return NextResponse.json(
       { error: "Не удалось получить позиции" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE - удаление позиции
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "ID позиции обязателен" },
+        { status: 400 }
+      );
+    }
+
+    await prisma.requestItem.delete({
+      where: { id: Number(id) },
+    });
+
+    return NextResponse.json({ message: "Позиция удалена успешно" });
+
+  } catch (e) {
+    console.error("Ошибка в DELETE /api/request-items:", e);
+    return NextResponse.json(
+      { error: "Не удалось удалить позицию" },
+      { status: 500 }
+    );
+  }
+}
+
+// PATCH - обновление позиции
+export async function PATCH(req: Request) {
+  try {
+    const { id, ...updateData } = await req.json();
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "ID позиции обязателен" },
+        { status: 400 }
+      );
+    }
+
+    const item = await prisma.requestItem.update({
+      where: { id: Number(id) },
+      data: updateData,
+      include: {
+        product: {
+          include: {
+            images: true,
+            category: true,
+          },
+        },
+        supplier: true,
+        customer: true,
+      },
+    });
+
+    // Добавляем вычисляемые поля
+    const itemWithComputed = {
+      ...item,
+      totalCost: (Number(item.pricePerUnit) * item.quantity).toString(),
+      remainingQuantity: Math.max(0, item.quantity - (item.deliveredQuantity || 0)),
+      deliveryProgress: `${item.deliveredQuantity || 0}/${item.quantity}`,
+      supplierName: item.supplier?.name || null,
+      customerName: item.customer?.name || null,
+    };
+
+    return NextResponse.json(itemWithComputed);
+
+  } catch (e) {
+    console.error("Ошибка в PATCH /api/request-items:", e);
+    return NextResponse.json(
+      { error: "Не удалось обновить позицию" },
       { status: 500 }
     );
   }

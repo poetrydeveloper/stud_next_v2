@@ -1,4 +1,4 @@
-//app/api/product-units/route.ts
+// app/api/product-units/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { generateSerialNumber } from "@/app/lib/serialGenerator";
@@ -67,6 +67,7 @@ export async function POST(req: Request) {
                 product: {
                   include: {
                     category: true,
+                    images: true // Добавлено включение images
                   }
                 },
                 delivery: true,
@@ -129,6 +130,7 @@ export async function GET(req: Request) {
         product: {
           include: {
             category: true,
+            images: true // ДОБАВЛЕНО: включаем изображения продуктов
           }
         },
         delivery: true,

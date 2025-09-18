@@ -52,10 +52,9 @@ export default function ProductUnitsPage() {
         throw new Error("Ошибка обновления статуса");
       }
 
-      // Обновляем локальное состояние
       setProductUnits(prev => prev.map(unit =>
         unit.id === unitId
-          ? { ...unit, status: newStatus, soldAt: newStatus === 'SOLD' ? new Date() : null }
+          ? { ...unit, status: newStatus, soldAt: newStatus === 'SOLD' ? new Date().toISOString() : null }
           : unit
       ));
       
@@ -67,19 +66,19 @@ export default function ProductUnitsPage() {
 
   if (loading) {
     return (
-      <div className="p-4">
-        <div className="text-center text-gray-500">Загрузка...</div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center text-gray-500">Загрузка единиц товара...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4">
-        <div className="text-red-500 mb-4">{error}</div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-red-500 mb-4 text-center">{error}</div>
         <button
           onClick={loadProductUnits}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
+          className="bg-blue-500 text-white px-4 py-2 rounded mx-auto block"
         >
           Попробовать снова
         </button>
@@ -88,14 +87,14 @@ export default function ProductUnitsPage() {
   }
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-6">Единицы товара</h1>
+    <div className="container mx-auto px-4 py-6">
+      <h1 className="text-2xl font-bold mb-6">Карточки товара</h1>
       
       {/* Фильтры */}
-      <div className="mb-6 flex gap-2">
+      <div className="mb-6 flex gap-2 flex-wrap">
         <button
           onClick={() => setFilter("all")}
-          className={`px-4 py-2 rounded ${
+          className={`px-4 py-2 rounded text-sm ${
             filter === "all" ? "bg-blue-500 text-white" : "bg-gray-200"
           }`}
         >
@@ -103,7 +102,7 @@ export default function ProductUnitsPage() {
         </button>
         <button
           onClick={() => setFilter("IN_STORE")}
-          className={`px-4 py-2 rounded ${
+          className={`px-4 py-2 rounded text-sm ${
             filter === "IN_STORE" ? "bg-blue-500 text-white" : "bg-gray-200"
           }`}
         >
@@ -111,7 +110,7 @@ export default function ProductUnitsPage() {
         </button>
         <button
           onClick={() => setFilter("SOLD")}
-          className={`px-4 py-2 rounded ${
+          className={`px-4 py-2 rounded text-sm ${
             filter === "SOLD" ? "bg-blue-500 text-white" : "bg-gray-200"
           }`}
         >
@@ -119,7 +118,7 @@ export default function ProductUnitsPage() {
         </button>
         <button
           onClick={() => setFilter("LOST")}
-          className={`px-4 py-2 rounded ${
+          className={`px-4 py-2 rounded text-sm ${
             filter === "LOST" ? "bg-blue-500 text-white" : "bg-gray-200"
           }`}
         >
@@ -128,20 +127,20 @@ export default function ProductUnitsPage() {
       </div>
 
       {/* Статистика */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-blue-50 p-4 rounded border">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-blue-50 p-4 rounded border text-center">
           <div className="text-2xl font-bold text-blue-600">
             {productUnits.filter(u => u.status === "IN_STORE").length}
           </div>
           <div className="text-sm text-blue-800">В магазине</div>
         </div>
-        <div className="bg-green-50 p-4 rounded border">
+        <div className="bg-green-50 p-4 rounded border text-center">
           <div className="text-2xl font-bold text-green-600">
             {productUnits.filter(u => u.status === "SOLD").length}
           </div>
           <div className="text-sm text-green-800">Проданные</div>
         </div>
-        <div className="bg-red-50 p-4 rounded border">
+        <div className="bg-red-50 p-4 rounded border text-center">
           <div className="text-2xl font-bold text-red-600">
             {productUnits.filter(u => u.status === "LOST").length}
           </div>
@@ -149,13 +148,13 @@ export default function ProductUnitsPage() {
         </div>
       </div>
 
-      {/* Список единиц товара */}
+      {/* Список единиц товара - ИСПРАВЛЕНО: убрана grid */}
       {productUnits.length === 0 ? (
-        <div className="text-center text-gray-500 py-8">
+        <div className="text-center text-gray-500 py-12">
           Нет единиц товара для отображения
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="space-y-4"> {/* Вместо grid используем space-y-4 */}
           {productUnits.map((unit) => (
             <ProductUnitCard
               key={unit.id}
