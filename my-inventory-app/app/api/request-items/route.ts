@@ -3,8 +3,57 @@ import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { Prisma } from "@prisma/client";
 
-// POST /api/request-items
-// body: { productId: number, status?: string, quantity?: number, pricePerUnit?: string|number, supplierId?: number, customerId?: number }
+// ==========================
+// КЭШ ДЛЯ БЫСТРОГО ДОСТУПА
+// ==========================
+
+// В кэше будем хранить позиции и время последнего обновления
+let requestItemsCache: any[] | null = null;
+let lastCacheUpdate: number | null = null;
+
+// Время жизни кэша (3 минуты)
+const CACHE_TTL = 3 * 60 * 1000; // 3 минуты в миллисекундах
+
+// Проверка, устарел ли кэш
+function isCacheExpired() {
+  if (!lastCacheUpdate) return true;
+  return Date.now() - lastCacheUpdate > CACHE_TTL;
+}
+
+// Обновление кэша из БД
+async function updateCacheFromDB() {
+  const items = await prisma.requestItem.findMany({
+    include: {
+      product: {
+        include: {
+          images: true,
+          category: true,
+        },
+      },
+      request: true,
+      supplier: true,
+      customer: true,
+    },
+    orderBy: { id: "desc" },
+  });
+
+  // Добавляем вычисляемые поля
+  requestItemsCache = items.map((it) => ({
+    ...it,
+    totalCost: (Number(it.pricePerUnit) * it.quantity).toString(),
+    remainingQuantity: Math.max(0, it.quantity - (it.deliveredQuantity || 0)),
+    deliveryProgress: `${it.deliveredQuantity || 0}/${it.quantity}`,
+    supplierName: it.supplier?.name || null,
+    customerName: it.customer?.name || null,
+  }));
+
+  lastCacheUpdate = Date.now();
+  return requestItemsCache;
+}
+
+// ========================================
+// POST /api/request-items — Добавление/обновление позиции
+// ========================================
 export async function POST(req: Request) {
   try {
     const {
@@ -112,6 +161,9 @@ export async function POST(req: Request) {
       });
     }
 
+    // После изменения — обновляем кэш, чтобы не ждать 3 минуты
+    await updateCacheFromDB();
+
     return NextResponse.json(item, { status: 201 });
   } catch (e) {
     console.error("Ошибка в POST /api/request-items:", e);
@@ -122,7 +174,9 @@ export async function POST(req: Request) {
   }
 }
 
+// ========================================
 // GET /api/request-items?status=candidate|in_request|extra
+// ========================================
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -131,33 +185,15 @@ export async function GET(req: Request) {
     const allowed = ["CANDIDATE", "IN_REQUEST", "EXTRA"];
     const status = allowed.includes(statusParam) ? statusParam : "CANDIDATE";
 
-    const items = await prisma.requestItem.findMany({
-      where: { status },
-      include: {
-        product: {
-          include: {
-            images: true,
-            category: true,
-          },
-        },
-        request: true,
-        supplier: true,
-        customer: true,
-      },
-      orderBy: { id: "desc" },
-    });
+    // Если кэш пустой или устарел — обновляем его
+    if (!requestItemsCache || isCacheExpired()) {
+      await updateCacheFromDB();
+    }
 
-    // Добавляем вычисляемые поля
-    const withComputed = items.map((it) => ({
-      ...it,
-      totalCost: (Number(it.pricePerUnit) * it.quantity).toString(),
-      remainingQuantity: Math.max(0, it.quantity - it.deliveredQuantity),
-      deliveryProgress: `${it.deliveredQuantity}/${it.quantity}`,
-      supplierName: it.supplier?.name || null,
-      customerName: it.customer?.name || null,
-    }));
+    // Возвращаем данные только с нужным статусом
+    const filteredItems = requestItemsCache.filter(item => item.status === status);
 
-    return NextResponse.json(withComputed);
+    return NextResponse.json(filteredItems);
   } catch (e) {
     console.error("Ошибка в GET /api/request-items:", e);
     return NextResponse.json(

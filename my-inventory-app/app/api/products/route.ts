@@ -4,6 +4,7 @@ import prisma from "@/app/lib/prisma";
 import { writeFile, mkdir, unlink } from "fs/promises";
 import path from "path";
 
+
 // POST /api/products — создание товара
 export async function POST(req: Request) {
   try {

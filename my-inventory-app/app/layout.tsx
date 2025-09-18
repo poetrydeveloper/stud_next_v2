@@ -4,262 +4,141 @@
 import "./globals.css";
 import Link from "next/link";
 import { useState } from "react";
+import { Menu, ChevronDown } from "lucide-react";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const [isSuppliersOpen, setIsSuppliersOpen] = useState(false);
-  const [isCustomersOpen, setIsCustomersOpen] = useState(false);
-  const [isDeliveriesOpen, setIsDeliveriesOpen] = useState(false);
-  const [isUnitsOpen, setIsUnitsOpen] = useState(false);
-  const [isCashOpen, setIsCashOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
 
-  // Функция для закрытия всех меню, кроме текущего
-  const closeAllMenus = () => {
-    setIsSuppliersOpen(false);
-    setIsCustomersOpen(false);
-    setIsDeliveriesOpen(false);
-    setIsUnitsOpen(false);
-    setIsCashOpen(false);
+  const toggleMenu = (menu: string) => {
+    setOpenMenu(openMenu === menu ? null : menu);
   };
+
+  const menuItems = [
+    {
+      title: "Товары",
+      links: [
+        { href: "/products", label: "Все товары" },
+        { href: "/products/new", label: "Создать товар" },
+        { href: "/brands/create", label: "Создать бренд" },
+        { href: "/categories/new", label: "Создать категорию" },
+        { href: "/api/categories/tree", label: "Дерево категорий" },
+      ],
+    },
+    {
+      title: "Поставки",
+      links: [
+        { href: "/deliveries", label: "Все поставки" },
+        { href: "/deliveries/new", label: "Создать поставку" },
+      ],
+    },
+    {
+      title: "Единицы товара",
+      links: [
+        { href: "/product-units", label: "Все единицы" },
+        { href: "/product-units/in-store", label: "В магазине" },
+        { href: "/product-units/sold", label: "Проданные" },
+        { href: "/product-units/lost", label: "Утерянные" },
+        { href: "/deliveries/new-unit", label: "+ Создать единицу" },
+      ],
+    },
+    {
+      title: "Контрагенты",
+      links: [
+        { href: "/suppliers", label: "Все поставщики" },
+        { href: "/suppliers/new", label: "Создать поставщика" },
+        { href: "/customers", label: "Все покупатели" },
+        { href: "/customers/new", label: "Создать покупателя" },
+      ],
+    },
+    {
+      title: "Касса",
+      links: [
+        { href: "/cash-days", label: "Кассовые дни" },
+      ],
+    },
+    {
+      title: "Заявки",
+      links: [
+        { href: "/requests/candidates", label: "Предзаявки" },
+        { href: "/requests", label: "Заявки" },
+      ],
+    },
+  ];
 
   return (
     <html lang="ru">
-      <body>
-        <nav className="p-3 border-b flex gap-6 items-center bg-white shadow-sm relative flex-wrap">
-          {/* --- Товары --- */}
-          <Link href="/products" className="hover:underline">
-            Все товары
-          </Link>
-          <Link href="/products/new" className="hover:underline">
-            Создать товар
-          </Link>
-
-          {/* --- Бренды --- */}
-          <Link href="/brands/create" className="hover:underline">
-            Создать бренд
-          </Link>
-
-          {/* --- Категории --- */}
-          <Link href="/categories/new" className="hover:underline">
-            Создать категорию
-          </Link>
-          <Link href="/api/categories/tree" className="hover:underline">
-            Дерево категорий
-          </Link>
-
-          {/* --- Касса --- */}
-          <div className="relative">
+      <body className="bg-gray-50">
+        {/* Верхняя панель */}
+        <header className="flex items-center justify-between p-4 bg-white shadow-sm">
+          <div className="flex items-center gap-3">
             <button
-              onClick={() => {
-                setIsCashOpen((prev) => !prev);
-                setIsSuppliersOpen(false);
-                setIsCustomersOpen(false);
-                setIsDeliveriesOpen(false);
-                setIsUnitsOpen(false);
-              }}
-              className="px-3 py-1 rounded hover:bg-gray-100 transition flex items-center gap-1"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="p-2 rounded-md hover:bg-gray-100 transition"
             >
-              Касса
-              <span className={`transition-transform ${isCashOpen ? "rotate-180" : "rotate-0"}`}>
-                ▼
-              </span>
+              <Menu size={24} />
             </button>
+            <h1 className="text-xl font-bold">Магазин</h1>
+          </div>
+          <div>
+            <Link href="/" className="text-sm text-gray-600 hover:underline">
+              Главная
+            </Link>
+          </div>
+        </header>
 
-            {isCashOpen && (
-              <div className="absolute mt-2 w-48 bg-white border rounded shadow-lg z-50">
-                <Link
-                  href="/cash-days"
-                  className="block px-4 py-2 hover:bg-gray-100"
-                  onClick={closeAllMenus}
-                >
-                  Кассовые дни
-                </Link>
-              </div>
-            )}
+        {/* Боковое меню */}
+        <aside
+          className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg transform transition-transform z-50 ${
+            isSidebarOpen ? "translate-x-0" : "-translate-x-64"
+          }`}
+        >
+          <div className="p-4 border-b flex justify-between items-center">
+            <h2 className="text-lg font-semibold">Навигация</h2>
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="text-gray-500 hover:text-gray-800 transition"
+            >
+              ✕
+            </button>
           </div>
 
-          {/* --- Заявки --- */}
-          <Link href="/requests/candidates" className="hover:underline">
-            Предзаявки
-          </Link>
-          <Link href="/requests" className="hover:underline">
-            Заявки
-          </Link>
-
-          {/* --- Поставки --- */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setIsDeliveriesOpen((prev) => !prev);
-                setIsSuppliersOpen(false);
-                setIsCustomersOpen(false);
-                setIsUnitsOpen(false);
-                setIsCashOpen(false);
-              }}
-              className="px-3 py-1 rounded hover:bg-gray-100 transition flex items-center gap-1"
-            >
-              Поставки
-              <span className={`transition-transform ${isDeliveriesOpen ? "rotate-180" : "rotate-0"}`}>
-                ▼
-              </span>
-            </button>
-
-            {isDeliveriesOpen && (
-              <div className="absolute mt-2 w-48 bg-white border rounded shadow-lg z-50">
-                <Link
-                  href="/deliveries"
-                  className="block px-4 py-2 hover:bg-gray-100"
-                  onClick={closeAllMenus}
+          <nav className="p-4">
+            {menuItems.map((menu) => (
+              <div key={menu.title} className="mb-4">
+                <button
+                  onClick={() => toggleMenu(menu.title)}
+                  className="w-full flex justify-between items-center py-2 px-3 rounded hover:bg-gray-100 transition"
                 >
-                  Все поставки
-                </Link>
-                <Link
-                  href="/deliveries/new"
-                  className="block px-4 py-2 hover:bg-gray-100"
-                  onClick={closeAllMenus}
-                >
-                  Создать поставку
-                </Link>
+                  <span>{menu.title}</span>
+                  <ChevronDown
+                    className={`transition-transform ${openMenu === menu.title ? "rotate-180" : ""}`}
+                    size={18}
+                  />
+                </button>
+                {openMenu === menu.title && (
+                  <div className="mt-2 ml-3 border-l pl-3 space-y-2">
+                    {menu.links.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className="block text-sm text-gray-700 hover:underline"
+                        onClick={() => setIsSidebarOpen(false)}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            ))}
+          </nav>
+        </aside>
 
-          {/* --- Product Units --- */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setIsUnitsOpen((prev) => !prev);
-                setIsSuppliersOpen(false);
-                setIsCustomersOpen(false);
-                setIsDeliveriesOpen(false);
-                setIsCashOpen(false);
-              }}
-              className="px-3 py-1 rounded hover:bg-gray-100 transition flex items-center gap-1"
-            >
-              Единицы товара
-              <span className={`transition-transform ${isUnitsOpen ? "rotate-180" : "rotate-0"}`}>
-                ▼
-              </span>
-            </button>
-
-            {isUnitsOpen && (
-              <div className="absolute mt-2 w-48 bg-white border rounded shadow-lg z-50">
-                <Link
-                  href="/product-units"
-                  className="block px-4 py-2 hover:bg-gray-100"
-                  onClick={closeAllMenus}
-                >
-                  Все единицы
-                </Link>
-                <Link
-                  href="/product-units/in-store"
-                  className="block px-4 py-2 hover:bg-gray-100"
-                  onClick={closeAllMenus}
-                >
-                  В магазине
-                </Link>
-                <Link
-                  href="/product-units/sold"
-                  className="block px-4 py-2 hover:bg-gray-100"
-                  onClick={closeAllMenus}
-                >
-                  Проданные
-                </Link>
-                <Link
-                  href="/product-units/lost"
-                  className="block px-4 py-2 hover:bg-gray-100"
-                  onClick={closeAllMenus}
-                >
-                  Утерянные
-                </Link>
-                <Link
-                  href="/deliveries/new-unit"
-                  className="block px-4 py-2 hover:bg-gray-100 border-t mt-1 pt-1"
-                  onClick={closeAllMenus}
-                >
-                  + Создать единицу
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* --- Поставщики --- */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setIsSuppliersOpen((prev) => !prev);
-                setIsCustomersOpen(false);
-                setIsDeliveriesOpen(false);
-                setIsUnitsOpen(false);
-                setIsCashOpen(false);
-              }}
-              className="px-3 py-1 rounded hover:bg-gray-100 transition flex items-center gap-1"
-            >
-              Поставщики
-              <span className={`transition-transform ${isSuppliersOpen ? "rotate-180" : "rotate-0"}`}>
-                ▼
-              </span>
-            </button>
-
-            {isSuppliersOpen && (
-              <div className="absolute mt-2 w-48 bg-white border rounded shadow-lg z-50">
-                <Link
-                  href="/suppliers"
-                  className="block px-4 py-2 hover:bg-gray-100"
-                  onClick={closeAllMenus}
-                >
-                  Все поставщики
-                </Link>
-                <Link
-                  href="/suppliers/new"
-                  className="block px-4 py-2 hover:bg-gray-100"
-                  onClick={closeAllMenus}
-                >
-                  Создать поставщика
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* --- Покупатели --- */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setIsCustomersOpen((prev) => !prev);
-                setIsSuppliersOpen(false);
-                setIsDeliveriesOpen(false);
-                setIsUnitsOpen(false);
-                setIsCashOpen(false);
-              }}
-              className="px-3 py-1 rounded hover:bg-gray-100 transition flex items-center gap-1"
-            >
-              Покупатели
-              <span className={`transition-transform ${isCustomersOpen ? "rotate-180" : "rotate-0"}`}>
-                ▼
-              </span>
-            </button>
-
-            {isCustomersOpen && (
-              <div className="absolute mt-2 w-48 bg-white border rounded shadow-lg z-50">
-                <Link
-                  href="/customers"
-                  className="block px-4 py-2 hover:bg-gray-100"
-                  onClick={closeAllMenus}
-                >
-                  Все покупатели
-                </Link>
-                <Link
-                  href="/customers/new"
-                  className="block px-4 py-2 hover:bg-gray-100"
-                  onClick={closeAllMenus}
-                >
-                  Создать покупателя
-                </Link>
-              </div>
-            )}
-          </div>
-        </nav>
-
-        <main className="p-4">{children}</main>
+        {/* Основной контент */}
+        <main className="p-4 transition-all duration-300">
+          {children}
+        </main>
       </body>
     </html>
   );
