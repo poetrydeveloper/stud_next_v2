@@ -59,17 +59,16 @@ model Category {
 }
 
 model Brand {
-  id        Int       @id @default(autoincrement())
-  name      String    @unique
-  slug      String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   products Product[]
 
   @@map("brands")
 }
-
 
 model Product {
   id          Int       @id @default(autoincrement())
@@ -78,9 +77,9 @@ model Product {
   description String?
   categoryId  Int?
   category    Category? @relation(fields: [categoryId], references: [id])
-  brandId     Int?      // Добавляем связь с брендом
+  brandId     Int? // Добавляем связь с брендом
   brand       Brand?    @relation(fields: [brandId], references: [id])
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -95,7 +94,7 @@ model Product {
 model ProductImage {
   id        Int     @id @default(autoincrement())
   productId Int
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
 
   filename  String
   path      String
@@ -152,7 +151,7 @@ model Delivery {
 
   // связь с RequestItem
   requestItemId Int
-  requestItem   RequestItem @relation(fields: [requestItemId], references: [id], onDelete: Cascade)
+  requestItem   RequestItem @relation(fields: [requestItemId], references: [id], onDelete: Restrict)
 
   deliveryDate DateTime @default(now()) @map("delivery_date")
   quantity     Int
@@ -190,35 +189,80 @@ enum DeliveryStatus {
 }
 
 model ProductUnit {
-  id           Int               @id @default(autoincrement())
-  serialNumber String            @unique @map("serial_number")
-  productId    Int
-  product      Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
-  deliveryId   Int
-  delivery     Delivery          @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
-  status       ProductUnitStatus @default(IN_STORE)
-  salePrice    Float?            @map("sale_price") // Цена продажи
-  soldAt       DateTime?         @map("sold_at") // Дата и время продажи
-  createdAt    DateTime          @default(now()) @map("created_at")
-  updatedAt    DateTime          @updatedAt @map("updated_at")
+  id           Int    @id @default(autoincrement())
+  serialNumber String @unique @map("serial_number")
 
+  // ===== Связи =====
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  deliveryId Int?
+  delivery   Delivery? @relation(fields: [deliveryId], references: [id], onDelete: Restrict)
+
+  parentProductUnitId Int?
+  parentProductUnit   ProductUnit?  @relation("ProductUnitChildren", fields: [parentProductUnitId], references: [id])
+  childProductUnits   ProductUnit[] @relation("ProductUnitChildren")
+
+  // ===== Дублируемые данные из Product =====
+  productCode         String?  @map("product_code")
+  productName         String?  @map("product_name")
+  productDescription  String?  @map("product_description")
+  productCategoryId   Int?     @map("product_category_id")
+  productCategoryName String?  @map("product_category_name")
+  productTags         Json?    @map("product_tags")
+  requestPricePerUnit Decimal? @map("request_price_per_unit")
+
+  // ===== Данные для аналитики и быстрых выборок =====
+  storeStock Int @default(0) @map("store_stock")
+  inRequests Int @default(0) @map("in_requests")
+
+  // ===== Статусы =====
+  statusCard    ProductUnitCardStatus
+  statusProduct ProductUnitPhysicalStatus?
+  isReturned    Boolean                    @default(false) // Возврат
+  returnedAt    DateTime?                  @map("returned_at")
+
+  // ===== Информация о продаже =====
+  salePrice    Float?    @map("sale_price") // фактическая цена продажи
+  soldAt       DateTime? @map("sold_at") // дата и время продажи
+  isCredit     Boolean   @default(false) @map("is_credit") // продано в долг
+  creditPaidAt DateTime? @map("credit_paid_at") // когда погасили долг
+
+  // ===== Информация о покупателе =====
+  buyerName  String? @map("buyer_name")
+  buyerPhone String? @map("buyer_phone")
+
+  // ===== Логи =====
+  logs Json?
+
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
   cashEvents CashEvent[]
+
   @@map("product_units")
 }
 
-enum ProductUnitStatus {
+enum ProductUnitCardStatus {
+  CANDIDATE
+  SPROUTED
+  IN_REQUEST
+  IN_DELIVERY
+}
+
+enum ProductUnitPhysicalStatus {
   IN_STORE
   SOLD
+  CREDIT
   LOST
 }
 
 model CashDay {
-  id        Int       @id @default(autoincrement())
-  date      DateTime  @unique @map("date")
-  isClosed  Boolean   @default(false) @map("is_closed")
-  total     Float     @default(0.00) @map("total")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  id        Int      @id @default(autoincrement())
+  date      DateTime @unique @map("date")
+  isClosed  Boolean  @default(false) @map("is_closed")
+  total     Float    @default(0.00) @map("total")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   events CashEvent[]
 
@@ -226,22 +270,22 @@ model CashDay {
 }
 
 model CashEvent {
-  id        Int           @id @default(autoincrement())
-  type      CashEventType @map("type")
-  amount    Float         @map("amount")
-  notes     String?       @map("notes")
-  cashDayId Int           @map("cash_day_id")
-  cashDay   CashDay       @relation(fields: [cashDayId], references: [id], onDelete: Cascade)
-  productUnitId Int?      @map("product_unit_id")
-  productUnit   ProductUnit? @relation(fields: [productUnitId], references: [id], onDelete: SetNull)
-  createdAt DateTime      @default(now()) @map("created_at")
+  id            Int           @id @default(autoincrement())
+  type          CashEventType @map("type")
+  amount        Float         @map("amount")
+  notes         String?       @map("notes")
+  cashDayId     Int           @map("cash_day_id")
+  cashDay       CashDay       @relation(fields: [cashDayId], references: [id], onDelete: Cascade)
+  productUnitId Int?          @map("product_unit_id")
+  productUnit   ProductUnit?  @relation(fields: [productUnitId], references: [id], onDelete: SetNull)
+  createdAt     DateTime      @default(now()) @map("created_at")
 
   @@map("cash_events")
 }
 
 enum CashEventType {
-  SALE        // Продажа
-  RETURN      // Возврат
+  SALE // Продажа
+  RETURN // Возврат
   PRICE_QUERY // Запрос цены
-  ORDER       // Заказ
+  ORDER // Заказ
 }
