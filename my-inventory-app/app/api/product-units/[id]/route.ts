@@ -1,111 +1,124 @@
 //app/api/product-units/[id]/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/app/lib/prisma';
-import { ProductUnitStatus } from '@/app/lib/types/productUnit';
+import { NextResponse } from "next/server";
+import prisma from "@/app/lib/prisma";
+import { appendLog, getOrCreateCashDayId, recalcProductUnitStats } from "@/app/api/product-units/helpers";
 
-export async function PATCH(
-  request: NextRequest,
+export async function GET(
+  req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { status, salePrice } = await request.json();
-    const id = parseInt(params.id);
-
-    // Валидация статуса
-    if (status && !['IN_STORE', 'SOLD', 'LOST'].includes(status)) {
-      return NextResponse.json(
-        { error: 'Неверный статус' },
-        { status: 400 }
-      );
-    }
-
-    const updateData: any = {};
-    
-    if (status) {
-      updateData.status = status as ProductUnitStatus;
-      
-      // Автоматически устанавливаем дату продажи при изменении статуса на SOLD
-      if (status === 'SOLD') {
-        updateData.soldAt = new Date();
-      } else if (status !== 'SOLD') {
-        // Сбрасываем дату продажи если статус меняется с SOLD
-        updateData.soldAt = null;
-      }
-    }
-
-    if (salePrice !== undefined) {
-      if (salePrice < 0) {
-        return NextResponse.json(
-          { error: 'Цена не может быть отрицательной' },
-          { status: 400 }
-        );
-      }
-      updateData.salePrice = salePrice;
-    }
-
-    const productUnit = await prisma.productUnit.update({
+    const id = Number(params.id);
+    const unit = await prisma.productUnit.findUnique({
       where: { id },
-      data: updateData,
       include: {
-        product: {
-          include: {
-            category: true,
-            images: {
-              where: { isMain: true },
-              take: 1
-            }
-          }
-        },
-        delivery: true
-      }
+        product: true,
+        childProductUnits: true,
+        cashEvents: true,
+      },
     });
 
-    return NextResponse.json(productUnit);
-  } catch (error) {
-    console.error('Error updating product unit:', error);
-    return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
-      { status: 500 }
-    );
+    if (!unit) {
+      return NextResponse.json({ ok: false, error: "Unit not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ ok: true, data: unit });
+  } catch (err: any) {
+    console.error("GET /api/product-units/[id] error:", err);
+    return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+/**
+ * PATCH — обновление единицы товара (продажа, возврат, кредит)
+ * body: {
+ *   action: "sell" | "return" | "creditPay",
+ *   salePrice?: number,
+ *   buyerName?: string,
+ *   buyerPhone?: string
+ * }
+ */
+export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
-    const id = parseInt(params.id);
+    const unitId = Number(params.id);
+    const data = await req.json();
+    const { action, salePrice, buyerName, buyerPhone } = data;
 
-    const productUnit = await prisma.productUnit.findUnique({
-      where: { id },
-      include: {
-        product: {
-          include: {
-            category: true,
-            images: {
-              where: { isMain: true },
-              take: 1
-            }
-          }
-        },
-        delivery: true
-      }
-    });
-
-    if (!productUnit) {
-      return NextResponse.json(
-        { error: 'Единица товара не найдена' },
-        { status: 404 }
-      );
+    if (!unitId) {
+      return NextResponse.json({ ok: false, error: "Missing unit ID" }, { status: 400 });
     }
 
-    return NextResponse.json(productUnit);
-  } catch (error) {
-    console.error('Error fetching product unit:', error);
-    return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
-      { status: 500 }
-    );
+    const unit = await prisma.productUnit.findUnique({ where: { id: unitId } });
+    if (!unit) {
+      return NextResponse.json({ ok: false, error: "Product unit not found" }, { status: 404 });
+    }
+
+    let updateData: any = {};
+    let logEvent: any = null;
+
+    if (action === "sell") {
+      updateData = {
+        statusProduct: unit.isCredit ? "CREDIT" : "SOLD",
+        soldAt: new Date(),
+        salePrice: salePrice || 0,
+        buyerName: buyerName || null,
+        buyerPhone: buyerPhone || null,
+        isCredit: !!(salePrice === 0),
+        logs: appendLog(unit.logs, {
+          event: "SOLD",
+          at: new Date().toISOString(),
+          buyerName,
+          buyerPhone,
+          salePrice,
+        }),
+      };
+      logEvent = "SOLD";
+    } else if (action === "return") {
+      updateData = {
+        statusProduct: "IN_STORE",
+        isReturned: true,
+        returnedAt: new Date(),
+        logs: appendLog(unit.logs, {
+          event: "RETURN",
+          at: new Date().toISOString(),
+          buyerName: unit.buyerName,
+          buyerPhone: unit.buyerPhone,
+        }),
+      };
+      logEvent = "RETURN";
+    } else if (action === "creditPay") {
+      if (!unit.isCredit) {
+        return NextResponse.json({ ok: false, error: "Unit is not on credit" }, { status: 400 });
+      }
+      updateData = {
+        salePrice: salePrice || unit.salePrice,
+        creditPaidAt: new Date(),
+        statusProduct: "SOLD",
+        logs: appendLog(unit.logs, {
+          event: "CREDIT_PAID",
+          at: new Date().toISOString(),
+          buyerName: unit.buyerName,
+          buyerPhone: unit.buyerPhone,
+          salePrice,
+        }),
+      };
+      logEvent = "CREDIT_PAID";
+    } else {
+      return NextResponse.json({ ok: false, error: "Invalid action" }, { status: 400 });
+    }
+
+    const updatedUnit = await prisma.productUnit.update({
+      where: { id: unitId },
+      data: updateData,
+      include: { product: true },
+    });
+
+    // Обновляем статистику продукта
+    await recalcProductUnitStats(updatedUnit.productId);
+
+    return NextResponse.json({ ok: true, data: updatedUnit, logEvent });
+  } catch (err: any) {
+    console.error("PATCH /api/product-units/[id] error:", err);
+    return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }
 }

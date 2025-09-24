@@ -1,146 +1,70 @@
-// app/api/product-units/route.ts
+//app/api/product-units/route.ts
+
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
-import { generateSerialNumber } from "@/app/lib/serialGenerator";
+import { generateSerialNumber, recalcProductUnitStats, appendLog } from "@/app/api/product-units/helpers";
 
-const MAX_SERIAL_RETRIES = 5;
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const productId = url.searchParams.get("productId");
+
+  const where: any = {};
+  if (productId) where.productId = Number(productId);
+
+  const units = await prisma.productUnit.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+    take: 200,
+    include: { product: true },
+  });
+
+  return NextResponse.json({ ok: true, data: units });
+}
 
 export async function POST(req: Request) {
   try {
-    const { productId, deliveryId, quantity = 1 } = await req.json();
+    const body = await req.json();
+    const { productId, deliveryId, parentProductUnitId, requestPricePerUnit } = body;
 
-    const [product, delivery] = await Promise.all([
-      prisma.product.findUnique({ where: { id: Number(productId) } }),
-      prisma.delivery.findUnique({ where: { id: Number(deliveryId) } }),
-    ]);
-
-    if (!product) {
-      return NextResponse.json({ error: "Товар не найден" }, { status: 404 });
-    }
-    if (!delivery) {
-      return NextResponse.json({ error: "Поставка не найдена" }, { status: 404 });
+    if (!productId) {
+      return NextResponse.json({ ok: false, error: "productId required" }, { status: 400 });
     }
 
-    // Проверяем, сколько единиц можно ещё создать
-    const existingCount = await prisma.productUnit.count({
-      where: { deliveryId: Number(deliveryId) },
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      include: { category: true },
     });
+    if (!product) return NextResponse.json({ ok: false, error: "Product not found" }, { status: 404 });
 
-    const remaining = delivery.quantity - existingCount;
-    if (remaining <= 0) {
-      return NextResponse.json(
-        {
-          error: "Все единицы для этой поставки уже созданы",
-          deliveryQuantity: delivery.quantity,
-          existingCount,
-        },
-        { status: 400 }
-      );
-    }
+    const serialNumber = await generateSerialNumber(prisma, productId, parentProductUnitId);
 
-    const finalQuantity = Math.min(quantity, remaining);
-    const createdUnits: any[] = [];
-
-    // Транзакция: создаём все юниты или ничего
-    await prisma.$transaction(async (tx) => {
-      for (let i = 0; i < finalQuantity; i++) {
-        let unitCreated = false;
-        let attempts = 0;
-
-        while (!unitCreated && attempts < MAX_SERIAL_RETRIES) {
-          attempts++;
-          const serial = generateSerialNumber({
-            productCode: product.code,
-            deliveryPrice: delivery.pricePerUnit.toString(),
-          });
-
-          try {
-            const unit = await tx.productUnit.create({
-              data: {
-                serialNumber: serial,
-                productId: product.id,
-                deliveryId: delivery.id,
-                status: "IN_STORE",
-                salePrice: 0,
-              },
-              include: {
-                product: {
-                  include: {
-                    category: true,
-                    images: true // Добавлено включение images
-                  }
-                },
-                delivery: true,
-              },
-            });
-            createdUnits.push(unit);
-            unitCreated = true;
-          } catch (err: any) {
-            if (err.code === "P2002" && err.meta?.target?.includes("serial_number")) {
-              // Конфликт серийника — пробуем заново
-              continue;
-            }
-            throw err;
-          }
-        }
-
-        if (!unitCreated) {
-          throw new Error(
-            `Не удалось создать уникальный серийный номер после ${MAX_SERIAL_RETRIES} попыток`
-          );
-        }
-      }
-    });
-
-    return NextResponse.json(
-      {
-        message: `Создано ${createdUnits.length} единиц товара`,
-        deliveryId: delivery.id,
-        productId: product.id,
-        createdCount: createdUnits.length,
-        productUnits: createdUnits,
+    const newUnit = await prisma.productUnit.create({
+      data: {
+        productId,
+        deliveryId,
+        parentProductUnitId,
+        productCode: product.code,
+        productName: product.name,
+        productDescription: product.description,
+        productCategoryId: product.categoryId,
+        productCategoryName: product.category?.name,
+        serialNumber,
+        statusCard: deliveryId ? "IN_DELIVERY" : "IN_REQUEST",
+        statusProduct: deliveryId ? "IN_STORE" : null,
+        requestPricePerUnit,
+        logs: appendLog([], {
+          event: "UNIT_CREATED",
+          at: new Date().toISOString(),
+          source: deliveryId ? "delivery" : "manual",
+        }),
       },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error("Ошибка создания единиц товара:", error);
-    return NextResponse.json(
-      { error: "Внутренняя ошибка сервера", detail: String(error) },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const productId = searchParams.get("productId");
-    const deliveryId = searchParams.get("deliveryId");
-    const status = searchParams.get("status");
-
-    const where: any = {
-      ...(productId && { productId: Number(productId) }),
-      ...(deliveryId && { deliveryId: Number(deliveryId) }),
-      ...(status && { status }),
-    };
-
-    const units = await prisma.productUnit.findMany({
-      where,
-      include: {
-        product: {
-          include: {
-            category: true,
-            images: true // ДОБАВЛЕНО: включаем изображения продуктов
-          }
-        },
-        delivery: true,
-      },
-      orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(units);
-  } catch (error) {
-    console.error("Ошибка получения единиц товара:", error);
-    return NextResponse.json({ error: "Внутренняя ошибка сервера" }, { status: 500 });
+    await recalcProductUnitStats(productId);
+
+    return NextResponse.json({ ok: true, data: newUnit });
+  } catch (err: any) {
+    console.error("POST /api/product-units error:", err);
+    return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }
 }
