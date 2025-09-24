@@ -6,7 +6,7 @@ import Link from "next/link";
 
 /**
  * Карточка единицы товара для отображения в сетке.
- * Показывает название, серийный номер, цену и статус.
+ * Показывает название, серийный номер, цену и статус, а также возврат и дату продажи.
  */
 export default function ProductUnitCard({ unit }) {
   return (
@@ -14,7 +14,7 @@ export default function ProductUnitCard({ unit }) {
       <div>
         {/* Название товара */}
         <h3 className="text-lg font-semibold text-gray-800 mb-2">
-          {unit.name || unit.product?.name || "Без названия"}
+          {unit.productName || unit.product?.name || "Без названия"}
         </h3>
 
         {/* Серийный номер */}
@@ -30,8 +30,8 @@ export default function ProductUnitCard({ unit }) {
           </span>
         </p>
 
-        {/* Статус товара */}
-        <div className="mt-2">
+        {/* Статусы */}
+        <div className="mt-2 flex flex-col gap-1">
           <span
             className={`inline-block px-2 py-1 text-xs font-medium rounded 
               ${
@@ -39,11 +39,25 @@ export default function ProductUnitCard({ unit }) {
                   ? "bg-green-100 text-green-800"
                   : unit.statusProduct === "LOST"
                   ? "bg-red-100 text-red-800"
-                  : "bg-gray-100 text-gray-800"
+                  : unit.statusProduct === "IN_STORE"
+                  ? "bg-gray-100 text-gray-800"
+                  : "bg-yellow-100 text-yellow-800"
               }`}
           >
             {unit.statusProduct || "Не указан"}
           </span>
+
+          {unit.isReturned && (
+            <span className="inline-block px-2 py-1 text-xs font-medium rounded bg-red-100 text-red-800">
+              Возврат: {unit.returnedAt ? new Date(unit.returnedAt).toLocaleString() : "-"}
+            </span>
+          )}
+
+          {unit.soldAt && (
+            <span className="inline-block px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-800">
+              Продано: {new Date(unit.soldAt).toLocaleString()}
+            </span>
+          )}
         </div>
       </div>
 
