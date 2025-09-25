@@ -24,6 +24,7 @@ export default function NewProductPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(false);
+  const [images, setImages] = useState<File[]>([]);
 
   useEffect(() => {
     // Загружаем категории и бренды
@@ -36,16 +37,30 @@ export default function NewProductPage() {
       .then((data) => setBrands(data.data || []));
   }, []);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) setImages(Array.from(e.target.files));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
     try {
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("code", code);
+      formData.append("description", description);
+      if (categoryId) formData.append("categoryId", String(categoryId));
+      if (brandId) formData.append("brandId", String(brandId));
+      images.forEach((file) => formData.append("images", file));
+
       const res = await fetch("/api/products", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, code, description, categoryId: categoryId || null, brandId: brandId || null }),
+        body: formData,
       });
+
       const data = await res.json();
+
       if (data.ok) {
         router.push("/products");
       } else {
@@ -120,6 +135,17 @@ export default function NewProductPage() {
               <option key={b.id} value={b.id}>{b.name}</option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <label className="block font-medium">Изображения</label>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleFileChange}
+            className="w-full border rounded px-2 py-1"
+          />
         </div>
 
         <button

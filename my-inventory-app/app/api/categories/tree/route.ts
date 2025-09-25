@@ -8,14 +8,26 @@ import prisma from "@/app/lib/prisma";
 export async function GET() {
   try {
     const categories = await prisma.category.findMany({
-      select: { id: true, name: true, parentId: true },
+      select: {
+        id: true,
+        name: true,
+        parentId: true,
+      },
       orderBy: { name: "asc" },
     });
 
-    // Если нужно, можно построить дерево, но для селекта плоский массив тоже подойдет
-    return NextResponse.json({ ok: true, data: categories });
-  } catch (err: any) {
-    console.error("GET /api/categories/tree error:", err);
-    return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
+    return NextResponse.json({
+      ok: true,
+      data: categories,
+    });
+  } catch (error: any) {
+    console.error("Ошибка при получении категорий:", error);
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "Не удалось получить список категорий",
+      },
+      { status: 500 }
+    );
   }
 }
