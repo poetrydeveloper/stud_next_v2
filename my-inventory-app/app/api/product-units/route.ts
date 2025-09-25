@@ -69,7 +69,10 @@ export async function POST(req: Request) {
         // quantity > 1 → создаём дочерние единицы
         await prisma.productUnit.update({
           where: { id: parentProductUnitId },
-          data: { statusCard: ProductUnitCardStatus.SPROUTED, logs: appendLog(parentUnit.logs || [], { event: "SPROUTED", at: new Date().toISOString() }) },
+          data: {
+            statusCard: ProductUnitCardStatus.SPROUTED,
+            logs: appendLog(parentUnit.logs || [], { event: "SPROUTED", at: new Date().toISOString() }),
+          },
         });
 
         for (let i = 0; i < quantity; i++) {
@@ -89,7 +92,13 @@ export async function POST(req: Request) {
               quantityInRequest: 1,
               createdAtRequest: new Date(),
               requestPricePerUnit,
-              logs: appendLog([], { event: "CHILD_CREATED_FOR_REQUEST", at: new Date().toISOString(), parentId: parentProductUnitId, index: i + 1, total: quantity }),
+              logs: appendLog([], {
+                event: "CHILD_CREATED_FOR_REQUEST",
+                at: new Date().toISOString(),
+                parentId: parentProductUnitId,
+                index: i + 1,
+                total: quantity,
+              }),
             },
           });
           createdUnits.push(unit);
@@ -114,7 +123,14 @@ export async function POST(req: Request) {
             quantityInCandidate: 0,
             createdAtCandidate: null,
             requestPricePerUnit,
-            logs: appendLog([], { event: "UNIT_CREATED", at: new Date().toISOString(), source: parentProductUnitId ? "child" : "manual", parentId: parentProductUnitId ?? null, index: i + 1, total: quantity }),
+            logs: appendLog([], {
+              event: "UNIT_CREATED",
+              at: new Date().toISOString(),
+              source: parentProductUnitId ? "child" : "manual",
+              parentId: parentProductUnitId ?? null,
+              index: i + 1,
+              total: quantity,
+            }),
           },
         });
 
@@ -130,7 +146,11 @@ export async function POST(req: Request) {
   }
 }
 
-
+/**
+ * PATCH /api/product-units
+ * Добавить единицу в кандидаты
+ * body: { unitId }
+ */
 export async function PATCH(req: Request) {
   try {
     const body = await req.json();
@@ -140,7 +160,7 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ ok: false, error: "unitId required" }, { status: 400 });
     }
 
-    // Найти карточку
+    // Находим единицу товара
     const unit = await prisma.productUnit.findUnique({ where: { id: unitId } });
     if (!unit) {
       return NextResponse.json({ ok: false, error: "ProductUnit not found" }, { status: 404 });
@@ -162,12 +182,12 @@ export async function PATCH(req: Request) {
       },
     });
 
-    // Пересчитать статистику продукта
+    // Пересчёт статистики продукта
     await recalcProductUnitStats(unit.productId);
 
     return NextResponse.json({ ok: true, data: updatedUnit });
   } catch (err: any) {
-    console.error("PATCH /api/product-units/patch-add-candidate error:", err);
+    console.error("PATCH /api/product-units error:", err);
     return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }
 }
