@@ -1,6 +1,4 @@
-//peisma/schema,prisma
-// This is your Prisma schema file
-// Docs: https://pris.ly/d/prisma-schema
+// schema.prisma
 
 datasource db {
   provider = "postgresql"
@@ -12,36 +10,28 @@ generator client {
 }
 
 model Supplier {
-  id            Int      @id @default(autoincrement())
-  name          String
-  contactPerson String?  @map("contact_person")
-  phone         String?
-  notes         String?
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id   Int    @id @default(autoincrement())
+  name String @unique
 
-  requestItems RequestItem[]
+  productUnits ProductUnit[]
 
   @@map("suppliers")
 }
 
 model Customer {
-  id        Int      @id @default(autoincrement())
-  name      String
-  phone     String
-  email     String?
-  notes     String?
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id    Int    @id @default(autoincrement())
+  name  String
+  phone String?
+  notes String?
 
-  requestItems RequestItem[]
+  productUnits ProductUnit[]
 
   @@map("customers")
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
+  id    Int    @id @default(autoincrement())
+  email String @unique
   name  String?
 }
 
@@ -59,11 +49,11 @@ model Category {
 }
 
 model Brand {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  slug      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   products Product[]
 
@@ -77,15 +67,13 @@ model Product {
   description String?
   categoryId  Int?
   category    Category? @relation(fields: [categoryId], references: [id])
-  brandId     Int? // Добавляем связь с брендом
+  brandId     Int?
   brand       Brand?    @relation(fields: [brandId], references: [id])
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   images       ProductImage[]
-  requestItems RequestItem[]
-  deliveries   Delivery[] // 🔥 связь с поставками
   productUnits ProductUnit[]
 
   @@map("products")
@@ -104,145 +92,64 @@ model ProductImage {
   @@map("product_images")
 }
 
-model Request {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  notes     String?
-
-  items RequestItem[]
-
-  @@map("requests")
-}
-
-model RequestItem {
-  id        Int      @id @default(autoincrement())
-  requestId Int?
-  request   Request? @relation(fields: [requestId], references: [id], onDelete: SetNull)
-
-  productId Int
-  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
-
-  status            ItemStatus @default(CANDIDATE)
-  quantity          Int        @default(1)
-  deliveredQuantity Int        @default(0)
-  isCompleted       Boolean    @default(false)
-  pricePerUnit      Decimal    @default(0.00)
-
-  supplierId Int?
-  supplier   Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
-
-  customerId Int?
-  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
-
-  // 🔥 связь с поставками
-  deliveries Delivery[]
-
-  @@map("request_items")
-}
-
-enum ItemStatus {
-  CANDIDATE // кандидат на заявку
-  IN_REQUEST // в заявке
-  EXTRA // экстра заявка
-}
-
-model Delivery {
-  id Int @id @default(autoincrement())
-
-  // связь с RequestItem
-  requestItemId Int
-  requestItem   RequestItem @relation(fields: [requestItemId], references: [id], onDelete: Restrict)
-
-  deliveryDate DateTime @default(now()) @map("delivery_date")
-  quantity     Int
-
-  // Автоматический статус поставки
-  status DeliveryStatus @default(PARTIAL)
-
-  extraShipment Boolean @default(false) @map("extra_shipment")
-  notes         String? @map("notes")
-
-  // Кэшируемые поля для истории
-  supplierName String
-  customerName String
-
-  productId Int
-  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
-
-  requestDate  DateTime
-  extraRequest Boolean  @default(false)
-  pricePerUnit Decimal  @default(0.00)
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  productUnits ProductUnit[]
-
-  @@map("deliveries")
-}
-
-enum DeliveryStatus {
-  PARTIAL // Частично
-  OVER // Переполучено
-  FULL // Полностью
-  EXTRA // Экстра
-}
-
 model ProductUnit {
-  id           Int    @id @default(autoincrement())
-  serialNumber String @unique @map("serial_number")
+  id           Int      @id @default(autoincrement())
+  serialNumber String   @unique @map("serial_number")
 
-  // ===== Связи =====
+  // Связь с Product
   productId Int
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  deliveryId Int?
-  delivery   Delivery? @relation(fields: [deliveryId], references: [id], onDelete: Restrict)
-
   parentProductUnitId Int?
-  parentProductUnit   ProductUnit?  @relation("ProductUnitChildren", fields: [parentProductUnitId], references: [id])
+  parentProductUnit   ProductUnit? @relation("ProductUnitChildren", fields: [parentProductUnitId], references: [id])
   childProductUnits   ProductUnit[] @relation("ProductUnitChildren")
 
-  // ===== Дублируемые данные из Product =====
-  productCode         String?  @map("product_code")
-  productName         String?  @map("product_name")
-  productDescription  String?  @map("product_description")
-  productCategoryId   Int?     @map("product_category_id")
+  // Дублируемые данные из Product
+  productCode        String?   @map("product_code")
+  productName        String?   @map("product_name")
+  productDescription String?   @map("product_description")
+  productCategoryId  Int?      @map("product_category_id")
   productCategoryName String?  @map("product_category_name")
-  productTags         Json?    @map("product_tags")
-  requestPricePerUnit Decimal? @map("request_price_per_unit")
+  productTags        Json?     @map("product_tags")
 
-  // ===== Данные для аналитики и быстрых выборок =====
-  storeStock Int @default(0) @map("store_stock")
-  inRequests Int @default(0) @map("in_requests")
+  // ===== Новые поля для кандидатов и заявок =====
+  quantityInCandidate Int?       @default(0) @map("quantity_in_candidate")
+  createdAtCandidate  DateTime?               @map("created_at_candidate")
+  quantityInRequest   Int?       @default(0) @map("quantity_in_request")
+  createdAtRequest    DateTime?               @map("created_at_request")
+  requestPricePerUnit Float?     @map("request_price_per_unit")
 
   // ===== Статусы =====
   statusCard    ProductUnitCardStatus
   statusProduct ProductUnitPhysicalStatus?
-  isReturned    Boolean                    @default(false) // Возврат
-  returnedAt    DateTime?                  @map("returned_at")
+  isReturned    Boolean @default(false)
+  returnedAt    DateTime? @map("returned_at")
 
   // ===== Информация о продаже =====
-  salePrice    Float?    @map("sale_price") // фактическая цена продажи
-  soldAt       DateTime? @map("sold_at") // дата и время продажи
-  isCredit     Boolean   @default(false) @map("is_credit") // продано в долг
-  creditPaidAt DateTime? @map("credit_paid_at") // когда погасили долг
+  salePrice    Float?    @map("sale_price")
+  soldAt       DateTime? @map("sold_at")
+  isCredit     Boolean   @default(false) @map("is_credit")
+  creditPaidAt DateTime? @map("credit_paid_at")
 
-  // ===== Информация о покупателе =====
-  buyerName  String? @map("buyer_name")
-  buyerPhone String? @map("buyer_phone")
+  // Поставщик и заказчик
+  supplierId Int?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+  customerId Int?
+  customer   Customer? @relation(fields: [customerId], references: [id])
 
-  // ===== Логи =====
+  // Логи
   logs Json?
 
-  createdAt  DateTime    @default(now()) @map("created_at")
-  updatedAt  DateTime    @updatedAt @map("updated_at")
-  cashEvents CashEvent[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("product_units")
+  
+  cashEvents CashEvent[]
 }
 
 enum ProductUnitCardStatus {
+  CLEAR
   CANDIDATE
   SPROUTED
   IN_REQUEST
@@ -257,12 +164,12 @@ enum ProductUnitPhysicalStatus {
 }
 
 model CashDay {
-  id        Int      @id @default(autoincrement())
-  date      DateTime @unique @map("date")
-  isClosed  Boolean  @default(false) @map("is_closed")
-  total     Float    @default(0.00) @map("total")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id        Int       @id @default(autoincrement())
+  date      DateTime  @unique @map("date")
+  isClosed  Boolean   @default(false) @map("is_closed")
+  total     Float     @default(0.00) @map("total")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
 
   events CashEvent[]
 
@@ -270,22 +177,23 @@ model CashDay {
 }
 
 model CashEvent {
-  id            Int           @id @default(autoincrement())
-  type          CashEventType @map("type")
-  amount        Float         @map("amount")
-  notes         String?       @map("notes")
-  cashDayId     Int           @map("cash_day_id")
-  cashDay       CashDay       @relation(fields: [cashDayId], references: [id], onDelete: Cascade)
+  id        Int           @id @default(autoincrement())
+  type      CashEventType @map("type")
+  amount    Float         @map("amount")
+  notes     String?       @map("notes")
+  cashDayId Int           @map("cash_day_id")
+  cashDay   CashDay       @relation(fields: [cashDayId], references: [id], onDelete: Cascade)
   productUnitId Int?          @map("product_unit_id")
   productUnit   ProductUnit?  @relation(fields: [productUnitId], references: [id], onDelete: SetNull)
-  createdAt     DateTime      @default(now()) @map("created_at")
+  createdAt DateTime      @default(now()) @map("created_at")
 
   @@map("cash_events")
 }
 
 enum CashEventType {
-  SALE // Продажа
-  RETURN // Возврат
-  PRICE_QUERY // Запрос цены
-  ORDER // Заказ
+  SALE
+  RETURN
+  PRICE_QUERY
+  ORDER
 }
+

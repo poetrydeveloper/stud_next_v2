@@ -1,59 +1,22 @@
 // app/products/page.tsx
 
-import Link from "next/link";
 import prisma from "@/app/lib/prisma";
+import ProductCard from "@/app/components/ProductCard";
 
 export default async function ProductsPage() {
   const products = await prisma.product.findMany({
     orderBy: { name: "asc" },
-    include: { category: true, brand: true, images: true }, // добавили images
+    include: { category: true, brand: true, images: true },
   });
 
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Продукты</h1>
-      <Link
-        href="/products/new"
-        className="mb-4 inline-block bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-      >
-        Создать продукт
-      </Link>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {products.map((p) => {
-          const mainImage = p.images?.find((img) => img.isMain) || p.images?.[0];
-          return (
-            <div key={p.id} className="bg-white rounded shadow p-4 flex flex-col justify-between">
-              <div>
-                {mainImage && (
-                  <img
-                    src={mainImage.path}
-                    alt={mainImage.filename}
-                    className="w-full h-40 object-cover rounded mb-2"
-                  />
-                )}
-                <h2 className="text-lg font-semibold">{p.name}</h2>
-                <p>Код: {p.code}</p>
-                <p>Категория: {p.category?.name || "-"}</p>
-                <p>Бренд: {p.brand?.name || "-"}</p>
-              </div>
-              <div className="mt-4 flex justify-between">
-                <Link
-                  href={`/products/${p.id}`}
-                  className="text-blue-600 hover:underline text-sm"
-                >
-                  Подробнее
-                </Link>
-                <Link
-                  href={`/products/${p.id}/edit`}
-                  className="text-yellow-600 hover:underline text-sm"
-                >
-                  Редактировать
-                </Link>
-              </div>
-            </div>
-          );
-        })}
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
       </div>
     </div>
   );
