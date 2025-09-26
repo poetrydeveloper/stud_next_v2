@@ -1,5 +1,4 @@
 // schema.prisma
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -44,6 +43,7 @@ model Category {
   children Category[] @relation("CategoryToChildren")
 
   products Product[]
+  spines   Spine[]    // добавляем связь: категория -> spine (Т.П.)
 
   @@map("categories")
 }
@@ -69,7 +69,11 @@ model Product {
   category    Category? @relation(fields: [categoryId], references: [id])
   brandId     Int?
   brand       Brand?    @relation(fields: [brandId], references: [id])
-  
+
+  // Новое поле: привязка к Spine (Т.П.)
+  spineId Int?
+  spine   Spine? @relation(fields: [spineId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -99,6 +103,10 @@ model ProductUnit {
   // Связь с Product
   productId Int
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Привязка к Spine (Т.П.)
+  spineId Int?
+  spine   Spine? @relation(fields: [spineId], references: [id])
 
   parentProductUnitId Int?
   parentProductUnit   ProductUnit? @relation("ProductUnitChildren", fields: [parentProductUnitId], references: [id])
@@ -197,3 +205,19 @@ enum CashEventType {
   ORDER
 }
 
+
+model Spine {
+  id         Int        @id @default(autoincrement())
+  name       String
+  slug       String     @unique
+  categoryId Int?
+  category   Category?  @relation(fields: [categoryId], references: [id])
+  imagePath  String?    // маленькая картинка (путь)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  products     Product[]
+  productUnits ProductUnit[]
+
+  @@map("spines")
+}

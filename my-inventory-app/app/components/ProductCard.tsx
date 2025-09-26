@@ -1,30 +1,39 @@
-// app/components/ProductCard.tsx
-
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function ProductCard({ product }) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleCreateUnit = async () => {
     setLoading(true);
+    setError("");
+
     try {
-      const res = await fetch("/api/product-units", {
+      const res = await fetch("/api/product-units/create-from-product", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: product.id, quantity: 1 }),
+        body: JSON.stringify({ productId: product.id }),
       });
-      const data = await res.json();
-      if (data.ok) {
-        alert(`Создана карточка: ${data.data[0].serialNumber}`);
-      } else {
-        alert("Ошибка: " + data.error);
+
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("Unexpected response, probably HTML (404 or redirect).");
       }
-    } catch (err) {
-      console.error(err);
-      alert("Произошла ошибка");
+
+      const data = await res.json();
+
+      if (!data.ok) {
+        throw new Error(data.error || "Ошибка создания карточки продукта");
+      }
+
+      // Редирект на страницу созданного ProductUnit
+      router.push(`/product-units/${data.data.id}`);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -45,6 +54,9 @@ export default function ProductCard({ product }) {
       <p>Код: {product.code}</p>
       <p>Категория: {product.category?.name || "-"}</p>
       <p>Бренд: {product.brand?.name || "-"}</p>
+      <p>Спайн: {product.spine?.name || "-"}</p> {/* ← добавили отображение spine */}
+
+      {error && <p className="text-red-600 mt-2 text-sm">{error}</p>}
 
       <div className="mt-4 flex justify-between">
         <button
@@ -54,12 +66,13 @@ export default function ProductCard({ product }) {
         >
           {loading ? "Создание..." : "Создать карточку продукта"}
         </button>
-        <Link
+
+        <a
           href={`/products/${product.id}/edit`}
           className="text-yellow-600 text-sm hover:underline"
         >
           Редактировать
-        </Link>
+        </a>
       </div>
     </div>
   );

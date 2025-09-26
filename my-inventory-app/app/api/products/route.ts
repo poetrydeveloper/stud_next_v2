@@ -5,7 +5,7 @@ import { writeFile, mkdir, unlink } from "fs/promises";
 import path from "path";
 
 /**
- * GET — список продуктов с категориями, брендами и изображениями
+ * GET — список продуктов с категориями, брендами, spine и изображениями
  */
 export async function GET() {
   try {
@@ -13,6 +13,7 @@ export async function GET() {
       include: {
         category: { select: { name: true } },
         brand: { select: { name: true } },
+        spine: { select: { id: true, name: true } },
         images: true,
       },
       orderBy: { name: "asc" },
@@ -25,7 +26,7 @@ export async function GET() {
 }
 
 /**
- * POST — создание нового продукта с изображениями
+ * POST — создание нового продукта с spine и изображениями
  */
 export async function POST(req: Request) {
   try {
@@ -36,23 +37,24 @@ export async function POST(req: Request) {
     const description = formData.get("description") as string | null;
     const categoryId = formData.get("categoryId") ? Number(formData.get("categoryId")) : null;
     const brandId = formData.get("brandId") ? Number(formData.get("brandId")) : null;
+    const spineId = formData.get("spineId") ? Number(formData.get("spineId")) : null;
 
     if (!name || !code) {
       return NextResponse.json({ ok: false, error: "Name and code are required" }, { status: 400 });
     }
 
-    // 1. Создаем продукт
+    // Создаем продукт
     const product = await prisma.product.create({
-      data: { name, code, description, categoryId, brandId },
+      data: { name, code, description, categoryId, brandId, spineId },
     });
 
-    // 2. Загружаем изображения
+    // Загружаем изображения
     await handleImageUpload(formData, code, product.id);
 
-    // 3. Получаем продукт с изображениями
+    // Получаем продукт с spine, категориями, брендом и изображениями
     const productWithImages = await prisma.product.findUnique({
       where: { id: product.id },
-      include: { images: true, category: true, brand: true },
+      include: { images: true, category: true, brand: true, spine: true },
     });
 
     return NextResponse.json({ ok: true, data: productWithImages }, { status: 201 });
@@ -63,7 +65,7 @@ export async function POST(req: Request) {
 }
 
 /**
- * PUT — обновление продукта с возможностью удаления и добавления изображений
+ * PUT — обновление продукта с spine и изображениями
  */
 export async function PUT(req: Request) {
   try {
@@ -75,6 +77,7 @@ export async function PUT(req: Request) {
     const description = formData.get("description") as string | null;
     const categoryId = formData.get("categoryId") ? Number(formData.get("categoryId")) : null;
     const brandId = formData.get("brandId") ? Number(formData.get("brandId")) : null;
+    const spineId = formData.get("spineId") ? Number(formData.get("spineId")) : null;
     const deleteImages = (formData.get("deleteImages") as string) || "";
 
     const currentProduct = await prisma.product.findUnique({
@@ -89,9 +92,7 @@ export async function PUT(req: Request) {
       for (const imageId of imagesToDelete) {
         const image = await prisma.productImage.findUnique({ where: { id: imageId } });
         if (image) {
-          try {
-            await unlink(path.join(process.cwd(), "public", image.path));
-          } catch {}
+          try { await unlink(path.join(process.cwd(), "public", image.path)); } catch {}
           await prisma.productImage.delete({ where: { id: imageId } });
         }
       }
@@ -100,7 +101,7 @@ export async function PUT(req: Request) {
     // Обновляем продукт
     await prisma.product.update({
       where: { id },
-      data: { name, code, description, categoryId, brandId },
+      data: { name, code, description, categoryId, brandId, spineId },
     });
 
     // Загружаем новые изображения
@@ -111,7 +112,7 @@ export async function PUT(req: Request) {
 
     const productWithImages = await prisma.product.findUnique({
       where: { id },
-      include: { images: true, category: true, brand: true },
+      include: { images: true, category: true, brand: true, spine: true },
     });
 
     return NextResponse.json({ ok: true, data: productWithImages });

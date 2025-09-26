@@ -1,3 +1,4 @@
+// app/brands/create/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -20,6 +21,7 @@ export default function NewBrandPage() {
       });
 
       const data = await res.json();
+
       if (data.ok) {
         router.push("/brands");
       } else {
@@ -47,7 +49,6 @@ export default function NewBrandPage() {
             required
           />
         </div>
-
         <button
           type="submit"
           className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"

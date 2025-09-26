@@ -1,5 +1,4 @@
 // app/products/new/page.tsx
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -8,7 +7,15 @@ import { useRouter } from "next/navigation";
 interface Category {
   id: number;
   name: string;
+  parentId: number | null;
 }
+
+interface Spine {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 interface Brand {
   id: number;
   name: string;
@@ -19,26 +26,66 @@ export default function NewProductPage() {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [description, setDescription] = useState("");
-  const [categoryId, setCategoryId] = useState<number | "">("");
+  const [categoryId, setCategoryId] = useState<number | "">(""); // ← исправлено: categoryId вместо spineId
+  const [spineId, setSpineId] = useState<number | "">("");
   const [brandId, setBrandId] = useState<number | "">("");
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]); // ← исправлено: categories вместо spines
+  const [spines, setSpines] = useState<Spine[]>([]); // ← отдельно spines
   const [brands, setBrands] = useState<Brand[]>([]);
-  const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<File[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingSpines, setLoadingSpines] = useState(false);
 
   useEffect(() => {
-    // Загружаем категории и бренды
+    // Загружаем категории (а не spines)
     fetch("/api/categories/tree")
       .then((res) => res.json())
       .then((data) => setCategories(data.data || []));
 
+    // Загружаем бренды
     fetch("/api/brands")
       .then((res) => res.json())
       .then((data) => setBrands(data.data || []));
   }, []);
 
+  // Загружаем spines при изменении категории
+  useEffect(() => {
+    if (categoryId) {
+      setLoadingSpines(true);
+      fetch(`/api/spines/category/${categoryId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setSpines(data.data || []);
+          setSpineId(""); // Сбрасываем выбор spine при смене категории
+        })
+        .catch((error) => {
+          console.error("Error loading spines:", error);
+          setSpines([]);
+        })
+        .finally(() => setLoadingSpines(false));
+    } else {
+      setSpines([]);
+      setSpineId("");
+    }
+  }, [categoryId]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) setImages(Array.from(e.target.files));
+  };
+
+  // Рекурсивная функция для отображения дерева категорий в <option>
+  const renderCategoryOptions = (nodes: Category[], depth = 0): JSX.Element[] => {
+    const options: JSX.Element[] = [];
+    
+    nodes.forEach((node) => {
+      options.push(
+        <option key={node.id} value={node.id}>
+          {Array(depth).fill("— ").join("")}{node.name}
+        </option>
+      );
+    });
+    
+    return options;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,7 +97,8 @@ export default function NewProductPage() {
       formData.append("name", name);
       formData.append("code", code);
       formData.append("description", description);
-      if (categoryId) formData.append("categoryId", String(categoryId));
+      formData.append("categoryId", String(categoryId)); // ← исправлено: передаем categoryId
+      if (spineId) formData.append("spineId", String(spineId));
       if (brandId) formData.append("brandId", String(brandId));
       images.forEach((file) => formData.append("images", file));
 
@@ -60,7 +108,6 @@ export default function NewProductPage() {
       });
 
       const data = await res.json();
-
       if (data.ok) {
         router.push("/products");
       } else {
@@ -109,17 +156,39 @@ export default function NewProductPage() {
           />
         </div>
 
+        {/* Исправлено: сначала выбираем категорию */}
         <div>
           <label className="block font-medium">Категория</label>
           <select
             className="w-full border rounded px-2 py-1"
             value={categoryId}
             onChange={(e) => setCategoryId(Number(e.target.value) || "")}
+            required
           >
-            <option value="">-- выберите --</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
+            <option value="">-- выберите категорию --</option>
+            {renderCategoryOptions(categories)}
+          </select>
+        </div>
+
+        {/* Исправлено: затем выбираем spine для выбранной категории */}
+        <div>
+          <label className="block font-medium">Spine (тип продукции)</label>
+          <select
+            className="w-full border rounded px-2 py-1"
+            value={spineId}
+            onChange={(e) => setSpineId(Number(e.target.value) || "")}
+            disabled={!categoryId || loadingSpines}
+          >
+            <option value="">-- выберите spine --</option>
+            {loadingSpines ? (
+              <option>Загрузка spines...</option>
+            ) : (
+              spines.map((spine) => (
+                <option key={spine.id} value={spine.id}>
+                  {spine.name}
+                </option>
+              ))
+            )}
           </select>
         </div>
 

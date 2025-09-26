@@ -20,9 +20,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       links: [
         { href: "/products", label: "Все товары" },
         { href: "/products/new", label: "Создать товар" },
-        { href: "/brands/create", label: "Создать бренд" },
-        { href: "/categories/new", label: "Создать категорию" },
+        { href: "/brands/new", label: "Создать бренд" },
+        { href: "/categories/new", label: "Создать категорию/спайн" },
         { href: "/api/categories/tree", label: "Дерево категорий" },
+        { href: "/spines/tree", label: "Дерево Spine" }, // ← новый пункт
       ],
     },
     {
@@ -53,9 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     },
     {
       title: "Касса",
-      links: [
-        { href: "/cash-days", label: "Кассовые дни" },
-      ],
+      links: [{ href: "/cash-days", label: "Кассовые дни" }],
     },
     {
       title: "Заявки",
