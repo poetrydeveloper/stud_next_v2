@@ -3,6 +3,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ProductUnitCardStatus } from "@prisma/client";
 
 interface SpineCardProps {
   spine: {
@@ -16,8 +17,11 @@ interface SpineCardProps {
     productUnits: Array<{
       id: number;
       serialNumber: string;
-      statusCard: string;
-      statusProduct: string;
+      productCode?: string;
+      productName?: string;
+      productDescription?: string;
+      statusCard: ProductUnitCardStatus;
+      statusProduct?: string;
       salePrice?: number;
       requestPricePerUnit?: number;
       product: {
@@ -30,11 +34,13 @@ interface SpineCardProps {
       productUnits: number;
     };
   };
+  onAddToCandidate?: (unitId: number) => Promise<void>;
 }
 
-export default function SpineCard({ spine }: SpineCardProps) {
+export default function SpineCard({ spine, onAddToCandidate }: SpineCardProps) {
   const router = useRouter();
   const [activeBrandIndex, setActiveBrandIndex] = useState(0);
+  const [loadingUnits, setLoadingUnits] = useState<number[]>([]);
 
   // Группируем units по брендам
   const brandsMap = new Map();
@@ -47,6 +53,8 @@ export default function SpineCard({ spine }: SpineCardProps) {
   });
 
   const brands = Array.from(brandsMap.entries());
+  const activeBrand = brands[activeBrandIndex];
+  const activeBrandUnits = activeBrand ? activeBrand[1] : [];
 
   const handleCardClick = () => {
     router.push(`/spines/${spine.id}`);
@@ -55,6 +63,25 @@ export default function SpineCard({ spine }: SpineCardProps) {
   const handleBrandClick = (index: number, e: React.MouseEvent) => {
     e.stopPropagation();
     setActiveBrandIndex(index);
+  };
+
+  const handleAddToCandidate = async (unitId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!onAddToCandidate) return;
+
+    setLoadingUnits(prev => [...prev, unitId]);
+    try {
+      await onAddToCandidate(unitId);
+    } finally {
+      setLoadingUnits(prev => prev.filter(id => id !== unitId));
+    }
+  };
+
+  // Сокращаем описание
+  const shortenDescription = (description?: string) => {
+    if (!description) return null;
+    if (description.length <= 60) return description;
+    return description.substring(0, 60) + '...';
   };
 
   // Сокращаем название бренда
@@ -106,55 +133,83 @@ export default function SpineCard({ spine }: SpineCardProps) {
         </div>
       </div>
 
-      {/* Содержимое папки - горизонтальное расположение */}
-      <div className="flex p-3">
-        {/* Левая часть - текст */}
-        <div className="flex-1 min-w-0 pr-3">
-          {/* Название Spine в рамке */}
-          <div className="border border-gray-200 rounded-md p-3 mb-3 bg-gray-50"> {/* Увеличил padding */}
-            <h3 className="text-sm font-semibold text-gray-900 text-center leading-tight" title={spine.name}>
+      {/* Содержимое папки */}
+      <div className="p-3">
+        {/* Название Spine - маленькими буквами */}
+        <div className="mb-3">
+          <h3 className="text-xs text-gray-600 text-center mb-1">Spine</h3>
+          <div className="border border-gray-200 rounded-md p-2 bg-gray-50">
+            <p className="text-sm text-gray-700 text-center font-medium" title={spine.name}>
               {spine.name}
-            </h3>
-          </div>
-
-          {/* Общая статистика - более компактная */}
-          <div className="flex justify-center gap-4 items-center text-[10px] text-gray-600">
-            <div className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
-              <span>Брендов: {brands.length}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-              <span>Всего: {spine._count.productUnits}</span>
-            </div>
+            </p>
           </div>
         </div>
 
-        {/* Правая часть - изображение */}
-        <div className="flex-shrink-0 w-24 h-24">
-          {spine.imagePath && spine.imagePath !== "/images/spine-placeholder.png" ? (
-            <img
-              src={spine.imagePath}
-              alt={spine.name}
-              className="w-full h-full object-contain bg-gray-50 rounded border"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                if (fallback) fallback.classList.remove('hidden');
-              }}
-            />
-          ) : null}
-          
-          {/* Fallback для изображений */}
-          <div className={`w-full h-full flex items-center justify-center bg-gray-50 rounded border border-dashed border-gray-300 ${
-            spine.imagePath && spine.imagePath !== "/images/spine-placeholder.png" ? 'hidden' : ''
-          }`}>
-            <div className="text-center text-gray-400">
-              <svg className="w-6 h-6 mx-auto mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-              </svg>
-              <span className="text-[8px]">Нет изображения</span>
+        {/* ProductUnits активного бренда */}
+        <div className="space-y-2 max-h-40 overflow-y-auto">
+          {activeBrandUnits.map(unit => (
+            <div key={unit.id} className="border border-gray-200 rounded-md p-2 bg-white">
+              {/* Основная информация продукта */}
+              <div className="mb-2">
+                <div className="flex justify-between items-start mb-1">
+                  <span className="text-sm font-semibold text-gray-900">
+                    {unit.productName || "Без названия"}
+                  </span>
+                  <span className="text-xs text-gray-500 bg-gray-100 px-1 rounded">
+                    {unit.productCode}
+                  </span>
+                </div>
+                
+                {/* Описание (если есть) */}
+                {unit.productDescription && (
+                  <p className="text-xs text-gray-600 mb-1">
+                    {shortenDescription(unit.productDescription)}
+                  </p>
+                )}
+              </div>
+
+              {/* Панель с кнопками и статусами */}
+              <div className="flex justify-between items-center">
+                {/* Статус кандидата */}
+                <div className="flex items-center gap-1">
+                  {unit.statusCard === ProductUnitCardStatus.CANDIDATE ? (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-yellow-100 text-yellow-800">
+                      Кандидат
+                    </span>
+                  ) : (
+                    <button
+                      onClick={(e) => handleAddToCandidate(unit.id, e)}
+                      disabled={loadingUnits.includes(unit.id)}
+                      className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 disabled:opacity-50"
+                    >
+                      {loadingUnits.includes(unit.id) ? "..." : "+ Кандидат"}
+                    </button>
+                  )}
+                </div>
+
+                {/* Физический статус */}
+                <span className={`text-xs px-1 rounded ${
+                  unit.statusProduct === "IN_STORE" ? "bg-green-100 text-green-800" :
+                  unit.statusProduct === "SOLD" ? "bg-blue-100 text-blue-800" :
+                  unit.statusProduct === "CREDIT" ? "bg-purple-100 text-purple-800" :
+                  "bg-gray-100 text-gray-600"
+                }`}>
+                  {unit.statusProduct || "Нет статуса"}
+                </span>
+              </div>
             </div>
+          ))}
+        </div>
+
+        {/* Общая статистика */}
+        <div className="flex justify-between items-center text-[10px] text-gray-600 mt-3 pt-2 border-t">
+          <div className="flex items-center gap-1">
+            <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
+            <span>Брендов: {brands.length}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+            <span>Всего: {spine._count.productUnits}</span>
           </div>
         </div>
       </div>
