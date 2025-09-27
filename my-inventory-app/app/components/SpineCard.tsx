@@ -35,7 +35,7 @@ interface SpineCardProps {
       productUnits: number;
     };
   };
-  onUnitStatusChange?: () => void; // Добавляем callback для обновления данных
+  onUnitStatusChange?: () => void;
 }
 
 export default function SpineCard({ spine, onUnitStatusChange }: SpineCardProps) {
@@ -45,7 +45,14 @@ export default function SpineCard({ spine, onUnitStatusChange }: SpineCardProps)
   const [expandedUnits, setExpandedUnits] = useState<number[]>([]);
   const [quantities, setQuantities] = useState<{[key: number]: number}>({});
 
-  // Группируем units по брендам (ВКЛЮЧАЯ кандидатов)
+  console.log("🔄 SpineCard рендерится:", {
+    spineId: spine.id,
+    spineName: spine.name,
+    unitsCount: spine.productUnits.length,
+    brandsCount: new Map(spine.productUnits.map(u => [u.product.brand?.name || "Без бренда", true])).size
+  });
+
+  // Группируем units по брендам
   const brandsMap = new Map();
   spine.productUnits.forEach(unit => {
     const brandName = unit.product.brand?.name || "Без бренда";
@@ -60,16 +67,19 @@ export default function SpineCard({ spine, onUnitStatusChange }: SpineCardProps)
   const activeBrandUnits = activeBrand ? activeBrand[1] : [];
 
   const handleCardClick = () => {
+    console.log("📁 Клик по карточке Spine:", spine.id);
     router.push(`/spines/${spine.id}`);
   };
 
   const handleBrandClick = (index: number, e: React.MouseEvent) => {
     e.stopPropagation();
+    console.log("🏷️ Смена активного бренда:", brands[index][0]);
     setActiveBrandIndex(index);
   };
 
   const toggleExpanded = (unitId: number, e: React.MouseEvent) => {
     e.stopPropagation();
+    console.log("📂 Переключение расширения unit:", unitId);
     setExpandedUnits(prev => 
       prev.includes(unitId) 
         ? prev.filter(id => id !== unitId)
@@ -78,16 +88,20 @@ export default function SpineCard({ spine, onUnitStatusChange }: SpineCardProps)
   };
 
   const handleQuantityChange = (unitId: number, value: number) => {
+    const quantity = Math.max(1, value);
+    console.log("🔢 Изменение количества для unit:", unitId, "количество:", quantity);
     setQuantities(prev => ({
       ...prev,
-      [unitId]: Math.max(1, value)
+      [unitId]: quantity
     }));
   };
 
   const handleAddToCandidate = async (unitId: number, e: React.MouseEvent) => {
     e.stopPropagation();
     
+    console.log("⭐ Добавление в кандидаты unit:", unitId);
     setLoadingUnits(prev => [...prev, unitId]);
+    
     try {
       const response = await fetch('/api/product-units', {
         method: 'PATCH',
@@ -100,12 +114,23 @@ export default function SpineCard({ spine, onUnitStatusChange }: SpineCardProps)
         }),
       });
 
+      console.log("📤 Ответ от API кандидатов:", {
+        status: response.status,
+        ok: response.ok
+      });
+
       if (response.ok) {
-        // Вызываем callback для обновления данных родительским компонентом
+        const data = await response.json();
+        console.log("✅ Успешное добавление в кандидаты:", data);
         if (onUnitStatusChange) {
           onUnitStatusChange();
         }
+      } else {
+        const error = await response.text();
+        console.error("❌ Ошибка добавления в кандидаты:", error);
       }
+    } catch (error) {
+      console.error("💥 Ошибка сети при добавлении в кандидаты:", error);
     } finally {
       setLoadingUnits(prev => prev.filter(id => id !== unitId));
     }
@@ -114,7 +139,9 @@ export default function SpineCard({ spine, onUnitStatusChange }: SpineCardProps)
   const handleCreateRequest = async (unitId: number, quantity: number, e: React.MouseEvent) => {
     e.stopPropagation();
     
+    console.log("📦 Создание заявки для unit:", unitId, "количество:", quantity);
     setLoadingUnits(prev => [...prev, unitId]);
+    
     try {
       const response = await fetch('/api/product-units/create-request', {
         method: 'POST',
@@ -127,18 +154,30 @@ export default function SpineCard({ spine, onUnitStatusChange }: SpineCardProps)
         }),
       });
 
+      console.log("📤 Ответ от API создания заявки:", {
+        status: response.status,
+        ok: response.ok,
+        url: response.url
+      });
+
       if (response.ok) {
+        const data = await response.json();
+        console.log("✅ Успешное создание заявки:", data);
         setExpandedUnits(prev => prev.filter(id => id !== unitId));
         if (onUnitStatusChange) {
           onUnitStatusChange();
         }
+      } else {
+        const error = await response.text();
+        console.error("❌ Ошибка создания заявки:", error);
       }
+    } catch (error) {
+      console.error("💥 Ошибка сети при создании заявки:", error);
     } finally {
       setLoadingUnits(prev => prev.filter(id => id !== unitId));
     }
   };
 
-  // Сокращаем описание
   const shortenDescription = (description?: string) => {
     if (!description) return null;
     if (description.length <= 60) return description;
@@ -151,9 +190,12 @@ export default function SpineCard({ spine, onUnitStatusChange }: SpineCardProps)
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-300 hover:shadow-md transition-shadow duration-200 cursor-pointer w-80">
+    <div 
+      className="bg-white rounded-lg shadow-sm border border-gray-300 hover:shadow-md transition-shadow duration-200 cursor-pointer w-80 h-96 flex flex-col" // Фиксированная высота
+      onClick={handleCardClick}
+    >
       {/* Верхняя часть с ярлычками */}
-      <div className="bg-gradient-to-b from-gray-100 to-gray-200 px-3 pt-1 pb-1 border-b border-gray-300 relative">
+      <div className="bg-gradient-to-b from-gray-100 to-gray-200 px-3 pt-1 pb-1 border-b border-gray-300 relative flex-shrink-0">
         <div className="flex justify-center gap-0.5 relative" style={{ height: '1.5rem' }}>
           {brands.map(([brandName, units], index) => {
             const isActive = index === activeBrandIndex;
@@ -181,32 +223,34 @@ export default function SpineCard({ spine, onUnitStatusChange }: SpineCardProps)
         </div>
       </div>
 
-      {/* Содержимое папки */}
-      <div className="p-3">
+      {/* Содержимое папки с фиксированной высотой и скроллом */}
+      <div className="flex-1 flex flex-col p-3 overflow-hidden">
         {/* Название Spine */}
-        <div className="mb-3">
+        <div className="mb-3 flex-shrink-0">
           <h3 className="text-xs text-gray-600 text-center mb-1">Spine</h3>
           <div className="border border-gray-200 rounded-md p-2 bg-gray-50">
-            <p className="text-sm text-gray-700 text-center font-medium">{spine.name}</p>
+            <p className="text-sm text-gray-700 text-center font-medium truncate" title={spine.name}>
+              {spine.name}
+            </p>
           </div>
         </div>
 
-        {/* ProductUnits */}
-        <div className="space-y-2 max-h-40 overflow-y-auto">
+        {/* ProductUnits с фиксированной высотой и скроллом */}
+        <div className="flex-1 overflow-y-auto space-y-2">
           {activeBrandUnits.map(unit => (
-            <div key={unit.id} className="border border-gray-200 rounded-md p-2 bg-white">
+            <div key={unit.id} className="border border-gray-200 rounded-md p-2 bg-white flex-shrink-0">
               {/* Основная информация */}
               <div className="mb-2">
                 <div className="flex justify-between items-start mb-1">
-                  <span className="text-sm font-semibold text-gray-900">
+                  <span className="text-sm font-semibold text-gray-900 truncate">
                     {unit.productName || "Без названия"}
                   </span>
-                  <span className="text-xs text-gray-500 bg-gray-100 px-1 rounded">
+                  <span className="text-xs text-gray-500 bg-gray-100 px-1 rounded flex-shrink-0">
                     {unit.productCode}
                   </span>
                 </div>
                 {unit.productDescription && (
-                  <p className="text-xs text-gray-600 mb-1">
+                  <p className="text-xs text-gray-600 line-clamp-2">
                     {shortenDescription(unit.productDescription)}
                   </p>
                 )}
@@ -214,15 +258,14 @@ export default function SpineCard({ spine, onUnitStatusChange }: SpineCardProps)
 
               {/* Панель управления */}
               {unit.statusCard === ProductUnitCardStatus.CANDIDATE ? (
-                // Режим кандидата - создание заявки
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-yellow-100 text-yellow-800">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-yellow-100 text-yellow-800 flex-shrink-0">
                       Кандидат
                     </span>
                     <button
                       onClick={(e) => toggleExpanded(unit.id, e)}
-                      className="text-xs text-blue-600 hover:text-blue-800"
+                      className="text-xs text-blue-600 hover:text-blue-800 flex-shrink-0"
                     >
                       {expandedUnits.includes(unit.id) ? "Свернуть" : "Заявка →"}
                     </button>
@@ -238,7 +281,7 @@ export default function SpineCard({ spine, onUnitStatusChange }: SpineCardProps)
                         className="w-16 px-2 py-1 border border-gray-300 rounded text-xs"
                         onClick={(e) => e.stopPropagation()}
                       />
-                      <span className="text-xs text-gray-600">шт.</span>
+                      <span className="text-xs text-gray-600 flex-shrink-0">шт.</span>
                       <button
                         onClick={(e) => handleCreateRequest(unit.id, quantities[unit.id] || 1, e)}
                         disabled={loadingUnits.includes(unit.id)}
@@ -250,17 +293,16 @@ export default function SpineCard({ spine, onUnitStatusChange }: SpineCardProps)
                   )}
                 </div>
               ) : (
-                // Обычный режим - добавление в кандидаты
                 <div className="flex justify-between items-center">
                   <button
                     onClick={(e) => handleAddToCandidate(unit.id, e)}
-                    disabled={loadingUnits.includes(unit.id)}
-                    className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 disabled:opacity-50"
+                    disabled={loadingUnits.includes(unit.id) || unit.statusCard !== ProductUnitCardStatus.CLEAR}
+                    className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 disabled:opacity-50 flex-shrink-0"
                   >
                     {loadingUnits.includes(unit.id) ? "..." : "+ Кандидат"}
                   </button>
 
-                  <span className={`text-xs px-1 rounded ${
+                  <span className={`text-xs px-1 rounded flex-shrink-0 ${
                     unit.statusProduct === "IN_STORE" ? "bg-green-100 text-green-800" :
                     unit.statusProduct === "SOLD" ? "bg-blue-100 text-blue-800" :
                     unit.statusProduct === "CREDIT" ? "bg-purple-100 text-purple-800" :
@@ -275,13 +317,13 @@ export default function SpineCard({ spine, onUnitStatusChange }: SpineCardProps)
         </div>
 
         {/* Статистика */}
-        <div className="flex justify-between items-center text-[10px] text-gray-600 mt-3 pt-2 border-t">
+        <div className="flex justify-between items-center text-[10px] text-gray-600 mt-3 pt-2 border-t flex-shrink-0">
           <span>Брендов: {brands.length}</span>
           <span>Всего: {spine._count.productUnits}</span>
         </div>
       </div>
 
-      <div className="bg-gradient-to-b from-gray-200 to-gray-300 h-1 border-t border-gray-400"></div>
+      <div className="bg-gradient-to-b from-gray-200 to-gray-300 h-1 border-t border-gray-400 flex-shrink-0"></div>
     </div>
   );
 }
