@@ -24,3 +24,13 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Плавные переходы для карусели */
+.brand-tab {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Эффект при наведении на неактивные вкладки */
+.brand-tab:not(.active):hover {
+  transform: translateY(-2px);
+}
