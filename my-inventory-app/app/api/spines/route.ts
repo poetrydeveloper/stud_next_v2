@@ -3,42 +3,38 @@ import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const categoryId = searchParams.get("categoryId");
+  try {
+    const { searchParams } = new URL(request.url);
+    const categoryId = searchParams.get("categoryId");
 
-  const where: any = {};
-  if (categoryId) where.categoryId = Number(categoryId);
+    const where: any = {};
+    if (categoryId) where.categoryId = Number(categoryId);
 
-  const spines = await prisma.spine.findMany({
-    where,
-    include: {
-      products: {
-        select: { id: true, name: true, code: true, images: { where: { isMain: true }, select: { path: true }, take: 1 } },
+    const spines = await prisma.spine.findMany({
+      where,
+      include: {
+        category: true,
+        productUnits: { // ← ТОЛЬКО productUnits, без products
+          include: {
+            product: {
+              select: {
+                brand: true // ← бренд продукта для unit
+              }
+            }
+          }
+        },
+        _count: {
+          select: {
+            productUnits: true
+          }
+        }
       },
-      productUnits: {
-        select: { id: true, serialNumber: true, statusCard: true },
-        take: 20,
-      },
-    },
-    orderBy: { name: "asc" },
-  });
+      orderBy: { name: "asc" },
+    });
 
-  return NextResponse.json(spines);
-}
-
-export async function POST(request: Request) {
-  const body = await request.json();
-  // body: { name, slug?, categoryId?, imagePath? }
-  if (!body.name) return NextResponse.json({ error: "name required" }, { status: 400 });
-
-  const spine = await prisma.spine.create({
-    data: {
-      name: body.name,
-      slug: body.slug ?? body.name.toLowerCase().replace(/\s+/g, "-"),
-      categoryId: body.categoryId ?? null,
-      imagePath: body.imagePath ?? "/images/spine-placeholder.png", // заглушка
-    },
-  });
-
-  return NextResponse.json(spine);
+    return NextResponse.json({ ok: true, data: spines });
+  } catch (error: any) {
+    console.error("GET /api/spines error:", error);
+    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+  }
 }

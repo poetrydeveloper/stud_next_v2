@@ -12,7 +12,10 @@ export async function GET(
     const unit = await prisma.productUnit.findUnique({
       where: { id },
       include: {
-        product: true,
+        spine: true,        // ← ТОЛЬКО прямая связь
+        supplier: true,
+        customer: true,
+        product: true,      // ← базовая информация о продукте
         childProductUnits: true,
         cashEvents: true,
       },

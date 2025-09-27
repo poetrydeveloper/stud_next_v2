@@ -3,15 +3,21 @@ import prisma from "@/app/lib/prisma";
 import UnitDetailClient from "@/app/product-units/UnitDetailClient";
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function ProductUnitDetailPage({ params }: PageProps) {
-  const unitId = Number(params.id);
+  const { id } = await params;
+  const unitId = Number(id);
 
   const unit = await prisma.productUnit.findUnique({
     where: { id: unitId },
-    include: { product: true },
+    include: { 
+      spine: true,        // ← ТОЛЬКО прямая связь со Spine
+      supplier: true,
+      customer: true,
+      product: true,      // ← продукт без дополнительных связей (только базовые поля)
+    },
   });
 
   if (!unit) {

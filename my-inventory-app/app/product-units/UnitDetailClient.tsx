@@ -11,6 +11,7 @@ export default function UnitDetailClient({ unit }) {
         <p><strong>Название:</strong> {unit.productName}</p>
         <p><strong>Код:</strong> {unit.productCode}</p>
         <p><strong>Категория:</strong> {unit.productCategoryName}</p>
+        <p><strong>Spine:</strong> {unit.spine?.name || "—"}</p> {/* ← ТОЛЬКО прямая связь */}
         <p><strong>Описание:</strong> {unit.productDescription || "—"}</p>
         <p><strong>Цена заявки:</strong> {unit.requestPricePerUnit || "—"} ₽</p>
         <p><strong>Статус карточки:</strong> {unit.statusCard}</p>

@@ -1,4 +1,4 @@
-// app/api/product-unit/route.ts
+// app/api/product-units/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { ProductUnitCardStatus } from "@prisma/client";
@@ -14,15 +14,28 @@ export async function GET(req: Request) {
   const where: any = {};
   if (productId) where.productId = Number(productId);
 
-  const units = await prisma.productUnit.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    take: 200,
-    include: { 
-      product: true,
-      spine: true,
+  // app/api/product-units/route.ts
+const units = await prisma.productUnit.findMany({
+  where,
+  orderBy: { createdAt: "desc" },
+  take: 200,
+  include: { 
+    product: {
+      include: {
+        category: true,  // категория продукта
+        brand: true,     // бренд продукта
+        spine: true      // spine продукта (на всякий случай)
+      }
     },
-  });
+    spine: {             // ← ОСНОВНАЯ связь! Именно эта должна работать
+      include: {
+        category: true   // если нужна категория spine
+      }
+    },
+    supplier: true,
+    customer: true
+  },
+});
 
   return NextResponse.json({ ok: true, data: units });
 }
