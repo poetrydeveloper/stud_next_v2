@@ -85,8 +85,17 @@ export default function CategoriesAndSpinesPage() {
         }),
       });
 
-      const data = await res.json();
-      if (res.ok) {
+      // Проверяем, что сервер вернул JSON
+      let data;
+      try {
+        data = await res.json();
+      } catch (err) {
+        console.error("Ошибка парсинга JSON:", err);
+        showNotification("Сервер вернул неверный формат данных");
+        return;
+      }
+
+      if (data.ok) {
         setSpineName("");
         setSpineCategoryId("");
         showNotification("Спайн успешно создан!");

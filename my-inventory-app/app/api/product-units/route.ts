@@ -1,8 +1,7 @@
-// app/api/product-units/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { ProductUnitCardStatus } from "@prisma/client";
-import { recalcProductUnitStats, appendLog } from "./helpers";
+import { recalcProductUnitStats } from "./helpers";
 
 /**
  * GET /api/product-units?productId=
@@ -14,28 +13,18 @@ export async function GET(req: Request) {
   const where: any = {};
   if (productId) where.productId = Number(productId);
 
-  // app/api/product-units/route.ts
-const units = await prisma.productUnit.findMany({
-  where,
-  orderBy: { createdAt: "desc" },
-  take: 200,
-  include: { 
-    product: {
-      include: {
-        category: true,  // категория продукта
-        brand: true,     // бренд продукта
-        spine: true      // spine продукта (на всякий случай)
-      }
+  const units = await prisma.productUnit.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+    take: 200,
+    include: { 
+      product: { include: { category: true, brand: true, spine: true } },
+      spine: { include: { category: true } },
+      supplier: true,
+      customer: true,
+      logs: true,
     },
-    spine: {             // ← ОСНОВНАЯ связь! Именно эта должна работать
-      include: {
-        category: true   // если нужна категория spine
-      }
-    },
-    supplier: true,
-    customer: true
-  },
-});
+  });
 
   return NextResponse.json({ ok: true, data: units });
 }
@@ -54,7 +43,11 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ ok: false, error: "unitId required" }, { status: 400 });
     }
 
-    const unit = await prisma.productUnit.findUnique({ where: { id: unitId } });
+    const unit = await prisma.productUnit.findUnique({
+      where: { id: unitId },
+      include: { logs: true },
+    });
+
     if (!unit) {
       return NextResponse.json({ ok: false, error: "ProductUnit not found" }, { status: 404 });
     }
@@ -65,16 +58,19 @@ export async function PATCH(req: Request) {
         statusCard: ProductUnitCardStatus.CANDIDATE,
         quantityInCandidate: quantity,
         createdAtCandidate: new Date(),
-        logs: appendLog(unit.logs || [], {
-          event: "ADDED_TO_CANDIDATE",
-          at: new Date().toISOString(),
-          quantity,
-          parentId: unit.parentProductUnitId ?? null,
-        }),
+        logs: {
+          create: {
+            type: "SYSTEM",
+            message: `Unit добавлен в кандидаты (${quantity} шт.)`,
+            meta: { event: "ADDED_TO_CANDIDATE", quantity },
+          },
+        },
       },
+      include: { logs: true },
     });
 
     await recalcProductUnitStats(unit.productId);
+
     return NextResponse.json({ ok: true, data: updatedUnit });
   } catch (err: any) {
     console.error("PATCH /api/product-units error:", err);

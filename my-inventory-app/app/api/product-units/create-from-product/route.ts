@@ -1,11 +1,10 @@
-// app/api/product-unit/create-from-product/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { ProductUnitCardStatus } from "@prisma/client";
-import { generateSerialNumber, appendLog, recalcProductUnitStats } from "../helpers";
+import { generateSerialNumber, recalcProductUnitStats } from "../helpers";
 
 /**
- * POST /api/product-unit/create-from-product
+ * POST /api/product-units/create-from-product
  * body: { productId: number }
  * Автоматическое создание ProductUnit на основе Product
  */
@@ -30,16 +29,6 @@ export async function POST(req: Request) {
       include: { category: true, spine: true, images: true },
     });
 
-    console.log("📋 Найденный продукт:", {
-      id: product?.id,
-      name: product?.name,
-      code: product?.code,
-      spineId: product?.spineId,
-      spineName: product?.spine?.name,
-      categoryId: product?.categoryId,
-      categoryName: product?.category?.name
-    });
-
     if (!product) {
       console.error("❌ Ошибка: продукт не найден");
       return NextResponse.json({ ok: false, error: "Product not found" }, { status: 404 });
@@ -47,12 +36,6 @@ export async function POST(req: Request) {
 
     if (!product.spineId) {
       console.error("❌ Ошибка: у продукта отсутствует Spine");
-      console.log("💡 Информация о продукте:", {
-        productId: product.id,
-        productName: product.name,
-        hasSpine: !!product.spineId,
-        spine: product.spine
-      });
       return NextResponse.json({
         ok: false,
         error: "У продукта отсутствует Spine. Пересоздайте продукт.",
@@ -70,17 +53,24 @@ export async function POST(req: Request) {
         spineId: product.spineId,
         productCode: product.code,
         productName: product.name,
-        productDescription: product.description,
+        productDescription: product.description || "",
         productCategoryId: product.categoryId,
         productCategoryName: product.category?.name,
         serialNumber,
         statusCard: ProductUnitCardStatus.CLEAR,
-        logs: appendLog([], {
-          event: "AUTO_CREATED_FROM_PRODUCT",
-          at: new Date().toISOString(),
-          spineId: product.spineId,
-        }),
+
+        // ✅ Логи создаем через nested create без spineId
+        logs: {
+          create: [
+            {
+              type: "SYSTEM",
+              message: `Unit автоматически создан из продукта ${product.name}`,
+              createdAt: new Date(),
+            },
+          ],
+        },
       },
+      include: { logs: true },
     });
 
     console.log("✅ ProductUnit создан:", {
@@ -94,10 +84,7 @@ export async function POST(req: Request) {
     await recalcProductUnitStats(productId);
 
     console.log("🎉 Успешное завершение. Отправка ответа клиенту.");
-    return NextResponse.json({ 
-      ok: true, 
-      data: newUnit 
-    });
+    return NextResponse.json({ ok: true, data: newUnit });
 
   } catch (err: any) {
     console.error("💥 Критическая ошибка в API:", {
@@ -105,9 +92,6 @@ export async function POST(req: Request) {
       stack: err.stack,
       name: err.name
     });
-    return NextResponse.json({ 
-      ok: false, 
-      error: err.message 
-    }, { status: 500 });
+    return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }
 }

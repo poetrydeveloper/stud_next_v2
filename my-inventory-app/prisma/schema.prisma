@@ -146,7 +146,7 @@ model ProductUnit {
   customer   Customer? @relation(fields: [customerId], references: [id])
 
   // Логи
-  logs Json?
+  logs   ProductUnitLog[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -220,4 +220,16 @@ model Spine {
   productUnits ProductUnit[]
 
   @@map("spines")
+}
+
+model ProductUnitLog {
+  id            Int         @id @default(autoincrement())
+  productUnitId Int
+  productUnit   ProductUnit @relation(fields: [productUnitId], references: [id], onDelete: Cascade)
+  type          String?     // "STATUS_CHANGE", "REQUEST", "SYSTEM"
+  message       String
+  meta          Json?
+  createdAt     DateTime    @default(now())
+
+  @@map("product_unit_logs")
 }

@@ -2,39 +2,31 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    const categoryId = searchParams.get("categoryId");
-
-    const where: any = {};
-    if (categoryId) where.categoryId = Number(categoryId);
-
     const spines = await prisma.spine.findMany({
-      where,
       include: {
         category: true,
-        productUnits: { // ← ТОЛЬКО productUnits, без products
+        productUnits: {
           include: {
             product: {
               select: {
-                brand: true // ← бренд продукта для unit
-              }
-            }
-          }
+                brand: { select: { name: true } },
+              },
+            },
+            logs: true,
+          },
         },
         _count: {
-          select: {
-            productUnits: true
-          }
-        }
+          select: { productUnits: true },
+        },
       },
       orderBy: { name: "asc" },
     });
 
-    return NextResponse.json({ ok: true, data: spines });
-  } catch (error: any) {
-    console.error("GET /api/spines error:", error);
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true, spines });
+  } catch (err: any) {
+    console.error("💥 Ошибка API /spines:", err);
+    return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }
 }
