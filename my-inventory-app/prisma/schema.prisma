@@ -35,17 +35,16 @@ model User {
 }
 
 model Category {
-  id       Int        @id @default(autoincrement())
+  id       Int       @id @default(autoincrement())
   name     String
-  slug     String     @unique
-  parentId Int?
-  parent   Category?  @relation("CategoryToChildren", fields: [parentId], references: [id])
-  children Category[] @relation("CategoryToChildren")
-
+  slug     String    @unique
+  path     String    @unique // Добавляем это поле
+  // Убираем parentId и связи
   products Product[]
-  spines   Spine[]    // добавляем связь: категория -> spine (Т.П.)
+  spines   Spine[]
 
   @@map("categories")
+  @@index([path]) // Добавляем индекс
 }
 
 model Brand {

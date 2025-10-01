@@ -6,10 +6,19 @@ import { useState, useEffect } from "react";
 interface Category {
   id: number;
   name: string;
+  path: string;
+  children?: Category[];
+}
+
+interface FlatCategory {
+  id: number;
+  name: string;
+  path: string;
 }
 
 export default function CategoriesAndSpinesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [flatCategories, setFlatCategories] = useState<FlatCategory[]>([]);
 
   // === Категории ===
   const [categoryName, setCategoryName] = useState("");
@@ -25,10 +34,18 @@ export default function CategoriesAndSpinesPage() {
   const [notification, setNotification] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/categories")
+    // Загружаем дерево категорий для селектора
+    fetch("/api/categories/tree")
       .then((res) => res.json())
       .then((data) => {
         if (data.ok) setCategories(data.data || []);
+      });
+
+    // Загружаем плоский список для спайнов
+    fetch("/api/categories")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.ok) setFlatCategories(data.data || []);
       });
   }, []);
 
@@ -36,6 +53,18 @@ export default function CategoriesAndSpinesPage() {
   const showNotification = (message: string) => {
     setNotification(message);
     setTimeout(() => setNotification(null), 3000);
+  };
+
+  /** Рекурсивная функция для отображения дерева категорий */
+  const renderCategoryOptions = (categories: Category[], level = 0) => {
+    return categories.map((category) => (
+      <div key={category.id}>
+        <option value={category.id}>
+          {"\u00A0\u00A0".repeat(level)}📁 {category.name}
+        </option>
+        {category.children && renderCategoryOptions(category.children, level + 1)}
+      </div>
+    ));
   };
 
   /** Создание категории */
@@ -57,7 +86,19 @@ export default function CategoriesAndSpinesPage() {
       if (data.ok) {
         setCategoryName("");
         setParentId("");
-        setCategories((prev) => [...prev, data.data]);
+        
+        // Перезагружаем категории
+        const [treeRes, flatRes] = await Promise.all([
+          fetch("/api/categories/tree"),
+          fetch("/api/categories")
+        ]);
+        
+        const treeData = await treeRes.json();
+        const flatData = await flatRes.json();
+        
+        if (treeData.ok) setCategories(treeData.data || []);
+        if (flatData.ok) setFlatCategories(flatData.data || []);
+        
         showNotification("Категория успешно создана!");
       } else {
         showNotification("Ошибка: " + data.error);
@@ -85,7 +126,9 @@ export default function CategoriesAndSpinesPage() {
         }),
       });
 
-      // Проверяем, что сервер вернул JSON
+      // TODO: РАСКОММЕНТИРОВАТЬ ПОСЛЕ ТОГО КАК Materialized Path БУДЕТ РЕАЛИЗОВАНА В БАЗЕ
+      // Сейчас используем старую схему с parentId, нужно перейти на path
+      
       let data;
       try {
         data = await res.json();
@@ -142,12 +185,8 @@ export default function CategoriesAndSpinesPage() {
               value={parentId}
               onChange={(e) => setParentId(Number(e.target.value) || "")}
             >
-              <option value="">-- нет родителя --</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+              <option value="">-- нет родителя (корневая) --</option>
+              {renderCategoryOptions(categories)}
             </select>
           </div>
 
@@ -185,7 +224,7 @@ export default function CategoriesAndSpinesPage() {
               required
             >
               <option value="">-- выберите категорию --</option>
-              {categories.map((c) => (
+              {flatCategories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
                 </option>
@@ -202,6 +241,17 @@ export default function CategoriesAndSpinesPage() {
           </button>
         </form>
       </section>
+
+      {/* TODO: УДАЛИТЬ ЭТОТ БЛОК ПОСЛЕ ТЕСТИРОВАНИЯ */}
+      <div className="p-4 bg-yellow-100 border border-yellow-400 rounded">
+        <h3 className="font-bold text-yellow-800">Внимание!</h3>
+        <p className="text-yellow-700 text-sm">
+          Для работы этой страницы нужно:
+          <br/>1. Реализовать Materialized Path в БД (добавить поле path в categories)
+          <br/>2. Убедиться что API /api/categories/tree возвращает дерево категорий
+          <br/>3. Проверить работу POST /api/spines
+        </p>
+      </div>
     </div>
   );
 }
