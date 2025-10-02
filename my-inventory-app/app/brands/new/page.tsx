@@ -1,4 +1,4 @@
-// app/brands/create/page.tsx
+// app/brands/new/page.tsx
 "use client";
 
 import { useState } from "react";

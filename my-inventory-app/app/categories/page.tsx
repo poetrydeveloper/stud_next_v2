@@ -1,4 +1,4 @@
-//app/categories/page.tsx
+// app/categories/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -8,7 +8,7 @@ interface Category {
   id: number;
   name: string;
   slug: string;
-  parentId: number | null;
+  path: string;
   children?: Category[];
 }
 
@@ -17,7 +17,7 @@ export default function CategoriesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/categories")
+    fetch("/api/categories/tree") // Используем tree endpoint который возвращает готовое дерево
       .then(res => res.json())
       .then((data) => {
         setCategories(data.data || []);
@@ -29,27 +29,16 @@ export default function CategoriesPage() {
       });
   }, []);
 
-  // Строим дерево категорий
-  const buildTree = (items: Category[], parentId: number | null = null): Category[] => {
-    return items
-      .filter((c) => c.parentId === parentId)
-      .map((c) => ({
-        ...c,
-        children: buildTree(items, c.id),
-      }));
-  };
-
-  const tree = buildTree(categories);
-
-  const renderTree = (nodes: Category[]) => (
+  const renderTree = (nodes: Category[], level = 0) => (
     <ul className="pl-4">
       {nodes.map((node) => (
         <li key={node.id} className="mb-1">
           <div className="flex items-center space-x-2">
             <span className="font-medium">{node.name}</span>
             <span className="text-xs text-gray-500">({node.slug})</span>
+            <span className="text-xs text-gray-400">path: {node.path}</span>
           </div>
-          {node.children && node.children.length > 0 && renderTree(node.children)}
+          {node.children && node.children.length > 0 && renderTree(node.children, level + 1)}
         </li>
       ))}
     </ul>
@@ -72,7 +61,7 @@ export default function CategoriesPage() {
         ) : categories.length === 0 ? (
           <p className="text-gray-500">Категории пока не созданы</p>
         ) : (
-          renderTree(tree)
+          renderTree(categories)
         )}
       </div>
     </div>

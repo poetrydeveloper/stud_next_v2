@@ -78,7 +78,7 @@ export default function CategoriesAndSpinesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: categoryName.trim(),
-          parentId: parentId || null,
+          parentId: parentId || null, // Оставляем parentId - API сам преобразует в path
         }),
       });
 
@@ -126,9 +126,6 @@ export default function CategoriesAndSpinesPage() {
         }),
       });
 
-      // TODO: РАСКОММЕНТИРОВАТЬ ПОСЛЕ ТОГО КАК Materialized Path БУДЕТ РЕАЛИЗОВАНА В БАЗЕ
-      // Сейчас используем старую схему с parentId, нужно перейти на path
-      
       let data;
       try {
         data = await res.json();
@@ -241,17 +238,6 @@ export default function CategoriesAndSpinesPage() {
           </button>
         </form>
       </section>
-
-      {/* TODO: УДАЛИТЬ ЭТОТ БЛОК ПОСЛЕ ТЕСТИРОВАНИЯ */}
-      <div className="p-4 bg-yellow-100 border border-yellow-400 rounded">
-        <h3 className="font-bold text-yellow-800">Внимание!</h3>
-        <p className="text-yellow-700 text-sm">
-          Для работы этой страницы нужно:
-          <br/>1. Реализовать Materialized Path в БД (добавить поле path в categories)
-          <br/>2. Убедиться что API /api/categories/tree возвращает дерево категорий
-          <br/>3. Проверить работу POST /api/spines
-        </p>
-      </div>
     </div>
   );
 }

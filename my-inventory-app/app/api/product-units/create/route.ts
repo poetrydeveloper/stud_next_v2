@@ -1,10 +1,11 @@
+//app/api/product-unit/create/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { ProductUnitCardStatus } from "@prisma/client";
 import { generateSerialNumber, recalcProductUnitStats } from "../helpers";
 
 /**
- * POST /api/product-units/create-from-product
+ * POST 
  * body: { productId: number }
  * Автоматическое создание ProductUnit на основе Product
  */

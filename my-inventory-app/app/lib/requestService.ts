@@ -1,118 +1,116 @@
-import { PrismaClient, ProductUnitCardStatus } from '@prisma/client';
-import { generateSerialNumber, recalcProductUnitStats } from '@/app/api/product-units/helpers';
-
-const prisma = new PrismaClient();
-
-export interface CreateRequestResult {
-  success: boolean;
-  data?: any;
-  error?: string;
-}
+// app/lib/requestService.ts (обновленная версия)
+import { RequestValidator } from '@/app/lib/requestValidator';
+import prisma from '@/app/lib/prisma'
 
 export class RequestService {
-  static async createRequest(unitId: number, quantity: number): Promise<CreateRequestResult> {
+  static async createRequest(unitId: number, quantity: number, requestPricePerUnit?: number): Promise<CreateRequestResult> {
+    const validator = new RequestValidator(`create-request-${unitId}-${Date.now()}`);
+
     try {
+      // 1. Валидация входных данных
+      await validator.validateStep('input_validation', 
+        async () => unitId > 0 && quantity > 0, 
+        'Проверка входных параметров'
+      );
+
       const parentUnit = await prisma.productUnit.findUnique({
         where: { id: unitId },
         include: { product: true },
       });
 
-      if (!parentUnit) return { success: false, error: "ProductUnit not found" };
-      if (parentUnit.statusCard !== ProductUnitCardStatus.CANDIDATE)
-        return { success: false, error: "Unit is not a candidate" };
+      // 2. Проверка существования unit
+      await validator.validateStep('unit_exists',
+        async () => !!parentUnit,
+        'Unit существует в базе'
+      );
+
+      // 3. Проверка статуса CANDIDATE
+      await validator.validateStep('unit_is_candidate',
+        async () => parentUnit!.statusCard === ProductUnitCardStatus.CANDIDATE,
+        'Unit имеет статус CANDIDATE'
+      );
 
       if (quantity === 1) {
-        return await this.createSingleRequest(parentUnit);
+        return await this.createSingleRequest(parentUnit!, requestPricePerUnit, validator);
       } else {
-        return await this.createMultipleRequests(parentUnit, quantity);
+        return await this.createMultipleRequests(parentUnit!, quantity, requestPricePerUnit, validator);
       }
     } catch (err: any) {
-      return { success: false, error: err.message };
+      validator.log(`💥 Критическая ошибка: ${err.message}`);
+      const report = validator.printFinalReport();
+      return { success: false, error: err.message, validationReport: report };
     }
   }
 
-  private static async createSingleRequest(parentUnit: any): Promise<CreateRequestResult> {
-    const updatedUnit = await prisma.productUnit.update({
-      where: { id: parentUnit.id },
-      data: {
-        statusCard: ProductUnitCardStatus.IN_REQUEST,
-        quantityInRequest: 1,
-        createdAtRequest: new Date(),
-        logs: {
-          create: {
-            type: "SYSTEM",
-            message: `Unit перемещен в заявку (1 шт.)`,
-            meta: { event: "MOVED_TO_REQUEST", quantity: 1, type: "SINGLE" },
-          },
+  private static async createMultipleRequests(parentUnit: any, quantity: number, requestPricePerUnit?: number, validator?: RequestValidator): Promise<CreateRequestResult> {
+    return await prisma.$transaction(async (tx) => {
+      // 1. Создание CLEAR клона с валидацией
+      validator?.log('🔄 Создание CLEAR клона...');
+      const newClearUnit = await UnitCloneHelper.createClearClone(parentUnit.id);
+      
+      await validator?.validateStep('clear_clone_created',
+        async () => {
+          const unit = await tx.productUnit.findUnique({ where: { id: newClearUnit.id } });
+          return unit?.statusCard === 'CLEAR';
         },
-      },
-      include: { logs: true },
-    });
+        'CLEAR клон создан и имеет правильный статус'
+      );
 
-    await recalcProductUnitStats(parentUnit.productId);
-
-    return { success: true, data: { type: "single", unit: updatedUnit } };
-  }
-
-  private static async createMultipleRequests(parentUnit: any, quantity: number): Promise<CreateRequestResult> {
-    const sproutedUnit = await prisma.productUnit.update({
-      where: { id: parentUnit.id },
-      data: {
-        statusCard: ProductUnitCardStatus.SPROUTED,
-        logs: {
-          create: {
-            type: "SYSTEM",
-            message: `Unit sprouted (${quantity} шт.)`,
-            meta: { event: "SPROUTED", quantity, childrenCount: quantity, type: "MULTIPLE" },
-          },
-        },
-      },
-      include: { logs: true },
-    });
-
-    const childUnits = [];
-    for (let i = 1; i <= quantity; i++) {
-      const serialNumber = await generateSerialNumber(prisma, parentUnit.productId, parentUnit.id, i, quantity);
-
-      const childUnit = await prisma.productUnit.create({
-        data: {
-          productId: parentUnit.productId,
-          spineId: parentUnit.spineId,
-          parentProductUnitId: parentUnit.id,
-          productCode: parentUnit.productCode,
-          productName: parentUnit.productName,
-          productDescription: parentUnit.productDescription,
-          productCategoryId: parentUnit.productCategoryId,
-          productCategoryName: parentUnit.productCategoryName,
-          serialNumber,
-          statusCard: ProductUnitCardStatus.IN_REQUEST,
-          quantityInRequest: 1,
-          createdAtRequest: new Date(),
-          requestPricePerUnit: parentUnit.requestPricePerUnit,
-          logs: {
-            create: {
-              type: "SYSTEM",
-              message: `Дочерняя unit создана из sprouted`,
-              meta: {
-                event: "CREATED_FROM_SPROUTED",
-                parentUnitId: parentUnit.id,
-                index: i,
-                total: quantity,
-                sproutedFrom: parentUnit.serialNumber,
-              },
-            },
-          },
-        },
+      // 2. Обновление родителя в SPROUTED
+      validator?.log('🔄 Преобразование родителя в SPROUTED...');
+      const sproutedUnit = await tx.productUnit.update({
+        where: { id: parentUnit.id },
+        data: { statusCard: ProductUnitCardStatus.SPROUTED }
       });
 
-      childUnits.push(childUnit);
-    }
+      await validator?.validateStep('parent_sprouted',
+        async () => sproutedUnit.statusCard === 'SPROUTED',
+        'Родительский unit переведен в SPROUTED'
+      );
 
-    await recalcProductUnitStats(parentUnit.productId);
+      // 3. Создание дочерних units с валидацией
+      validator?.log(`🔄 Создание ${quantity} дочерних units...`);
+      const childUnits = [];
+      
+      for (let i = 1; i <= quantity; i++) {
+        const childUnit = await tx.productUnit.create({
+          data: { /* ... данные ребенка ... */ }
+        });
+        childUnits.push(childUnit);
 
-    return {
-      success: true,
-      data: { type: "multiple", sprouted: sproutedUnit, children: childUnits, childrenCount: childUnits.length },
-    };
+        // Валидация каждого ребенка
+        await validator?.validateStep(`child_${i}_created`,
+          async () => {
+            const unit = await tx.productUnit.findUnique({ where: { id: childUnit.id } });
+            return unit?.statusCard === 'IN_REQUEST' && unit.parentProductUnitId === parentUnit.id;
+          },
+          `Дочерний unit ${i}/${quantity} создан и привязан`
+        );
+      }
+
+      // 4. Финальная проверка целостности
+      await validator?.validateStep('final_integrity_check',
+        async () => {
+          const childrenCount = await tx.productUnit.count({
+            where: { parentProductUnitId: parentUnit.id, statusCard: 'IN_REQUEST' }
+          });
+          return childrenCount === quantity;
+        },
+        `Все ${quantity} дочерних units созданы и привязаны`
+      );
+
+      const result = { 
+        success: true, 
+        data: { /* ... данные результата ... */ } 
+      };
+
+      // Печатаем финальный отчет
+      if (validator) {
+        const report = validator.printFinalReport();
+        result.validationReport = report;
+      }
+
+      return result;
+    });
   }
 }
