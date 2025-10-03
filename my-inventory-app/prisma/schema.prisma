@@ -161,6 +161,7 @@ enum ProductUnitCardStatus {
   SPROUTED
   IN_REQUEST
   IN_DELIVERY
+  ARRIVED
 }
 
 enum ProductUnitPhysicalStatus {
