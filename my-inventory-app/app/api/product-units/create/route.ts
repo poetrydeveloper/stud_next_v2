@@ -2,14 +2,17 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { ProductUnitCardStatus } from "@prisma/client";
-import { generateSerialNumber, recalcProductUnitStats, copyProductDataToUnit } from "@/app/api/product-units/helpers";
+import { 
+  generateSerialNumber, 
+  copyProductDataToUnit 
+} from "@/app/api/product-units/helpers";
 
 export async function POST(req: Request) {
   console.log("=== API: CREATE PRODUCT UNIT FROM PRODUCT ===");
   
   try {
     const body = await req.json();
-    const { productId, supplierId, requestPricePerUnit } = body; // ✅ ДОБАВЛЕНО supplierId
+    const { productId, supplierId, requestPricePerUnit } = body;
 
     console.log("📥 Полученные данные:", { productId, supplierId, requestPricePerUnit });
 
@@ -33,17 +36,17 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    const serialNumber = await generateSerialNumber(prisma, productId, null);
+    const serialNumber = await generateSerialNumber(prisma, productId, undefined);
 
-    // ✅ ИСПРАВЛЕНО: копируем ВСЕ данные
+    // Создаем Product Unit
     const unitData = {
       productId: product.id,
       spineId: product.spineId,
-      supplierId: supplierId || null, // ✅ ДОБАВЛЕНО
-      ...copyProductDataToUnit(product), // копируем данные продукта
+      supplierId: supplierId || null,
+      ...copyProductDataToUnit(product),
       serialNumber,
       statusCard: ProductUnitCardStatus.CLEAR,
-      requestPricePerUnit: requestPricePerUnit || null, // ✅ ДОБАВЛЕНО
+      requestPricePerUnit: requestPricePerUnit || null,
       logs: {
         create: {
           type: "SYSTEM",
@@ -54,10 +57,13 @@ export async function POST(req: Request) {
 
     const newUnit = await prisma.productUnit.create({
       data: unitData,
-      include: { logs: true, supplier: true, spine: true },
+      include: { 
+        logs: true, 
+        supplier: true, 
+        spine: true,
+        product: true 
+      },
     });
-
-    await recalcProductUnitStats(productId);
 
     return NextResponse.json({ 
       ok: true, 
@@ -66,6 +72,14 @@ export async function POST(req: Request) {
 
   } catch (err: any) {
     console.error("💥 Ошибка в API:", err);
+    
+    if (err.code === "P2002") {
+      return NextResponse.json(
+        { ok: false, error: "Product unit with this serial number already exists" },
+        { status: 400 }
+      );
+    }
+    
     return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }
 }

@@ -2,38 +2,43 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 
-/**
- * GET — возвращает дерево категорий для селекторов
- */
 export async function GET() {
   try {
     const categories = await prisma.category.findMany({
       select: {
         id: true,
         name: true,
-        path: true, // Используем path вместо parentId
+        path: true,
       },
       orderBy: { path: "asc" },
     });
 
-    // Функция для построения дерева из path
+    // ИСПРАВЛЕННАЯ функция построения дерева
     const buildTree = (categories: any[]) => {
       const tree: any[] = [];
       const map = new Map();
       
+      // Создаем узлы
       categories.forEach(cat => {
         map.set(cat.id, { ...cat, children: [] });
       });
       
+      // Строим иерархию
       categories.forEach(cat => {
-        if (cat.path === '/') {
+        const pathParts = cat.path.split('/').filter(Boolean);
+        
+        if (pathParts.length === 1) {
+          // Корневая категория (путь типа "/1/")
           tree.push(map.get(cat.id));
         } else {
-          const pathParts = cat.path.split('/').filter(Boolean);
+          // Дочерняя категория (путь типа "/1/2/")
           const parentId = parseInt(pathParts[pathParts.length - 2]);
           const parent = map.get(parentId);
           if (parent) {
             parent.children.push(map.get(cat.id));
+          } else {
+            // Если родитель не найден, добавляем в корень
+            tree.push(map.get(cat.id));
           }
         }
       });
@@ -52,7 +57,7 @@ export async function GET() {
     return NextResponse.json(
       {
         ok: false,
-        error: "Не удалось получить список категорий",
+        error: "Не удалось получить дерево категорий",
       },
       { status: 500 }
     );

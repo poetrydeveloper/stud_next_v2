@@ -30,7 +30,7 @@ export default function ProductCard({ product }) {
 
     try {
       console.log("📤 Отправка запроса к API...");
-      const res = await fetch("/api/product-units/create-from-product", {
+      const res = await fetch("/api/product-units/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId: product.id }),

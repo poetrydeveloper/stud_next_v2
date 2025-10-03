@@ -74,19 +74,24 @@ export default function NewProductPage() {
   };
 
   // Рекурсивная функция для отображения дерева категорий в <option>
-  const renderCategoryOptions = (nodes: Category[], depth = 0): JSX.Element[] => {
-    const options: JSX.Element[] = [];
+const renderCategoryOptions = (nodes: any[], depth = 0): JSX.Element[] => {
+  const options: JSX.Element[] = [];
+  
+  nodes.forEach((node) => {
+    options.push(
+      <option key={node.id} value={node.id}>
+        {"\u00A0\u00A0".repeat(depth)}📁 {node.name}
+      </option>
+    );
     
-    nodes.forEach((node) => {
-      options.push(
-        <option key={node.id} value={node.id}>
-          {Array(depth).fill("— ").join("")}{node.name}
-        </option>
-      );
-    });
-    
-    return options;
-  };
+    // ДОБАВЛЯЕМ РЕКУРСИЮ для дочерних категорий
+    if (node.children && node.children.length > 0) {
+      options.push(...renderCategoryOptions(node.children, depth + 1));
+    }
+  });
+  
+  return options;
+};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

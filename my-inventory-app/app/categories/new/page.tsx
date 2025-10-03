@@ -56,16 +56,23 @@ export default function CategoriesAndSpinesPage() {
   };
 
   /** Рекурсивная функция для отображения дерева категорий */
-  const renderCategoryOptions = (categories: Category[], level = 0) => {
-    return categories.map((category) => (
-      <div key={category.id}>
-        <option value={category.id}>
-          {"\u00A0\u00A0".repeat(level)}📁 {category.name}
-        </option>
-        {category.children && renderCategoryOptions(category.children, level + 1)}
-      </div>
-    ));
-  };
+const renderCategoryOptions = (categories: Category[], level = 0): JSX.Element[] => {
+  const options: JSX.Element[] = [];
+  
+  categories.forEach(category => {
+    options.push(
+      <option key={category.id} value={category.id}>
+        {"\u00A0\u00A0".repeat(level)}📁 {category.name}
+      </option>
+    );
+    
+    if (category.children && category.children.length > 0) {
+      options.push(...renderCategoryOptions(category.children, level + 1));
+    }
+  });
+  
+  return options;
+};
 
   /** Создание категории */
   const handleCreateCategory = async (e: React.FormEvent) => {
