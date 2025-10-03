@@ -1,29 +1,49 @@
 // app/lib/prismaLogMiddleware.ts
 import { PrismaClient } from '@prisma/client';
 
+// Используем существующий клиент, не создаем новый
+let loggingPrisma: PrismaClient;
+
 export function createLogMiddleware(prisma: PrismaClient) {
-  prisma.$use(async (params, next) => {
-    // Логируем только изменения ProductUnit
-    if (params.model === 'ProductUnit' && (params.action === 'update' || params.action === 'create')) {
-      const result = await next(params);
-      
-      // Для update - логируем изменения
-      if (params.action === 'update') {
-        await logProductUnitChanges(params.args.where.id, params.args.data, result);
+  // Проверяем что prisma полностью инициализирован
+  if (!prisma || typeof prisma.$use !== 'function') {
+    console.warn('Prisma client not ready for middleware');
+    return;
+  }
+  
+  loggingPrisma = prisma; // Сохраняем ссылку на существующий клиент
+  
+  try {
+    prisma.$use(async (params, next) => {
+      // Логируем только изменения ProductUnit
+      if (params.model === 'ProductUnit' && (params.action === 'update' || params.action === 'create')) {
+        const result = await next(params);
+        
+        // Для update - логируем изменения
+        if (params.action === 'update') {
+          await logProductUnitChanges(params.args.where.id, params.args.data, result);
+        }
+        // Для create - логируем создание
+        else if (params.action === 'create') {
+          await logProductUnitCreation(result.id, result);
+        }
+        
+        return result;
       }
-      // Для create - логируем создание
-      else if (params.action === 'create') {
-        await logProductUnitCreation(result.id, result);
-      }
       
-      return result;
-    }
+      return next(params);
+    });
     
-    return next(params);
-  });
+    console.log('✅ ProductUnit logging middleware installed');
+    
+  } catch (error) {
+    console.error('❌ Failed to setup Prisma middleware:', error);
+  }
 }
 
 async function logProductUnitChanges(unitId: number, newData: any, updatedUnit: any) {
+  if (!loggingPrisma) return;
+  
   const changes: string[] = [];
   
   // Отслеживаем изменения статусов
@@ -41,37 +61,43 @@ async function logProductUnitChanges(unitId: number, newData: any, updatedUnit: 
   }
   
   if (changes.length > 0) {
-    const prisma = new PrismaClient();
-    await prisma.productUnitLog.create({
-      data: {
-        productUnitId: unitId,
-        type: 'STATUS_CHANGE',
-        message: changes.join(' | '),
-        meta: {
-          changes,
-          newData,
-          timestamp: new Date().toISOString()
+    try {
+      await loggingPrisma.productUnitLog.create({
+        data: {
+          productUnitId: unitId,
+          type: 'STATUS_CHANGE',
+          message: changes.join(' | '),
+          meta: {
+            changes,
+            newData,
+            timestamp: new Date().toISOString()
+          }
         }
-      }
-    });
-    await prisma.$disconnect();
+      });
+    } catch (error) {
+      console.error('Failed to log ProductUnit changes:', error);
+    }
   }
 }
 
 async function logProductUnitCreation(unitId: number, unitData: any) {
-  const prisma = new PrismaClient();
-  await prisma.productUnitLog.create({
-    data: {
-      productUnitId: unitId,
-      type: 'SYSTEM',
-      message: `ProductUnit создан: ${unitData.serialNumber}`,
-      meta: {
-        event: 'UNIT_CREATED',
-        serialNumber: unitData.serialNumber,
-        initialStatus: unitData.statusCard,
-        timestamp: new Date().toISOString()
+  if (!loggingPrisma) return;
+  
+  try {
+    await loggingPrisma.productUnitLog.create({
+      data: {
+        productUnitId: unitId,
+        type: 'SYSTEM',
+        message: `ProductUnit создан: ${unitData.serialNumber}`,
+        meta: {
+          event: 'UNIT_CREATED',
+          serialNumber: unitData.serialNumber,
+          initialStatus: unitData.statusCard,
+          timestamp: new Date().toISOString()
+        }
       }
-    }
-  });
-  await prisma.$disconnect();
+    });
+  } catch (error) {
+    console.error('Failed to log ProductUnit creation:', error);
+  }
 }

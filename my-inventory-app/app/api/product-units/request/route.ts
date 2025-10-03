@@ -1,4 +1,4 @@
-//app/api/product-unit/request/route.ts
+//app/api/product-units/request/route.ts
 import { NextResponse } from "next/server";
 import { RequestService } from "@/app/lib/requestService";
 

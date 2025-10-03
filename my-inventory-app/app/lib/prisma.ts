@@ -1,4 +1,4 @@
-// app/lib/prisma.ts (обновляем)
+// app/lib/prisma.ts
 import { PrismaClient } from "@prisma/client";
 import { createLogMiddleware } from './prismaLogMiddleware';
 
@@ -11,7 +11,15 @@ export const prisma =
   });
 
 // Подключаем middleware для логирования
-createLogMiddleware(prisma);
+// Но с защитой от ранней инициализации
+if (prisma && typeof prisma.$use === 'function') {
+  try {
+    createLogMiddleware(prisma);
+    console.log('✅ Prisma middleware initialized successfully');
+  } catch (error) {
+    console.warn('⚠️ Middleware initialization failed, continuing without it:', error);
+  }
+}
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
