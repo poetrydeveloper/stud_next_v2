@@ -206,6 +206,7 @@ enum CashEventType {
 }
 
 
+// prisma/schema.prisma
 model Spine {
   id         Int        @id @default(autoincrement())
   name       String
@@ -213,6 +214,10 @@ model Spine {
   categoryId Int?
   category   Category?  @relation(fields: [categoryId], references: [id])
   imagePath  String?    // маленькая картинка (путь)
+  
+  // НОВОЕ ПОЛЕ - денормализованные данные по брендам
+  brandData  Json?      @db.Json
+  
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 

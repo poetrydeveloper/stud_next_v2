@@ -235,3 +235,55 @@ export function formatProductUnitResponse(unit: any): any {
     updatedAt: unit.updatedAt
   };
 }
+
+// app/api/product-units/helpers.ts - ДОБАВЛЯЕМ ЭТУ ФУНКЦИЮ:
+
+/**
+ * Обновляет brandData в Spine при создании/изменении Unit
+ */
+export async function updateSpineBrandData(
+  spineId: number, 
+  brandInfo: {
+    brandName: string;
+    displayName: string;
+    imagePath: string | null;
+    productCode: string;
+  }
+): Promise<void> {
+  try {
+    const spine = await prisma.spine.findUnique({ 
+      where: { id: spineId } 
+    });
+
+    if (!spine) {
+      console.warn(`❌ Spine ${spineId} not found`);
+      return;
+    }
+
+    // Безопасная работа с brandData
+    let currentBrandData: any = {};
+    
+    if (spine.brandData && typeof spine.brandData === 'object') {
+      currentBrandData = { ...spine.brandData };
+    }
+
+    // Обновляем или добавляем данные бренда
+    currentBrandData[brandInfo.brandName] = {
+      displayName: brandInfo.displayName,
+      imagePath: brandInfo.imagePath,
+      productCode: brandInfo.productCode,
+      updatedAt: new Date().toISOString()
+    };
+
+    await prisma.spine.update({
+      where: { id: spineId },
+      data: { brandData: currentBrandData }
+    });
+    
+    console.log(`✅ Spine ${spineId} updated with brand: ${brandInfo.brandName}`);
+    
+  } catch (error) {
+    console.error('❌ Error updating spine brand data:', error);
+    // НЕ выбрасываем ошибку, чтобы не ломать создание unit
+  }
+}

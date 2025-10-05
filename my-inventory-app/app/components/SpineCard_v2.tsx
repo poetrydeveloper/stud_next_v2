@@ -37,22 +37,31 @@ export default function SpineCard_v2({ spine }: SpineCardProps) {
     setQuantities(prev => ({ ...prev, [unitId]: Math.max(1, value) }));
   };
 
-  const handleAddToCandidate = async (unitId: number) => {
-    setLoadingUnits(prev => [...prev, unitId]);
-    
-    const result = await SpineCardService.addToCandidate(unitId);
-    
-    if (result.success) {
-      setUnitsState(prev =>
-        prev.map(u => u.id === unitId ? { ...u, statusCard: ProductUnitCardStatus.CANDIDATE } : u)
-      );
-      SpineCardService.showNotification("Товар добавлен в кандидаты");
-    } else {
-      SpineCardService.showNotification(result.error!, true);
-    }
-    
-    setLoadingUnits(prev => prev.filter(id => id !== unitId));
-  };
+  // В компоненте где вызывается handleAddToCandidate - добавить логирование
+const handleAddToCandidate = async (unitId: number) => {
+  console.log("🎯 [CLIENT] Нажата кнопка 'В кандидаты' для unit:", unitId);
+  
+  setLoadingUnits(prev => [...prev, unitId]);
+  
+  console.log("🔄 [CLIENT] Вызываем SpineCardService.addToCandidate...");
+  const result = await SpineCardService.addToCandidate(unitId);
+  
+  console.log("📦 [CLIENT] Результат от SpineCardService:", result);
+  
+  if (result.success) {
+    console.log("✅ [CLIENT] Успех! Обновляем состояние...");
+    setUnitsState(prev =>
+      prev.map(u => u.id === unitId ? { ...u, statusCard: ProductUnitCardStatus.CANDIDATE } : u)
+    );
+    SpineCardService.showNotification("Товар добавлен в кандидаты");
+  } else {
+    console.error("❌ [CLIENT] Ошибка:", result.error);
+    SpineCardService.showNotification(result.error!, true);
+  }
+  
+  setLoadingUnits(prev => prev.filter(id => id !== unitId));
+  console.log("🏁 [CLIENT] Процесс завершен");
+};
 
   const handleCreateRequest = async (unitId: number, quantity: number) => {
     setLoadingUnits(prev => [...prev, unitId]);

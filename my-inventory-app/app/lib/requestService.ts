@@ -1,6 +1,15 @@
-// app/lib/requestService.ts (обновленная версия)
+// app/lib/requestService.ts
 import { RequestValidator } from '@/app/lib/requestValidator';
-import prisma from '@/app/lib/prisma'
+import { UnitCloneHelper } from '@/app/lib/unitCloneHelper';
+import prisma from '@/app/lib/prisma';
+import { ProductUnitCardStatus } from '@prisma/client';
+
+export interface CreateRequestResult {
+  success: boolean;
+  error?: string;
+  data?: any;
+  validationReport?: any;
+}
 
 export class RequestService {
   static async createRequest(unitId: number, quantity: number, requestPricePerUnit?: number): Promise<CreateRequestResult> {
@@ -42,6 +51,49 @@ export class RequestService {
     }
   }
 
+  private static async createSingleRequest(parentUnit: any, requestPricePerUnit?: number, validator?: RequestValidator): Promise<CreateRequestResult> {
+    validator?.log('🔄 Создание одиночной заявки...');
+
+    try {
+      // Создаем CLEAR replacement unit
+      validator?.log('🔄 Создание CLEAR replacement...');
+      const newClearUnit = await UnitCloneHelper.createClearClone(parentUnit.id);
+      
+      // Обновляем родителя в IN_REQUEST
+      validator?.log('🔄 Перевод в IN_REQUEST...');
+      const updatedUnit = await prisma.productUnit.update({
+        where: { id: parentUnit.id },
+        data: { 
+          statusCard: ProductUnitCardStatus.IN_REQUEST,
+          requestPricePerUnit: requestPricePerUnit || parentUnit.requestPricePerUnit,
+          createdAtRequest: new Date(),
+          logs: {
+            create: {
+              type: "IN_REQUEST",
+              message: `Создана одиночная заявка, цена: ${requestPricePerUnit || parentUnit.requestPricePerUnit}`,
+              meta: {
+                pricePerUnit: requestPricePerUnit || parentUnit.requestPricePerUnit,
+                clearReplacementUnitId: newClearUnit.id
+              }
+            }
+          }
+        }
+      });
+
+      validator?.log('✅ Одиночная заявка создана');
+      return { 
+        success: true, 
+        data: {
+          parentUnit: updatedUnit,
+          clearReplacementUnit: newClearUnit
+        }
+      };
+    } catch (error: any) {
+      validator?.log(`💥 Ошибка создания заявки: ${error.message}`);
+      return { success: false, error: error.message };
+    }
+  }
+
   private static async createMultipleRequests(parentUnit: any, quantity: number, requestPricePerUnit?: number, validator?: RequestValidator): Promise<CreateRequestResult> {
     return await prisma.$transaction(async (tx) => {
       // 1. Создание CLEAR клона с валидацией
@@ -60,7 +112,19 @@ export class RequestService {
       validator?.log('🔄 Преобразование родителя в SPROUTED...');
       const sproutedUnit = await tx.productUnit.update({
         where: { id: parentUnit.id },
-        data: { statusCard: ProductUnitCardStatus.SPROUTED }
+        data: { 
+          statusCard: ProductUnitCardStatus.SPROUTED,
+          logs: {
+            create: {
+              type: "SPROUTED",
+              message: `Unit преобразован в SPROUTED для создания ${quantity} дочерних заявок`,
+              meta: {
+                childrenCount: quantity,
+                pricePerUnit: requestPricePerUnit
+              }
+            }
+          }
+        }
       });
 
       await validator?.validateStep('parent_sprouted',
@@ -74,7 +138,37 @@ export class RequestService {
       
       for (let i = 1; i <= quantity; i++) {
         const childUnit = await tx.productUnit.create({
-          data: { /* ... данные ребенка ... */ }
+          data: {
+            // Копируем данные от родителя
+            productId: parentUnit.productId,
+            spineId: parentUnit.spineId,
+            supplierId: parentUnit.supplierId,
+            productCode: parentUnit.productCode,
+            productName: parentUnit.productName,
+            productDescription: parentUnit.productDescription,
+            productCategoryId: parentUnit.productCategoryId,
+            productCategoryName: parentUnit.productCategoryName,
+            productTags: parentUnit.productTags,
+            
+            // Данные для заявки
+            statusCard: ProductUnitCardStatus.IN_REQUEST,
+            requestPricePerUnit: requestPricePerUnit || parentUnit.requestPricePerUnit,
+            parentProductUnitId: parentUnit.id,
+            createdAtRequest: new Date(),
+            
+            // Логирование
+            logs: {
+              create: {
+                type: "CHILD_CREATED",
+                message: `Дочерний unit создан из SPROUTED родителя`,
+                meta: {
+                  parentUnitId: parentUnit.id,
+                  sequence: i,
+                  total: quantity
+                }
+              }
+            }
+          }
         });
         childUnits.push(childUnit);
 
@@ -96,12 +190,17 @@ export class RequestService {
           });
           return childrenCount === quantity;
         },
-        `Все ${quantity} дочерних units созданы и привязаны`
+        `Все ${quantity} дочерних units созданы и привязан`
       );
 
       const result = { 
         success: true, 
-        data: { /* ... данные результата ... */ } 
+        data: {
+          parent: sproutedUnit,
+          children: childUnits,
+          clearReplacementUnit: newClearUnit,
+          childrenCount: quantity
+        } 
       };
 
       // Печатаем финальный отчет

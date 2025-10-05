@@ -4,20 +4,39 @@ import prisma from "@/app/lib/prisma";
 import { ProductUnitCardStatus } from "@prisma/client";
 import { 
   generateSerialNumber, 
-  copyProductDataToUnit 
+  copyProductDataToUnit,
+  updateSpineBrandData
 } from "@/app/api/product-units/helpers";
+import { UnitCloneHelper } from "@/app/lib/unitCloneHelper"; // ✅ ИМПОРТИРУЕМ СУЩЕСТВУЮЩИЙ
 
 export async function POST(req: Request) {
-  console.log("=== API: CREATE PRODUCT UNIT FROM PRODUCT ===");
+  console.log("=== API: CREATE PRODUCT UNIT ===");
   
   try {
     const body = await req.json();
-    const { productId, supplierId, requestPricePerUnit } = body;
+    const { productId, supplierId, requestPricePerUnit, cloneFromUnitId } = body;
 
-    console.log("📥 Полученные данные:", { productId, supplierId, requestPricePerUnit });
+    console.log("📥 Полученные данные:", { productId, supplierId, requestPricePerUnit, cloneFromUnitId });
 
+    // ✅ ВАРИАНТ 1: Клонирование из существующего Unit
+    if (cloneFromUnitId) {
+      console.log("🔄 Режим клонирования из unit:", cloneFromUnitId);
+      
+      const newUnit = await UnitCloneHelper.createClearClone(cloneFromUnitId);
+      
+      return NextResponse.json({ 
+        ok: true, 
+        data: newUnit,
+        mode: "clone"
+      });
+    }
+
+    // ✅ ВАРИАНТ 2: Создание из Product (существующая логика)
     if (!productId) {
-      return NextResponse.json({ ok: false, error: "productId required" }, { status: 400 });
+      return NextResponse.json({ 
+        ok: false, 
+        error: "productId или cloneFromUnitId required" 
+      }, { status: 400 });
     }
 
     const product = await prisma.product.findUnique({
@@ -61,13 +80,29 @@ export async function POST(req: Request) {
         logs: true, 
         supplier: true, 
         spine: true,
-        product: true 
+        product: {
+          include: {
+            brand: true,
+            images: true
+          }
+        }
       },
     });
 
+    // ✅ ОБНОВЛЯЕМ SPINE BRAND DATA
+    console.log("🔄 Обновляем Spine.brandData...");
+    await updateSpineBrandData(product.spineId, {
+      brandName: product.brand?.name || "Без бренда",
+      displayName: product.name,
+      imagePath: product.images?.[0]?.path || null,
+      productCode: product.code
+    });
+    console.log("✅ Spine.brandData обновлен");
+
     return NextResponse.json({ 
       ok: true, 
-      data: newUnit 
+      data: newUnit,
+      mode: "create_from_product"
     });
 
   } catch (err: any) {
