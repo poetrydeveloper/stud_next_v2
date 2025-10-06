@@ -1,20 +1,22 @@
 // app/api/product-units/[id]/sprout/route.ts
 import prisma from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
-import { copyParentUnitData, generateSerialNumber } from "@/app/api/product-units/helpers";
+import { copyParentUnitData, generateSerialNumber, copyProductDataToUnit } from "@/app/api/product-units/helpers";
 import { ProductUnitCardStatus } from "@prisma/client";
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   console.log("=== API: CREATE SPROUTED REQUEST ===");
   
-  const id = Number(params.id);
-  console.log("📥 Sprout для unit ID:", id);
+  const { id } = await params;
+  const unitId = Number(id);
+  console.log("📥 Sprout для unit ID:", unitId);
 
   try {
     const body = await req.json();
     const { requests } = body;
 
     console.log("📥 Полученные requests:", requests);
+    console.log("📥 Полученные requests ДЕТАЛЬНО:", JSON.stringify(requests, null, 2));
 
     if (!requests || !Array.isArray(requests) || requests.length === 0) {
       console.error("❌ Неверный формат requests");
@@ -24,7 +26,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       }, { status: 400 });
     }
 
-    // Валидация каждого request
+    // Валидация каждого request - ИСПРАВЛЕННАЯ
     for (const r of requests) {
       if (!r.quantity || r.quantity < 1) {
         console.error("❌ Неверное quantity в request:", r);
@@ -33,11 +35,13 @@ export async function POST(req: Request, { params }: { params: { id: string } })
           error: "Each request must have quantity >= 1" 
         }, { status: 400 });
       }
-      if (!r.pricePerUnit || r.pricePerUnit <= 0) {
+      
+      // ИСПРАВЛЕННАЯ ВАЛИДАЦИЯ ЦЕНЫ
+      if (r.pricePerUnit === undefined || r.pricePerUnit === null || r.pricePerUnit <= 0) {
         console.error("❌ Неверная pricePerUnit в request:", r);
         return NextResponse.json({ 
           ok: false, 
-          error: "Each request must have pricePerUnit > 0" 
+          error: `Each request must have pricePerUnit > 0 (received: ${r.pricePerUnit})` 
         }, { status: 400 });
       }
     }
@@ -49,7 +53,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
       // Получаем родительский unit
       const parent = await tx.productUnit.findUnique({ 
-        where: { id },
+        where: { id: unitId },
         include: {
           product: {
             include: {
@@ -62,7 +66,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       });
       
       if (!parent) {
-        console.error("❌ Родительский unit не найден:", id);
+        console.error("❌ Родительский unit не найден:", unitId);
         return NextResponse.json({ 
           ok: false, 
           error: "Parent unit not found" 
@@ -80,19 +84,48 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         }, { status: 400 });
       }
 
+      // Создаем CLEAR replacement unit (ДОБАВЛЕНО)
+      console.log("🔄 Создаем CLEAR replacement unit...");
+      const clearReplacement = await tx.productUnit.create({
+        data: {
+          productId: parent.productId,
+          spineId: parent.spineId,
+          supplierId: parent.supplierId,
+          ...copyProductDataToUnit(parent.product),
+          serialNumber: await generateSerialNumber(prisma, parent.productId, undefined),
+          statusCard: ProductUnitCardStatus.CLEAR,
+          statusProduct: null,
+          requestPricePerUnit: parent.requestPricePerUnit,
+          logs: {
+            create: {
+              type: "CLEAR_REPLACEMENT",
+              message: `CLEAR unit создана как замена для SPROUTED родителя`,
+              meta: {
+                parentUnitId: parent.id,
+                parentSerialNumber: parent.serialNumber,
+                purpose: "replacement_for_sprouted"
+              }
+            }
+          }
+        }
+      });
+      console.log("✅ CLEAR replacement создан:", clearReplacement.serialNumber);
+
       // Обновляем родителя в SPROUTED
       console.log("🔄 Обновляем родителя в SPROUTED...");
       const updatedParent = await tx.productUnit.update({
-        where: { id },
+        where: { id: unitId },
         data: { 
           statusCard: "SPROUTED",
           logs: {
             create: {
               type: "SPROUTED",
-              message: `Unit преобразован в SPROUTED для создания ${requests.length} дочерних заявок`,
+              message: `Unit преобразован в SPROUTED для создания дочерних заявок`,
               meta: {
-                childrenCount: requests.length,
-                totalQuantity: requests.reduce((sum, r) => sum + r.quantity, 0)
+                requestsCount: requests.length,
+                totalQuantity: requests.reduce((sum, r) => sum + r.quantity, 0),
+                prices: requests.map(r => r.pricePerUnit),
+                clearReplacementUnitId: clearReplacement.id // ДОБАВЛЕНО
               }
             }
           }
@@ -103,77 +136,95 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
       const createdChildren = [];
       let totalQuantity = 0;
+      let childSequence = 0;
 
       // Создаем дочерние units
-      console.log(`🔄 Создаем ${requests.length} дочерних units...`);
+      console.log(`🔄 Создаем дочерние units...`);
       
       for (const r of requests) {
-        totalQuantity += r.quantity;
+        console.log(`🔄 Обрабатываем request: ${r.quantity} шт. по цене ${r.pricePerUnit}...`);
         
-        console.log(`🔄 Создаем дочерний unit ${r.quantity} шт. по цене ${r.pricePerUnit}...`);
+        // Создаем отдельный unit для каждой единицы товара
+        for (let i = 0; i < r.quantity; i++) {
+          childSequence++;
+          totalQuantity++;
+          
+          console.log(`🔄 Создаем дочерний unit ${childSequence}/${totalQuantity}...`);
 
-        const childData = copyParentUnitData(parent, {
-          quantityInRequest: r.quantity,
-          requestPricePerUnit: r.pricePerUnit,
-          serialNumber: await generateSerialNumber(prisma, parent.productId, parent.id),
-          parentProductUnitId: parent.id,
-          statusCard: "IN_REQUEST",
-          createdAtRequest: new Date(),
-        });
+          const childData = copyParentUnitData(parent, {
+            quantityInRequest: 1, // ✅ КАЖДЫЙ unit = 1 штука
+            requestPricePerUnit: r.pricePerUnit, // ✅ Цена передается правильно
+            serialNumber: `${parent.serialNumber}/child-${childSequence}`, // ✅ Уникальный номер
+            parentProductUnitId: parent.id,
+            statusCard: "IN_REQUEST",
+            createdAtRequest: new Date(),
+          });
 
-        const childUnit = await tx.productUnit.create({
-          data: childData,
-        });
+          const childUnit = await tx.productUnit.create({
+            data: childData,
+          });
 
-        console.log(`✅ Дочерний unit создан: ${childUnit.serialNumber}`);
+          console.log(`✅ Дочерний unit создан: ${childUnit.serialNumber}`);
 
-        createdChildren.push(childUnit);
+          createdChildren.push(childUnit);
 
-        // Логируем создание каждого ребенка
-        await tx.productUnitLog.create({
-          data: {
-            productUnitId: childUnit.id,
-            type: "CHILD_CREATED",
-            message: `Дочерний unit создан из родителя ${parent.serialNumber}, количество: ${r.quantity}, цена: ${r.pricePerUnit}`,
-            meta: {
-              parentUnitId: parent.id,
-              parentSerialNumber: parent.serialNumber,
-              quantity: r.quantity,
-              pricePerUnit: r.pricePerUnit
-            }
-          },
-        });
+          // Логируем создание каждого ребенка
+          await tx.productUnitLog.create({
+            data: {
+              productUnitId: childUnit.id,
+              type: "CHILD_CREATED",
+              message: `Дочерний unit создан из родителя ${parent.serialNumber}, цена: ${r.pricePerUnit} ₽`,
+              meta: {
+                parentUnitId: parent.id,
+                parentSerialNumber: parent.serialNumber,
+                sequence: childSequence,
+                totalQuantity: totalQuantity,
+                pricePerUnit: r.pricePerUnit,
+                requestIndex: requests.indexOf(r) + 1
+              }
+            },
+          });
+        }
       }
 
       // Логируем операцию sprout у родителя
       await tx.productUnitLog.create({
         data: {
-          productUnitId: id,
+          productUnitId: unitId,
           type: "SPROUT_COMPLETED",
-          message: `Разветвление завершено: создано ${requests.length} дочерних заявок, общее количество: ${totalQuantity}`,
+          message: `Разветвление завершено: создано ${createdChildren.length} дочерних заявок и CLEAR замена`,
           meta: {
-            childrenCount: requests.length,
+            childrenCount: createdChildren.length,
             totalQuantity: totalQuantity,
+            clearReplacementUnitId: clearReplacement.id, // ДОБАВЛЕНО
+            clearReplacementSerialNumber: clearReplacement.serialNumber, // ДОБАВЛЕНО
+            requests: requests.map(r => ({
+              quantity: r.quantity,
+              pricePerUnit: r.pricePerUnit
+            })),
             children: createdChildren.map(c => ({
               id: c.id,
               serialNumber: c.serialNumber,
-              quantity: requests.find(r => r.quantity === c.quantityInRequest)?.quantity
+              pricePerUnit: c.requestPricePerUnit
             }))
           }
         },
       });
 
       console.log("✅ Транзакция завершена успешно");
+      console.log(`✅ Создано ${createdChildren.length} дочерних units и 1 CLEAR replacement`);
 
       return NextResponse.json({ 
         ok: true, 
         data: {
           parent: updatedParent,
           children: createdChildren,
-          childrenCount: requests.length,
-          totalQuantity: totalQuantity
+          clearReplacementUnit: clearReplacement, // ДОБАВЛЕНО
+          childrenCount: createdChildren.length,
+          totalQuantity: totalQuantity,
+          requests: requests
         },
-        message: `Создано ${requests.length} дочерних заявок на общее количество ${totalQuantity} единиц`
+        message: `Создано ${createdChildren.length} дочерних заявок и CLEAR замена`
       });
     });
 
