@@ -54,8 +54,8 @@ export default function CategoryTree({
           )}
         </div>
 
-        {/* Дочерние категории */}
-        {hasChildren && isSelected && (
+        {/* Дочерние категории - ВАЖНО: показываем ВСЕ уровни вложенности */}
+        {hasChildren && (
           <div className="mt-1">
             {category.children!.map(child => 
               renderCategoryNode(child, level + 1)

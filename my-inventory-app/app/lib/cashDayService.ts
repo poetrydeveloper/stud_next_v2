@@ -154,13 +154,13 @@ export class CashDayService {
         events: {
           include: {
             productUnit: {
-              select: {
-                id: true,
-                productName: true,
-                serialNumber: true,
+              include: {
                 product: {
-                  select: {
-                    name: true
+                  include: {
+                    images: {
+                      where: { isMain: true },
+                      take: 1
+                    }
                   }
                 }
               }
