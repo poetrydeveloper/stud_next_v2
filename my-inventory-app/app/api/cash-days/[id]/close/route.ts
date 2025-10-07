@@ -1,7 +1,9 @@
 // app/api/cash-days/[id]/close/route.ts
 import { NextResponse } from "next/server";
-import { CashDayService } from '@/app/lib/cashDayService';
+import prisma from "@/app/lib/prisma";
+import { CashDayService } from "@/app/lib/cashDayService";
 
+// POST /api/cash-days/[id]/close - закрыть кассовый день
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
@@ -12,14 +14,22 @@ export async function POST(
     
     return NextResponse.json({ 
       ok: true, 
-      data: cashDay,
-      message: 'Торговый день закрыт'
+      message: "Кассовый день закрыт",
+      data: cashDay 
     });
   } catch (error: any) {
     console.error("POST /api/cash-days/[id]/close error:", error);
+    
+    if (error.message.includes("не найден") || error.message.includes("уже закрыт")) {
+      return NextResponse.json(
+        { ok: false, error: error.message },
+        { status: 400 }
+      );
+    }
+    
     return NextResponse.json(
       { ok: false, error: error.message },
-      { status: 400 }
+      { status: 500 }
     );
   }
 }

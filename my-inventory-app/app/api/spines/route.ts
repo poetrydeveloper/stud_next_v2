@@ -1,37 +1,103 @@
-// app/api/spines/route.ts (добавляем POST)
+// app/api/spines/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { generateSlug } from "@/app/lib/translit";
+import { ProductUnitPhysicalStatus } from "@prisma/client";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const statusFilter = searchParams.get('status') as ProductUnitPhysicalStatus | null;
+    const categoryId = searchParams.get('categoryId');
+    const includeEmpty = searchParams.get('includeEmpty') !== 'false'; // по умолчанию true
+
     const spines = await prisma.spine.findMany({
       include: {
         category: true,
         productUnits: {
+          where: statusFilter ? {
+            statusProduct: statusFilter
+          } : {},
           include: {
             product: {
               select: {
-                brand: { select: { name: true } },
+                name: true,
+                code: true,
+                brand: { 
+                  select: { 
+                    id: true,
+                    name: true 
+                  } 
+                },
+                images: { 
+                  where: { isMain: true },
+                  take: 1 
+                }
               },
             },
-            logs: true,
+            customer: {
+              select: {
+                name: true,
+                phone: true
+              }
+            },
+            logs: { 
+              take: 5, 
+              orderBy: { createdAt: 'desc' } 
+            },
           },
+          orderBy: { createdAt: 'desc' }
         },
         _count: {
           select: { productUnits: true },
         },
       },
+      where: {
+        ...(categoryId && { categoryId: parseInt(categoryId) }),
+        ...(!includeEmpty && {
+          productUnits: {
+            some: statusFilter ? { statusProduct: statusFilter } : {}
+          }
+        })
+      },
       orderBy: { name: "asc" },
     });
 
-    return NextResponse.json({ ok: true, spines });
+    // Обогащаем данные brandData для обратной совместимости
+    const enrichedSpines = spines.map(spine => {
+      const brandData: Record<string, any> = {};
+      
+      spine.productUnits.forEach(unit => {
+        const brandName = unit.product?.brand?.name || 'Без бренда';
+        if (!brandData[brandName]) {
+          brandData[brandName] = {
+            count: 0,
+            units: []
+          };
+        }
+        brandData[brandName].count++;
+        brandData[brandName].units.push(unit);
+      });
+
+      return {
+        ...spine,
+        brandData
+      };
+    });
+
+    return NextResponse.json({ 
+      ok: true, 
+      spines: enrichedSpines,
+      filters: {
+        status: statusFilter,
+        categoryId: categoryId ? parseInt(categoryId) : null
+      }
+    });
   } catch (err: any) {
     console.error("💥 Ошибка API /spines:", err);
     return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }
 }
-
 
 /**
  * POST /api/spines — создание нового Spine
