@@ -1,5 +1,7 @@
-// app/api/product-units/helpers.ts
+// app/api/product-units/helpers.ts// app/api/product-units/helpers.ts
 import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 /**
  * Генерация серийного номера для ProductUnit
@@ -236,8 +238,6 @@ export function formatProductUnitResponse(unit: any): any {
   };
 }
 
-// app/api/product-units/helpers.ts - ДОБАВЛЯЕМ ЭТУ ФУНКЦИЮ:
-
 /**
  * Обновляет brandData в Spine при создании/изменении Unit
  */
@@ -285,5 +285,119 @@ export async function updateSpineBrandData(
   } catch (error) {
     console.error('❌ Error updating spine brand data:', error);
     // НЕ выбрасываем ошибку, чтобы не ломать создание unit
+  }
+}
+
+/**
+ * Создание множественной заявки с дочерними юнитами
+ */
+export async function createMultipleRequest(
+  parentUnitId: number,
+  quantity: number,
+  pricePerUnit: number
+): Promise<{ parentUnit: any; childUnits: any[] }> {
+  const prisma = new PrismaClient();
+
+  try {
+    console.log("🔄 Создание множественной заявки:", {
+      parentUnitId,
+      quantity,
+      pricePerUnit
+    });
+
+    return await prisma.$transaction(async (tx) => {
+      // 1. Обновляем родительский юнит
+      const parentUnit = await tx.productUnit.update({
+        where: { id: parentUnitId },
+        data: {
+          statusCard: "IN_REQUEST",
+          quantityInRequest: quantity,
+          requestPricePerUnit: pricePerUnit,
+          createdAtRequest: new Date(),
+        },
+        include: {
+          logs: {
+            orderBy: { createdAt: 'desc' }
+          }
+        }
+      });
+
+      // 2. Создаем дочерние юниты
+      const childUnits = [];
+      for (let i = 0; i < quantity; i++) {
+        const childSerialNumber = `${parentUnit.serialNumber}/${i + 1}`;
+        
+        const childUnit = await tx.productUnit.create({
+          data: {
+            productId: parentUnit.productId,
+            spineId: parentUnit.spineId,
+            supplierId: parentUnit.supplierId,
+            parentProductUnitId: parentUnitId,
+            
+            // Копируем данные
+            productCode: parentUnit.productCode,
+            productName: parentUnit.productName,
+            productDescription: parentUnit.productDescription,
+            productCategoryId: parentUnit.productCategoryId,
+            productCategoryName: parentUnit.productCategoryName,
+            productTags: parentUnit.productTags,
+            
+            // Данные заявки
+            serialNumber: childSerialNumber,
+            statusCard: "IN_REQUEST",
+            requestPricePerUnit: pricePerUnit,
+            quantityInRequest: 1,
+            createdAtRequest: new Date(),
+            
+            // Логируем создание
+            logs: {
+              create: {
+                type: "REQUEST_CHILD_CREATED",
+                message: `Дочерний юнит заявки создан из родителя #${parentUnit.serialNumber}`,
+                meta: {
+                  parentUnitId: parentUnit.id,
+                  requestPrice: pricePerUnit,
+                  childIndex: i + 1
+                }
+              }
+            }
+          },
+          include: {
+            logs: {
+              orderBy: { createdAt: 'desc' }
+            }
+          }
+        });
+        
+        childUnits.push(childUnit);
+      }
+
+      // 3. Логируем в родительском юните
+      await tx.productUnitLog.create({
+        data: {
+          productUnitId: parentUnitId,
+          type: "MULTIPLE_REQUEST_CREATED",
+          message: `Создана множественная заявка на ${quantity} единиц по ${pricePerUnit} руб.`,
+          meta: {
+            childrenCount: quantity,
+            pricePerUnit: pricePerUnit,
+            totalAmount: quantity * pricePerUnit
+          }
+        }
+      });
+
+      console.log("✅ Множественная заявка создана:", {
+        parentUnit: parentUnit.serialNumber,
+        childrenCount: childUnits.length
+      });
+
+      return { parentUnit, childUnits };
+    });
+
+  } catch (error) {
+    console.error("💥 Ошибка создания множественной заявки:", error);
+    throw error;
+  } finally {
+    await prisma.$disconnect();
   }
 }

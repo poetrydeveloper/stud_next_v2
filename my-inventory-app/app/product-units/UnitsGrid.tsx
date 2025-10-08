@@ -4,6 +4,14 @@
 import { useState } from "react";
 import ProductUnitCard from "@/app/components/ProductUnitCard";
 
+interface ProductUnitLog {
+  id: number;
+  type: string;
+  message: string;
+  meta: any;
+  createdAt: string;
+}
+
 interface Unit {
   id: number;
   serialNumber: string;
@@ -13,6 +21,8 @@ interface Unit {
   quantityInCandidate?: number;
   createdAtCandidate?: string;
   requestPricePerUnit?: number;
+  // 🔥 ВАЖНО: ДОБАВЛЯЕМ ЛОГИ В ТИП
+  logs?: ProductUnitLog[];
   product?: {
     name: string;
     code: string;
@@ -31,6 +41,18 @@ export default function UnitsGrid({ units: initialUnits }: UnitsGridProps) {
   const [quantityMap, setQuantityMap] = useState<Record<number, number>>({});
   const [loadingMap, setLoadingMap] = useState<Record<number, boolean>>({});
 
+  // 🔥 ДОБАВЛЯЕМ ОТЛАДОЧНЫЙ ВЫВОД
+  console.log("🔍 UnitsGrid получил units:", {
+    unitsCount: units.length,
+    firstUnit: units[0] ? {
+      id: units[0].id,
+      serialNumber: units[0].serialNumber,
+      logsCount: units[0].logs?.length || 0,
+      hasLogs: !!units[0].logs,
+      logs: units[0].logs // 👈 проверяем здесь!
+    } : 'no units'
+  });
+
   const handleQuantityChange = (id: number, value: number) => {
     setQuantityMap((prev) => ({ ...prev, [id]: value }));
   };
@@ -40,28 +62,32 @@ export default function UnitsGrid({ units: initialUnits }: UnitsGridProps) {
     setLoadingMap((prev) => ({ ...prev, [unitId]: true }));
 
     try {
-      // ИСПРАВЛЕНО: правильный endpoint
+      console.log("📤 Добавление в кандидаты:", { unitId, quantity });
+      
       const res = await fetch("/api/product-units", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           unitId, 
-          quantity,
-          action: "addToCandidate" 
+          quantity
         }),
       });
 
       const data = await res.json();
+      console.log("📥 Ответ от API кандидатов:", data);
+      
       if (data.ok) {
         alert(`Единица добавлена в кандидаты (${quantity} шт.)`);
-        // Обновляем статус на CANDIDATE в UI
+        
+        // 🔥 ОБНОВЛЯЕМ ЮНИТ С НОВЫМИ ЛОГАМИ ИЗ ОТВЕТА
         setUnits((prev) =>
           prev.map((u) =>
             u.id === unitId ? { 
               ...u, 
               statusCard: "CANDIDATE", 
               quantityInCandidate: quantity, 
-              createdAtCandidate: new Date().toISOString() 
+              createdAtCandidate: new Date().toISOString(),
+              logs: data.data?.logs || u.logs // 👈 сохраняем новые логи
             } : u
           )
         );
@@ -69,7 +95,7 @@ export default function UnitsGrid({ units: initialUnits }: UnitsGridProps) {
         alert("Ошибка: " + data.error);
       }
     } catch (err) {
-      console.error(err);
+      console.error("💥 Ошибка добавления в кандидаты:", err);
       alert("Произошла ошибка при добавлении в кандидаты");
     } finally {
       setLoadingMap((prev) => ({ ...prev, [unitId]: false }));

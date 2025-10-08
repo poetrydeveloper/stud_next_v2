@@ -18,8 +18,25 @@ export default async function ProductUnitsPage() {
             spine: true,
             category: true
           }
-        }
+        },
+        // 🔥 ВАЖНО: ДОБАВЛЯЕМ ЛОГИ!
+        logs: {
+          orderBy: { createdAt: 'desc' }
+        },
+        spine: true,
+        supplier: true,
+        customer: true
       },
+    });
+
+    console.log("📦 Загружены units:", {
+      total: units.length,
+      firstUnit: units[0] ? {
+        id: units[0].id,
+        serialNumber: units[0].serialNumber,
+        logsCount: units[0].logs?.length || 0,
+        hasLogs: !!units[0].logs
+      } : 'no units'
     });
 
     // Фильтруем кандидатов с улучшенной типизацией

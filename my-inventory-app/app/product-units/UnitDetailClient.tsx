@@ -1,8 +1,18 @@
 // app/product-units/UnitDetailClient.tsx
+// app/product-units/UnitDetailClient.tsx
 "use client";
 
 import { ProductUnit } from "@/types/product-unit";
 import ProductUnitActions from "@/app/components/ProductUnitActions";
+import { useState } from "react";
+
+interface ProductUnitLog {
+  id: number;
+  type: string;
+  message: string;
+  meta: any;
+  createdAt: string;
+}
 
 interface UnitDetailClientProps {
   unit: ProductUnit & {
@@ -12,10 +22,23 @@ interface UnitDetailClientProps {
       brand?: { name: string };
       images?: Array<{ id: number; path: string; isMain: boolean }>;
     };
+    // 🔥 ДОБАВЛЯЕМ ЛОГИ В ПРОПС
+    logs?: ProductUnitLog[];
   };
 }
 
 export default function UnitDetailClient({ unit }: UnitDetailClientProps) {
+  const [showLogs, setShowLogs] = useState(false);
+
+  // 🔥 ДОБАВЛЯЕМ ОТЛАДОЧНЫЙ ВЫВОД
+  console.log("🔍 UnitDetailClient получил unit:", {
+    unitId: unit.id,
+    serialNumber: unit.serialNumber,
+    logsCount: unit.logs?.length || 0,
+    hasLogs: !!unit.logs,
+    logs: unit.logs
+  });
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString('ru-RU', {
@@ -75,6 +98,52 @@ export default function UnitDetailClient({ unit }: UnitDetailClientProps) {
             <div className="mt-4">
               <span className="text-sm text-gray-600 block mb-1">Описание:</span>
               <p className="text-gray-800">{unit.product.description}</p>
+            </div>
+          )}
+        </div>
+
+        {/* 🔥 БЛОК ЛОГОВ - ДОБАВЛЯЕМ */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">История изменений</h2>
+            <button
+              onClick={() => setShowLogs(!showLogs)}
+              className="inline-flex items-center text-purple-600 text-sm hover:text-purple-800 font-medium transition-colors"
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              {showLogs ? 'Скрыть' : 'Показать'} логи ({unit.logs?.length || 0})
+            </button>
+          </div>
+
+          {showLogs && (
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {unit.logs && unit.logs.length > 0 ? (
+                unit.logs.map((log) => (
+                  <div key={log.id} className="border-l-4 border-blue-500 pl-4 py-2 bg-gray-50 rounded">
+                    <div className="flex justify-between items-start">
+                      <span className="font-medium text-gray-800 text-sm">{log.type}</span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(log.createdAt).toLocaleDateString('ru-RU')}
+                      </span>
+                    </div>
+                    <p className="text-gray-600 text-sm mt-1">{log.message}</p>
+                    {log.meta && Object.keys(log.meta).length > 0 && (
+                      <div className="mt-1 text-xs text-gray-500">
+                        {JSON.stringify(log.meta)}
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  <svg className="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Нет записей в логах
+                </div>
+              )}
             </div>
           )}
         </div>
