@@ -1,8 +1,8 @@
-// app/components/ProductCard.tsx
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ProductImage } from "./ProductImage";
 
 export default function ProductCard({ product }) {
   const router = useRouter();
@@ -84,13 +84,22 @@ export default function ProductCard({ product }) {
 
   return (
     <div className="bg-white rounded shadow p-4 flex flex-col justify-between">
+      {/* Заменяем обычный img на ProductImage */}
       {mainImage && (
-        <img
-          src={mainImage.path}
-          alt={mainImage.filename}
+        <ProductImage
+          imagePath={mainImage.localPath || mainImage.path}
+          alt={product.name}
           className="w-full h-40 object-cover rounded mb-2"
         />
       )}
+      
+      {/* Если нет изображения - показываем плейсхолдер */}
+      {!mainImage && (
+        <div className="w-full h-40 bg-gray-200 rounded mb-2 flex items-center justify-center">
+          <span className="text-gray-500 text-sm">Нет изображения</span>
+        </div>
+      )}
+
       <h2 className="text-lg font-semibold">{product.name}</h2>
       <p>Код: {product.code}</p>
       <p>Категория: {product.category?.name || "-"}</p>
@@ -101,6 +110,9 @@ export default function ProductCard({ product }) {
       <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
         <p>ID: {product.id} | SpineID: {product.spineId || "нет"}</p>
         <p>Изображений: {product.images?.length || 0}</p>
+        {mainImage && (
+          <p>Путь: {mainImage.localPath || mainImage.path}</p>
+        )}
       </div>
 
       {error && (

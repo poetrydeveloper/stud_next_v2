@@ -92,6 +92,11 @@ model ProductImage {
   isMain    Boolean  @default(false)
   createdAt DateTime @default(now())
 
+  localPath     String?  // Локальный путь: "/media/products/123/main.jpg"
+  githubUrl     String?  // GitHub URL: "https://raw.githubusercontent.com/..."
+  storageType   String   @default("local") // "local" | "github" | "both"
+  
+
   @@map("product_images")
 }
 
