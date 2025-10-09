@@ -1,4 +1,4 @@
-// app/lib/prisma.ts
+// @/app/lib/prisma.ts
 import { PrismaClient } from "@prisma/client";
 import { createLogMiddleware } from './prismaLogMiddleware';
 
