@@ -38,13 +38,12 @@ model Category {
   id       Int       @id @default(autoincrement())
   name     String
   slug     String    @unique
-  path     String    @unique // Добавляем это поле
-  // Убираем parentId и связи
+  path     String    @unique
   products Product[]
   spines   Spine[]
 
   @@map("categories")
-  @@index([path]) // Добавляем индекс
+  @@index([path])
 }
 
 model Brand {
@@ -68,13 +67,10 @@ model Product {
   category    Category? @relation(fields: [categoryId], references: [id])
   brandId     Int?
   brand       Brand?    @relation(fields: [brandId], references: [id])
-
-  // Новое поле: привязка к Spine (Т.П.)
-  spineId Int?
-  spine   Spine? @relation(fields: [spineId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  spineId     Int?
+  spine       Spine?    @relation(fields: [spineId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   images       ProductImage[]
   productUnits ProductUnit[]
@@ -83,81 +79,27 @@ model Product {
 }
 
 model ProductImage {
-  id        Int     @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   productId Int
-  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
-
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
   filename  String
   path      String
   isMain    Boolean  @default(false)
   createdAt DateTime @default(now())
-
-  localPath     String?  // Локальный путь: "/media/products/123/main.jpg"
-  githubUrl     String?  // GitHub URL: "https://raw.githubusercontent.com/..."
-  storageType   String   @default("local") // "local" | "github" | "both"
-  
+  localPath String?
+  githubUrl String?
+  storageType String @default("local")
 
   @@map("product_images")
 }
 
-model ProductUnit {
-  id           Int      @id @default(autoincrement())
-  serialNumber String   @unique @map("serial_number")
-
-  // Связь с Product
-  productId Int
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  // Привязка к Spine (Т.П.)
-  spineId Int?
-  spine   Spine? @relation(fields: [spineId], references: [id])
-
-  parentProductUnitId Int?
-  parentProductUnit   ProductUnit? @relation("ProductUnitChildren", fields: [parentProductUnitId], references: [id])
-  childProductUnits   ProductUnit[] @relation("ProductUnitChildren")
-
-  // Дублируемые данные из Product
-  productCode        String?   @map("product_code")
-  productName        String?   @map("product_name")
-  productDescription String?   @map("product_description")
-  productCategoryId  Int?      @map("product_category_id")
-  productCategoryName String?  @map("product_category_name")
-  productTags        Json?     @map("product_tags")
-
-  // ===== Новые поля для кандидатов и заявок =====
-  quantityInCandidate Int?       @default(0) @map("quantity_in_candidate")
-  createdAtCandidate  DateTime?               @map("created_at_candidate")
-  quantityInRequest   Int?       @default(0) @map("quantity_in_request")
-  createdAtRequest    DateTime?               @map("created_at_request")
-  requestPricePerUnit Float?     @map("request_price_per_unit")
-
-  // ===== Статусы =====
-  statusCard    ProductUnitCardStatus
-  statusProduct ProductUnitPhysicalStatus?
-  isReturned    Boolean @default(false)
-  returnedAt    DateTime? @map("returned_at")
-
-  // ===== Информация о продаже =====
-  salePrice    Float?    @map("sale_price")
-  soldAt       DateTime? @map("sold_at")
-  isCredit     Boolean   @default(false) @map("is_credit")
-  creditPaidAt DateTime? @map("credit_paid_at")
-
-  // Поставщик и заказчик
-  supplierId Int?
-  supplier   Supplier? @relation(fields: [supplierId], references: [id])
-  customerId Int?
-  customer   Customer? @relation(fields: [customerId], references: [id])
-
-  // Логи
-  logs   ProductUnitLog[]
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("product_units")
-  
-  cashEvents CashEvent[]
+// Новый enum для статусов разборки
+enum UnitDisassemblyStatus {
+  MONOLITH
+  DISASSEMBLED
+  PARTIAL
+  COLLECTED
+  RESTORED
 }
 
 enum ProductUnitCardStatus {
@@ -174,6 +116,80 @@ enum ProductUnitPhysicalStatus {
   SOLD
   CREDIT
   LOST
+  IN_DISASSEMBLED
+  IN_COLLECTED
+}
+
+// Новая модель для сценариев разборки
+model DisassemblyScenario {
+  id        Int    @id @default(autoincrement())
+  name      String
+  parentUnitId  Int @unique
+  parentUnit    ProductUnit @relation(fields: [parentUnitId], references: [id], onDelete: Cascade)
+  partsCount Int
+  childProductsIds Json
+  partialChildUnits Json?
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("disassembly_scenarios")
+}
+
+model ProductUnit {
+  id           Int      @id @default(autoincrement())
+  serialNumber String   @unique @map("serial_number")
+  productId    Int
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  spineId      Int?
+  spine        Spine?   @relation(fields: [spineId], references: [id])
+
+  parentProductUnitId Int?
+  parentProductUnit   ProductUnit? @relation("ProductUnitChildren", fields: [parentProductUnitId], references: [id])
+  childProductUnits   ProductUnit[] @relation("ProductUnitChildren")
+
+  productCode         String? @map("product_code")
+  productName         String? @map("product_name")
+  productDescription  String? @map("product_description")
+  productCategoryId   Int?    @map("product_category_id")
+  productCategoryName String? @map("product_category_name")
+  productTags         Json?   @map("product_tags")
+
+  quantityInCandidate Int?       @default(0) @map("quantity_in_candidate")
+  createdAtCandidate  DateTime?  @map("created_at_candidate")
+  quantityInRequest   Int?       @default(0) @map("quantity_in_request")
+  createdAtRequest    DateTime?  @map("created_at_request")
+  requestPricePerUnit Float?     @map("request_price_per_unit")
+
+  statusCard          ProductUnitCardStatus
+  statusProduct       ProductUnitPhysicalStatus?
+  isReturned          Boolean   @default(false)
+  returnedAt          DateTime? @map("returned_at")
+
+  salePrice    Float?    @map("sale_price")
+  soldAt       DateTime? @map("sold_at")
+  isCredit     Boolean   @default(false) @map("is_credit")
+  creditPaidAt DateTime? @map("credit_paid_at")
+
+  supplierId Int?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+  customerId Int?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  // Новые поля для разборки/сборки
+  disassemblyStatus      UnitDisassemblyStatus @default(MONOLITH)
+  disassembledParentId   Int?
+  disassembledParent     ProductUnit? @relation("DisassemblyParent", fields: [disassembledParentId], references: [id])
+  disassemblyScenario    DisassemblyScenario?  // Только ссылка без fields/references
+  isParsingAlgorithm     Boolean @default(false)
+  partialChildren        ProductUnit[] @relation("DisassemblyParent")
+
+  logs        ProductUnitLog[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  cashEvents  CashEvent[]
+
+  @@map("product_units")
 }
 
 model CashDay {
@@ -196,8 +212,8 @@ model CashEvent {
   notes     String?       @map("notes")
   cashDayId Int           @map("cash_day_id")
   cashDay   CashDay       @relation(fields: [cashDayId], references: [id], onDelete: Cascade)
-  productUnitId Int?          @map("product_unit_id")
-  productUnit   ProductUnit?  @relation(fields: [productUnitId], references: [id], onDelete: SetNull)
+  productUnitId Int?      @map("product_unit_id")
+  productUnit   ProductUnit? @relation(fields: [productUnitId], references: [id], onDelete: SetNull)
   createdAt DateTime      @default(now()) @map("created_at")
 
   @@map("cash_events")
@@ -210,19 +226,14 @@ enum CashEventType {
   ORDER
 }
 
-
-// prisma/schema.prisma
 model Spine {
   id         Int        @id @default(autoincrement())
   name       String
   slug       String     @unique
   categoryId Int?
   category   Category?  @relation(fields: [categoryId], references: [id])
-  imagePath  String?    // маленькая картинка (путь)
-  
-  // НОВОЕ ПОЛЕ - денормализованные данные по брендам
+  imagePath  String?
   brandData  Json?      @db.Json
-  
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 
@@ -236,7 +247,7 @@ model ProductUnitLog {
   id            Int         @id @default(autoincrement())
   productUnitId Int
   productUnit   ProductUnit @relation(fields: [productUnitId], references: [id], onDelete: Cascade)
-  type          String?     // "STATUS_CHANGE", "REQUEST", "SYSTEM"
+  type          String?
   message       String
   meta          Json?
   createdAt     DateTime    @default(now())
