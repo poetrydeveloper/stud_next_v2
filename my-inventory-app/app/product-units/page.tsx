@@ -1,7 +1,7 @@
-// app/product-units/page.tsx
+// app/product-units/page.tsx (ОБНОВЛЕННАЯ ВЕРСИЯ)
 import prisma from "@/app/lib/prisma";
-import UnitsGrid from "./UnitsGrid";
-import CandidateUnitsGrid from "@/app/components/CandidateUnitsGrid";
+import CompactUnitsView from "./CompactUnitsView";
+import CandidateUnitsView from "./CandidateUnitsView";
 
 export default async function ProductUnitsPage() {
   try {
@@ -16,12 +16,13 @@ export default async function ProductUnitsPage() {
               take: 1
             },
             spine: true,
-            category: true
+            category: true,
+            brand: true
           }
         },
-        // 🔥 ВАЖНО: ДОБАВЛЯЕМ ЛОГИ!
         logs: {
-          orderBy: { createdAt: 'desc' }
+          orderBy: { createdAt: 'desc' },
+          take: 5
         },
         spine: true,
         supplier: true,
@@ -29,17 +30,7 @@ export default async function ProductUnitsPage() {
       },
     });
 
-    console.log("📦 Загружены units:", {
-      total: units.length,
-      firstUnit: units[0] ? {
-        id: units[0].id,
-        serialNumber: units[0].serialNumber,
-        logsCount: units[0].logs?.length || 0,
-        hasLogs: !!units[0].logs
-      } : 'no units'
-    });
-
-    // Фильтруем кандидатов с улучшенной типизацией
+    // Фильтруем кандидатов и обычные units
     const candidateUnits = units.filter((u) => u.statusCard === "CANDIDATE");
     const normalUnits = units.filter((u) => u.statusCard !== "CANDIDATE");
 
@@ -54,7 +45,7 @@ export default async function ProductUnitsPage() {
                   Единицы товара
                 </h1>
                 <p className="text-gray-600">
-                  Управление товарными единицами и кандидатами
+                  Компактный просмотр с группировкой по Spine и брендам
                 </p>
               </div>
               
@@ -69,7 +60,7 @@ export default async function ProductUnitsPage() {
             </div>
           </div>
 
-          {/* Основные units */}
+          {/* Основные units с новой компактной структурой */}
           <section className="mb-12">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900">
@@ -79,30 +70,20 @@ export default async function ProductUnitsPage() {
                 {normalUnits.length} единиц
               </span>
             </div>
-            <UnitsGrid units={normalUnits} />
+            
+            <CompactUnitsView units={normalUnits} />
             
             {normalUnits.length === 0 && (
               <div className="text-center py-12 bg-white rounded-lg border-2 border-dashed border-gray-300">
-                <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m8-8V4a1 1 0 00-1-1h-2a1 1 0 00-1 1v1M9 7h6" />
-                </svg>
+                <div className="text-4xl mb-4">📦</div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Нет товарных единиц</h3>
                 <p className="text-gray-500 mb-4">Создайте первую единицу товара чтобы начать работу</p>
-                <a
-                  href="/product-units/new"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Создать unit
-                </a>
               </div>
             )}
           </section>
 
-          {/* Кандидаты */}
-          <CandidateUnitsGrid units={candidateUnits} />
+          {/* Кандидаты в компактном виде */}
+          <CandidateUnitsView units={candidateUnits} />
         </div>
       </div>
     );
@@ -112,22 +93,18 @@ export default async function ProductUnitsPage() {
     
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-md mx-auto text-center bg-white p-8 rounded-lg shadow-sm border border-red-200">
-            <svg className="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Ошибка загрузки</h1>
-            <p className="text-gray-600 mb-6">
-              Не удалось загрузить список товарных единиц. Пожалуйста, попробуйте обновить страницу.
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
-            >
-              Обновить страницу
-            </button>
-          </div>
+        <div className="text-center">
+          <div className="text-6xl mb-4">😞</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Ошибка загрузки</h1>
+          <p className="text-gray-600 mb-6">
+            Не удалось загрузить список товарных единиц.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Обновить страницу
+          </button>
         </div>
       </div>
     );

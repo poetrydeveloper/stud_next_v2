@@ -1,4 +1,4 @@
-// app/store/DisassemblyButtons.tsx (ОБНОВЛЕННАЯ - КОМПАКТНАЯ ВЕРСИЯ)
+//app/store/DisassemblyButtons.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -67,7 +67,10 @@ export default function DisassemblyButtons({ unit, onOperationSuccess }: Disasse
       const response = await fetch("/api/disassembly/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scenarioId: scenario.id })
+        body: JSON.stringify({ 
+          scenarioId: scenario.id,
+          unitId: unit.id // ← ИСПРАВЛЕНО: добавлен unitId
+        })
       });
 
       const data = await response.json();

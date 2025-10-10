@@ -1,4 +1,3 @@
-// app/components/DisassemblyExecuteButton.tsx
 'use client';
 
 import { useState } from 'react';
@@ -6,12 +5,14 @@ import { useState } from 'react';
 interface DisassemblyExecuteButtonProps {
   scenarioId: number;
   scenarioName: string;
+  unitId: number; // ← ДОБАВЛЕНО
   onExecuted?: () => void;
 }
 
 export default function DisassemblyExecuteButton({
   scenarioId,
   scenarioName,
+  unitId, // ← ДОБАВЛЕНО
   onExecuted
 }: DisassemblyExecuteButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +32,10 @@ export default function DisassemblyExecuteButton({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ scenarioId }),
+        body: JSON.stringify({ 
+          scenarioId, 
+          unitId // ← ДОБАВЛЕНО
+        }),
       });
 
       const result = await response.json();

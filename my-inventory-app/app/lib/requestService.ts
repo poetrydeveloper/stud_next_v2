@@ -1,4 +1,4 @@
-// app/lib/requestService.ts
+// app/lib/requestService.ts (ПОЛНЫЙ ИСПРАВЛЕННЫЙ КОД)
 import { RequestValidator } from '@/app/lib/requestValidator';
 import { UnitCloneHelper } from '@/app/lib/unitCloneHelper';
 import prisma from '@/app/lib/prisma';
@@ -137,8 +137,14 @@ export class RequestService {
       const childUnits = [];
       
       for (let i = 1; i <= quantity; i++) {
+        // ГЕНЕРИРУЕМ УНИКАЛЬНЫЙ SERIAL NUMBER
+        const childSerialNumber = `${parentUnit.serialNumber}/child-${i}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
         const childUnit = await tx.productUnit.create({
           data: {
+            // ОБЯЗАТЕЛЬНОЕ ПОЛЕ - добавлено
+            serialNumber: childSerialNumber,
+            
             // Копируем данные от родителя
             productId: parentUnit.productId,
             spineId: parentUnit.spineId,

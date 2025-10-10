@@ -124,16 +124,17 @@ enum ProductUnitPhysicalStatus {
 model DisassemblyScenario {
   id        Int    @id @default(autoincrement())
   name      String
-  parentUnitId  Int @unique
-  parentUnit    ProductUnit @relation(fields: [parentUnitId], references: [id], onDelete: Cascade)
+  parentProductCode String  // ← КОД продукта-родителя
+  childProductCodes Json    // ← МАССИВ кодов продуктов-детей
   partsCount Int
-  childProductsIds Json
-  partialChildUnits Json?
   isActive Boolean @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  // Связь с ProductUnit
+  productUnits ProductUnit[] // ← ДОБАВИТЬ ЭТУ СВЯЗЬ
 
   @@map("disassembly_scenarios")
+  @@unique([parentProductCode, name]) // Уникальность по коду + названию
 }
 
 model ProductUnit {
@@ -180,7 +181,8 @@ model ProductUnit {
   disassemblyStatus      UnitDisassemblyStatus @default(MONOLITH)
   disassembledParentId   Int?
   disassembledParent     ProductUnit? @relation("DisassemblyParent", fields: [disassembledParentId], references: [id])
-  disassemblyScenario    DisassemblyScenario?  // Только ссылка без fields/references
+  disassemblyScenarioId  Int? // ← ДОБАВИТЬ ЭТО ПОЛЕ
+  disassemblyScenario    DisassemblyScenario? @relation(fields: [disassemblyScenarioId], references: [id]) // ← ИСПРАВИТЬ
   isParsingAlgorithm     Boolean @default(false)
   partialChildren        ProductUnit[] @relation("DisassemblyParent")
 

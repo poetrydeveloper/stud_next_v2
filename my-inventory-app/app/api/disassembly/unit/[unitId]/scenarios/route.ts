@@ -1,11 +1,11 @@
-// app/api/disassembly/unit/[unitId]/scenarios/route.ts
+// app/api/disassembly/unit/[unitId]/scenarios/route.ts (ПЕРЕПИСАННЫЙ)
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { DisassemblyService } from "@/app/lib/disassemblyService";
 
 /**
  * GET /api/disassembly/unit/[unitId]/scenarios
- * Получение сценариев по unitId
+ * Получение доступных сценариев для unit (новая логика)
  */
 export async function GET(
   req: Request,

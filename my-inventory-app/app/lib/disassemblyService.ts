@@ -1,15 +1,16 @@
-// app/lib/disassemblyService.ts
+// app/lib/disassemblyService.ts (ПОЛНОСТЬЮ ПЕРЕПИСАННЫЙ)
 import { ProductUnitPhysicalStatus, UnitDisassemblyStatus } from "@prisma/client";
 import prisma from "./prisma";
 
 interface CreateScenarioData {
   name: string;
-  parentUnitId: number;
-  childProductsIds: number[];
+  parentProductCode: string; // ← ИЗМЕНЕНО: код продукта вместо unitId
+  childProductCodes: string[]; // ← ИЗМЕНЕНО: коды продуктов вместо ID
 }
 
 interface ExecuteDisassemblyData {
-  scenarioId: number;
+  unitId: number; // ← ИЗМЕНЕНО: конкретный unit для разборки
+  scenarioId: number; // ← шаблон сценария
 }
 
 interface ExecuteAssemblyData {
@@ -19,47 +20,56 @@ interface ExecuteAssemblyData {
 
 export class DisassemblyService {
   
-  // Создание сценария разборки
+  // Создание сценария разборки (ШАБЛОН)
   static async createScenario(data: CreateScenarioData) {
-    const parentUnit = await prisma.productUnit.findUnique({
-      where: { id: data.parentUnitId },
-      include: { product: true }
+    // Проверяем что родительский продукт существует
+    const parentProduct = await prisma.product.findUnique({
+      where: { code: data.parentProductCode }
     });
 
-    if (!parentUnit) {
-      throw new Error('Родительский Unit не найден');
+    if (!parentProduct) {
+      throw new Error(`Родительский продукт с кодом "${data.parentProductCode}" не найден`);
     }
 
-    if (parentUnit.statusProduct !== ProductUnitPhysicalStatus.IN_STORE) {
-      throw new Error('Unit должен быть IN_STORE для создания сценария');
+    // Проверяем что все дочерние продукты существуют
+    const childProducts = await prisma.product.findMany({
+      where: { code: { in: data.childProductCodes } }
+    });
+
+    if (childProducts.length !== data.childProductCodes.length) {
+      const foundCodes = childProducts.map(p => p.code);
+      const missingCodes = data.childProductCodes.filter(code => !foundCodes.includes(code));
+      throw new Error(`Дочерние продукты не найдены: ${missingCodes.join(', ')}`);
     }
 
-    // Проверяем существующие сценарии
-    const existingScenario = await prisma.disassemblyScenario.findUnique({
-      where: { parentUnitId: data.parentUnitId }
+    // Проверяем существующие сценарии для этого продукта
+    const existingScenario = await prisma.disassemblyScenario.findFirst({
+      where: { 
+        parentProductCode: data.parentProductCode,
+        name: data.name 
+      }
     });
 
     if (existingScenario) {
-      throw new Error('Сценарий для этого Unit уже существует');
+      throw new Error('Сценарий с таким названием для этого продукта уже существует');
     }
 
     return prisma.disassemblyScenario.create({
       data: {
         name: data.name,
-        parentUnitId: data.parentUnitId,
-        partsCount: data.childProductsIds.length,
-        childProductsIds: data.childProductsIds,
+        parentProductCode: data.parentProductCode,
+        childProductCodes: data.childProductCodes,
+        partsCount: data.childProductCodes.length,
         isActive: true
       }
     });
   }
 
-  // Выполнение разборки
+  // Выполнение разборки (применение шаблона к конкретному unit)
   static async executeDisassembly(data: ExecuteDisassemblyData) {
     return prisma.$transaction(async (tx) => {
       const scenario = await tx.disassemblyScenario.findUnique({
-        where: { id: data.scenarioId },
-        include: { parentUnit: true }
+        where: { id: data.scenarioId }
       });
 
       if (!scenario) {
@@ -70,22 +80,37 @@ export class DisassemblyService {
         throw new Error('Сценарий не активен');
       }
 
-      const parentUnit = scenario.parentUnit;
+      // Находим unit для разборки
+      const parentUnit = await tx.productUnit.findUnique({
+        where: { id: data.unitId },
+        include: { product: true }
+      });
+
+      if (!parentUnit) {
+        throw new Error('Unit не найден');
+      }
+
+      // ВАЛИДАЦИЯ: проверяем что код продукта unit совпадает с родительским кодом в сценарии
+      const unitProductCode = parentUnit.productCode || parentUnit.product?.code;
+      if (unitProductCode !== scenario.parentProductCode) {
+        throw new Error(`Сценарий не подходит для этого unit. Ожидается продукт: ${scenario.parentProductCode}, получен: ${unitProductCode}`);
+      }
 
       if (parentUnit.statusProduct !== ProductUnitPhysicalStatus.IN_STORE ||
           parentUnit.disassemblyStatus !== UnitDisassemblyStatus.MONOLITH) {
-        throw new Error('Некорректный статус родительского Unit');
+        throw new Error('Unit должен быть IN_STORE и MONOLITH для разборки');
       }
 
+      // Находим дочерние продукты по кодам из сценария
       const childProducts = await tx.product.findMany({
-        where: { id: { in: scenario.childProductsIds as number[] } }
+        where: { code: { in: scenario.childProductCodes as string[] } }
       });
 
       if (childProducts.length !== scenario.partsCount) {
-        throw new Error('Не все продукты найдены');
+        throw new Error('Не все дочерние продукты найдены в базе');
       }
 
-      // Создаем дочерние Unit
+      // Создаем дочерние units
       const childUnits = [];
       for (const product of childProducts) {
         const childUnit = await tx.productUnit.create({
@@ -97,12 +122,12 @@ export class DisassemblyService {
             productName: product.name,
             productDescription: product.description,
             productCategoryId: product.categoryId,
-            statusCard: 'CLEAR',
+            statusCard: 'ARRIVED',
             statusProduct: ProductUnitPhysicalStatus.IN_STORE,
             disassemblyStatus: UnitDisassemblyStatus.PARTIAL,
             disassembledParentId: parentUnit.id,
             isParsingAlgorithm: false,
-            supplierId: null,
+            supplierId: parentUnit.supplierId,
             customerId: null
           }
         });
@@ -115,15 +140,8 @@ export class DisassemblyService {
         data: {
           statusProduct: ProductUnitPhysicalStatus.IN_DISASSEMBLED,
           disassemblyStatus: UnitDisassemblyStatus.DISASSEMBLED,
-          isParsingAlgorithm: false
-        }
-      });
-
-      // Обновляем сценарий с ID созданных детей
-      await tx.disassemblyScenario.update({
-        where: { id: scenario.id },
-        data: {
-          partialChildUnits: childUnits.map(unit => unit.id)
+          isParsingAlgorithm: false,
+          disassemblyScenarioId: scenario.id // ← связываем с использованным сценарием
         }
       });
 
@@ -138,6 +156,8 @@ export class DisassemblyService {
               operation: 'disassembly',
               parentUnitId: parentUnit.id,
               scenarioId: scenario.id,
+              parentProductCode: scenario.parentProductCode,
+              childProductCodes: scenario.childProductCodes,
               timestamp: new Date()
             }
           }
@@ -152,7 +172,7 @@ export class DisassemblyService {
     });
   }
 
-  // Выполнение сборки
+  // Выполнение сборки (без изменений - работает с конкретными юнитами)
   static async executeAssembly(data: ExecuteAssemblyData) {
     return prisma.$transaction(async (tx) => {
       const parentUnit = await tx.productUnit.findUnique({
@@ -189,7 +209,8 @@ export class DisassemblyService {
         where: { id: data.parentUnitId },
         data: {
           statusProduct: ProductUnitPhysicalStatus.IN_STORE,
-          disassemblyStatus: UnitDisassemblyStatus.RESTORED
+          disassemblyStatus: UnitDisassemblyStatus.RESTORED,
+          disassemblyScenarioId: null // ← очищаем ссылку на сценарий
         }
       });
 
@@ -220,8 +241,7 @@ export class DisassemblyService {
   // Валидация сценария
   static async validateScenario(scenarioId: number) {
     const scenario = await prisma.disassemblyScenario.findUnique({
-      where: { id: scenarioId },
-      include: { parentUnit: true }
+      where: { id: scenarioId }
     });
 
     if (!scenario) {
@@ -229,7 +249,7 @@ export class DisassemblyService {
     }
 
     const products = await prisma.product.findMany({
-      where: { id: { in: scenario.childProductsIds as number[] } }
+      where: { code: { in: scenario.childProductCodes as string[] } }
     });
 
     const isValid = products.length === scenario.partsCount;
@@ -241,35 +261,52 @@ export class DisassemblyService {
       productsFound: products.length,
       productsRequired: scenario.partsCount,
       missingProducts,
-      canExecute: isValid && scenario.parentUnit.statusProduct === ProductUnitPhysicalStatus.IN_STORE
+      canExecute: isValid
     };
   }
 
   // Получение сценария по ID
   static async getScenario(id: number) {
     return prisma.disassemblyScenario.findUnique({
-      where: { id },
-      include: {
-        parentUnit: {
-          include: {
-            product: true,
-            spine: true
-          }
-        }
+      where: { id }
+    });
+  }
+
+  // Получение доступных сценариев для unit (по коду продукта)
+  static async getUnitScenarios(unitId: number) {
+    const unit = await prisma.productUnit.findUnique({
+      where: { id: unitId },
+      include: { product: true }
+    });
+
+    if (!unit) {
+      return [];
+    }
+
+    const unitProductCode = unit.productCode || unit.product?.code;
+    
+    return prisma.disassemblyScenario.findMany({
+      where: { 
+        parentProductCode: unitProductCode,
+        isActive: true 
       }
     });
   }
 
-  // Получение сценариев по unitId
-  static async getUnitScenarios(unitId: number) {
+  // Получение всех сценариев
+  static async getAllScenarios(includeInactive: boolean = false) {
     return prisma.disassemblyScenario.findMany({
-      where: { parentUnitId: unitId },
-      include: {
-        parentUnit: {
-          include: {
-            product: true
-          }
-        }
+      where: includeInactive ? {} : { isActive: true },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
+  // Поиск сценариев по коду продукта
+  static async getScenariosByProductCode(productCode: string) {
+    return prisma.disassemblyScenario.findMany({
+      where: { 
+        parentProductCode: productCode,
+        isActive: true 
       }
     });
   }

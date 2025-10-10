@@ -1,4 +1,4 @@
-// app/lib/requestValidator.ts
+// app/lib/requestValidator.ts (ПОЛНЫЙ КОД)
 export class RequestValidator {
   private steps: { [key: string]: boolean } = {};
   private logs: string[] = [];

@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const unitId = Number(params.id);
+    const unitId = Number((await params).id);
 
     const logs = await prisma.productUnitLog.findMany({
       where: { productUnitId: unitId },

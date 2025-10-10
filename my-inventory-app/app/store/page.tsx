@@ -86,7 +86,7 @@ export default function StorePage() {
         setError(null);
         
         const params = new URLSearchParams();
-        params.append('status', 'IN_STORE'); // Только товары на складе
+        params.append('status', 'IN_STORE,IN_DISASSEMBLED');
         
         if (selectedCategory) {
           params.append('categoryId', selectedCategory.toString());

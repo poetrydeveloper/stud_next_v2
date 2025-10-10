@@ -1,12 +1,29 @@
-// app/api/store/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
+import { ProductUnitPhysicalStatus } from "@prisma/client";
 
 export async function GET() {
   try {
+    // Активные статусы для отображения (включая разобранные)
+    const activeStatuses: ProductUnitPhysicalStatus[] = [
+      'IN_STORE', 
+      'CLEAR', 
+      'IN_REQUEST', 
+      'IN_DELIVERY', 
+      'ARRIVED', 
+      'IN_DISASSEMBLED',
+      'IN_COLLECTED'
+    ];
+
     const spines = await prisma.spine.findMany({
       include: {
         productUnits: {
+          where: {
+            // Фильтруем только активные статусы (исключаем проданные/утерянные)
+            statusProduct: {
+              in: activeStatuses
+            }
+          },
           include: {
             product: {
               include: {

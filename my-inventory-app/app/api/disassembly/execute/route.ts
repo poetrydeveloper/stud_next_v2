@@ -6,26 +6,27 @@ import { DisassemblyService } from "@/app/lib/disassemblyService";
 /**
  * POST /api/disassembly/execute
  * Выполнение разборки по сценарию
- * body: { scenarioId: number }
+ * body: { scenarioId: number, unitId: number } // ← ДОБАВИТЬ unitId
  */
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { scenarioId } = body;
+    const { scenarioId, unitId } = body; // ← ДОБАВИТЬ unitId
 
-    console.log("🔍 POST /api/disassembly/execute:", { scenarioId });
+    console.log("🔍 POST /api/disassembly/execute:", { scenarioId, unitId });
 
     // Валидация
-    if (!scenarioId) {
+    if (!scenarioId || !unitId) { // ← ДОБАВИТЬ проверку unitId
       return NextResponse.json(
-        { ok: false, error: "scenarioId обязателен" },
+        { ok: false, error: "scenarioId и unitId обязательны" },
         { status: 400 }
       );
     }
 
     // Выполнение разборки
     const result = await DisassemblyService.executeDisassembly({
-      scenarioId
+      scenarioId,
+      unitId // ← ПЕРЕДАТЬ unitId
     });
 
     console.log("✅ POST /api/disassembly/execute успешно:", {

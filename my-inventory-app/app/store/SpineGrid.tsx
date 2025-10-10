@@ -2,7 +2,8 @@
 "use client";
 
 import { useState } from "react";
-import SaleButtons from "@/app/store/SaleButtons"; // ← ИСПРАВЛЕНО!
+import SaleButtons from "@/app/store/SaleButtons";
+import AssemblyButton from "@/app/store/AssemblyButton";
 
 interface Spine {
   id: number;
@@ -46,7 +47,6 @@ interface SpineGridProps {
   selectedStatus: string;
 }
 
-// Выносим интерфейс лога
 interface Log {
   id: number;
   type: string;
@@ -61,7 +61,6 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
   const [unitLogs, setUnitLogs] = useState<Record<number, Log[]>>({});
   const [loadingLogs, setLoadingLogs] = useState<Record<number, boolean>>({});
 
-  // Переключение раскрытия Spine
   const toggleSpine = (spineId: number) => {
     setExpandedSpines(prev => ({
       ...prev,
@@ -69,7 +68,6 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
     }));
   };
 
-  // Переключение логов Unit
   const toggleUnitLogs = async (unitId: number) => {
     const newExpanded = !expandedUnits[unitId];
     setExpandedUnits(prev => ({ ...prev, [unitId]: newExpanded }));
@@ -90,10 +88,8 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
     }
   };
 
-  // Фильтрация units
   const getFilteredUnits = (spine: Spine) => {
     if (!spine.productUnits) return [];
-
     return spine.productUnits.filter(unit => {
       const brandMatch = selectedBrand === "all" || unit.product?.brand?.name === selectedBrand;
       const statusMatch = selectedStatus === "all" || unit.statusCard === selectedStatus || unit.statusProduct === selectedStatus;
@@ -101,20 +97,16 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
     });
   };
 
-  // Группировка по брендам
   const getUnitsByBrand = (units: ProductUnit[]) => {
     const grouped: Record<string, ProductUnit[]> = {};
-    
     units.forEach(unit => {
       const brandName = unit.product?.brand?.name || "Без бренда";
       if (!grouped[brandName]) grouped[brandName] = [];
       grouped[brandName].push(unit);
     });
-
     return grouped;
   };
 
-  // Статистика Spine
   const getSpineStats = (spine: Spine) => {
     const units = spine.productUnits || [];
     return {
@@ -123,10 +115,10 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
       sold: units.filter(u => u.statusProduct === "SOLD").length,
       credit: units.filter(u => u.statusProduct === "CREDIT").length,
       inRequest: units.filter(u => u.statusCard === "IN_REQUEST").length,
+      disassembled: units.filter(u => u.statusProduct === "IN_DISASSEMBLED").length,
     };
   };
 
-  // Цвета статусов
   const getStatusConfig = (status: string) => {
     const config: Record<string, { bg: string; text: string; border: string; label: string }> = {
       CLEAR: { bg: "bg-blue-100", text: "text-blue-800", border: "border-blue-200", label: "CLEAR" },
@@ -138,7 +130,9 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
       IN_STORE: { bg: "bg-gray-100", text: "text-gray-800", border: "border-gray-200", label: "На складе" },
       SOLD: { bg: "bg-green-100", text: "text-green-800", border: "border-green-200", label: "Продано" },
       CREDIT: { bg: "bg-orange-100", text: "text-orange-800", border: "border-orange-200", label: "В кредите" },
-      LOST: { bg: "bg-red-100", text: "text-red-800", border: "border-red-200", label: "Утеряно" }
+      LOST: { bg: "bg-red-100", text: "text-red-800", border: "border-red-200", label: "Утеряно" },
+      IN_DISASSEMBLED: { bg: "bg-purple-100", text: "text-purple-800", border: "border-purple-200", label: "Разобран" },
+      IN_COLLECTED: { bg: "bg-teal-100", text: "text-teal-800", border: "border-teal-200", label: "Собран" }
     };
     return config[status] || { bg: "bg-gray-100", text: "text-gray-800", border: "border-gray-200", label: status };
   };
@@ -177,7 +171,6 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
 
         return (
           <div key={spine.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            {/* Заголовок Spine */}
             <div 
               className="px-6 py-4 border-b border-gray-200 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
               onClick={() => toggleSpine(spine.id)}
@@ -195,6 +188,7 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
                       {stats.sold > 0 && <span className="bg-white px-2 py-1 rounded border text-blue-600">✅ {stats.sold}</span>}
                       {stats.credit > 0 && <span className="bg-white px-2 py-1 rounded border text-orange-600">💳 {stats.credit}</span>}
                       {stats.inRequest > 0 && <span className="bg-white px-2 py-1 rounded border text-indigo-600">📋 {stats.inRequest}</span>}
+                      {stats.disassembled > 0 && <span className="bg-white px-2 py-1 rounded border text-purple-600">🔧 {stats.disassembled}</span>}
                     </div>
                   </div>
                 </div>
@@ -207,7 +201,6 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
               </div>
             </div>
 
-            {/* Содержимое Spine */}
             {isExpanded && (
               <div className="p-6">
                 {Object.keys(unitsByBrand).length === 0 ? (
@@ -219,7 +212,6 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
                   <div className="space-y-6">
                     {Object.entries(unitsByBrand).map(([brandName, brandUnits]) => (
                       <div key={brandName} className="border border-gray-200 rounded-lg overflow-hidden">
-                        {/* Заголовок бренда */}
                         <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
                           <div className="flex items-center justify-between">
                             <h4 className="font-semibold text-gray-900 flex items-center space-x-2">
@@ -232,18 +224,22 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
                           </div>
                         </div>
 
-                        {/* Список units */}
                         <div className="divide-y divide-gray-200">
                           {brandUnits.map(unit => {
                             const productStatus = getStatusConfig(unit.statusProduct);
                             const cardStatus = getStatusConfig(unit.statusCard);
 
+                            // ДОБАВЛЕНО: Отладочная информация
+                            console.log('🔍 DEBUG Unit:', {
+                              id: unit.id,
+                              statusProduct: unit.statusProduct, 
+                              shouldShowAssembly: unit.statusProduct === "IN_DISASSEMBLED"
+                            });
+
                             return (
                               <div key={unit.id} className="px-4 py-3 hover:bg-gray-50 transition-colors">
                                 <div className="flex items-start justify-between">
-                                  {/* Информация */}
                                   <div className="flex items-start space-x-4 flex-1 min-w-0">
-                                    {/* Изображение */}
                                     <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg border border-gray-200 overflow-hidden">
                                       {unit.product?.images?.[0] ? (
                                         <img
@@ -258,7 +254,6 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
                                       )}
                                     </div>
 
-                                    {/* Данные */}
                                     <div className="flex-1 min-w-0">
                                       <h5 className="text-sm font-semibold text-gray-900 mb-2">
                                         {unit.productName || unit.product?.name || "Без названия"}
@@ -300,7 +295,6 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
                                         )}
                                       </div>
 
-                                      {/* Кнопка логов */}
                                       <button
                                         onClick={() => toggleUnitLogs(unit.id)}
                                         disabled={loadingLogs[unit.id]}
@@ -320,16 +314,26 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
                                     </div>
                                   </div>
 
-                                  {/* Действия */}
-                                  <div className="flex-shrink-0 ml-4">
+                                  {/* Действия - ИСПРАВЛЕННЫЙ БЛОК */}
+                                  <div className="flex-shrink-0 ml-4 space-y-2">
                                     <SaleButtons 
                                       unit={unit}
                                       onSaleSuccess={() => window.location.reload()}
                                     />
+                                    {/* ДОБАВЛЕНА ПРОВЕРКА ДЛЯ ОТЛАДКИ */}
+                                    {unit.statusProduct === "IN_DISASSEMBLED" ? (
+                                      <AssemblyButton 
+                                        unit={unit}
+                                        onAssemblySuccess={() => window.location.reload()}
+                                      />
+                                    ) : (
+                                      <div className="text-xs text-gray-500 text-center">
+                                        Статус: {unit.statusProduct}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
 
-                                {/* Логи */}
                                 {expandedUnits[unit.id] && (
                                   <div className="mt-4 pt-4 border-t border-gray-200">
                                     <div className="text-xs text-gray-500 mb-3 font-medium">

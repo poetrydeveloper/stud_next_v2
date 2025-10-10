@@ -1,4 +1,3 @@
-// app/api/spines/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { generateSlug } from "@/app/lib/translit";
@@ -7,17 +6,48 @@ import { ProductUnitPhysicalStatus } from "@prisma/client";
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const statusFilter = searchParams.get('status') as ProductUnitPhysicalStatus | null;
+    const statusFilter = searchParams.get('status');
     const categoryId = searchParams.get('categoryId');
     const includeEmpty = searchParams.get('includeEmpty') !== 'false'; // по умолчанию true
+
+    // Активные статусы для отображения (включая разобранные)
+    const activeStatuses: ProductUnitPhysicalStatus[] = [
+      'IN_STORE', 
+      'CLEAR', 
+      'IN_REQUEST', 
+      'IN_DELIVERY', 
+      'ARRIVED', 
+      'IN_DISASSEMBLED',
+      'IN_COLLECTED'
+    ];
+
+    // Парсим статус фильтр - может быть строкой или массивом
+    let statusWhereCondition = {};
+    if (statusFilter) {
+      // Если статус содержит запятую - это несколько статусов
+      if (statusFilter.includes(',')) {
+        const statuses = statusFilter.split(',').filter(s => s.trim() !== '') as ProductUnitPhysicalStatus[];
+        statusWhereCondition = {
+          statusProduct: { in: statuses }
+        };
+      } else {
+        // Один статус
+        statusWhereCondition = {
+          statusProduct: statusFilter as ProductUnitPhysicalStatus
+        };
+      }
+    } else {
+      // По умолчанию - все активные статусы
+      statusWhereCondition = {
+        statusProduct: { in: activeStatuses }
+      };
+    }
 
     const spines = await prisma.spine.findMany({
       include: {
         category: true,
         productUnits: {
-          where: statusFilter ? {
-            statusProduct: statusFilter
-          } : {},
+          where: statusWhereCondition,
           include: {
             product: {
               select: {
@@ -56,7 +86,7 @@ export async function GET(request: Request) {
         ...(categoryId && { categoryId: parseInt(categoryId) }),
         ...(!includeEmpty && {
           productUnits: {
-            some: statusFilter ? { statusProduct: statusFilter } : {}
+            some: statusWhereCondition
           }
         })
       },
