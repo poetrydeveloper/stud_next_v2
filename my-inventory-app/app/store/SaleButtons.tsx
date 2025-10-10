@@ -1,12 +1,15 @@
-// app/store/SaleButtons.tsx (обновленная версия)
+// app/store/SaleButtons.tsx (ОБНОВЛЕННАЯ - КОМПАКТНЫЙ МАКЕТ)
 "use client";
 
 import { useState } from "react";
 import SaleModal from "./SaleModal";
+import DisassemblyButtons from "./DisassemblyButtons";
 
 interface ProductUnit {
   id: number;
   statusProduct: string;
+  disassemblyStatus: string;
+  isParsingAlgorithm: boolean;
   productName?: string;
   serialNumber: string;
   productCode?: string;
@@ -48,35 +51,44 @@ export default function SaleButtons({ unit, onSaleSuccess }: SaleButtonsProps) {
   if (unit.statusProduct === "SOLD" || unit.statusProduct === "CREDIT") {
     return (
       <div className="text-right text-xs">
-        <div className="text-gray-600 mb-1">
+        <div className="text-gray-600">
           {unit.statusProduct === "SOLD" ? "✅ Продано" : "💳 В кредите"}
         </div>
       </div>
     );
   }
 
-  // Только для товаров на складе показываем кнопки продажи
+  // Только для товаров на складе показываем кнопки
   if (unit.statusProduct !== "IN_STORE") {
     return null;
   }
 
   return (
     <>
-      <div className="flex flex-col space-y-2">
-        <button 
-          onClick={() => handleSaleClick(false)}
-          className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 min-w-[100px] justify-center"
-        >
-          <span>💰</span>
-          <span>Продать</span>
-        </button>
-        <button 
-          onClick={() => handleSaleClick(true)}
-          className="px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors flex items-center space-x-2 min-w-[100px] justify-center"
-        >
-          <span>💳</span>
-          <span>Кредит</span>
-        </button>
+      <div className="flex flex-col space-y-2 min-w-[80px]">
+        {/* Кнопки продажи - компактные */}
+        <div className="flex flex-col space-y-1">
+          <button 
+            onClick={() => handleSaleClick(false)}
+            className="px-2 py-1 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 transition-colors flex items-center space-x-1 justify-center"
+          >
+            <span className="text-xs">💰</span>
+            <span>Продать</span>
+          </button>
+          <button 
+            onClick={() => handleSaleClick(true)}
+            className="px-2 py-1 bg-orange-600 text-white text-xs font-medium rounded hover:bg-orange-700 transition-colors flex items-center space-x-1 justify-center"
+          >
+            <span className="text-xs">💳</span>
+            <span>Кредит</span>
+          </button>
+        </div>
+
+        {/* Кнопки разборки - компактные */}
+        <DisassemblyButtons 
+          unit={unit}
+          onOperationSuccess={onSaleSuccess}
+        />
       </div>
 
       <SaleModal
