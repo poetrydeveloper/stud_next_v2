@@ -1,10 +1,9 @@
-// app/layout.tsx
 "use client";
 
 import "./globals.css";
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, ChevronDown } from "lucide-react";
+import { Menu, ChevronDown, Database, Warehouse } from "lucide-react";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -23,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         { href: "/brands/new", label: "Создать бренд" },
         { href: "/categories/new", label: "Создать категорию/спайн" },
         { href: "/api/categories/tree", label: "Дерево категорий" },
-        { href: "/spines/tree", label: "Дерево Spine" }, // ← новый пункт
+        { href: "/spines/tree", label: "Дерево Spine" },
       ],
     },
     {
@@ -63,6 +62,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         { href: "/requests", label: "Заявки" },
       ],
     },
+    // НОВЫЙ РАЗДЕЛ - Разборка/Сборка
+    {
+      title: "Разборка/Сборка",
+      links: [
+        { href: "/disassembly", label: "Все операции" },
+        { href: "/disassembly/scenario/create", label: "Создать сценарий" },
+        { href: "/store", label: "Склад (состояния)", icon: "🏪" },
+      ],
+    },
   ];
 
   return (
@@ -79,7 +87,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </button>
             <h1 className="text-xl font-bold">Магазин</h1>
           </div>
-          <div>
+          <div className="flex items-center gap-4">
+            {/* Кнопка склада */}
+            <Link 
+              href="/store" 
+              className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm"
+            >
+              <Warehouse size={18} />
+              Склад
+            </Link>
+            
+            {/* Кнопка админки БД */}
+            <Link 
+              href="/admin/database-backup" 
+              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm"
+            >
+              <Database size={18} />
+              Бэкапы БД
+            </Link>
+            
             <Link href="/" className="text-sm text-gray-600 hover:underline">
               Главная
             </Link>
@@ -121,9 +147,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       <Link
                         key={link.href}
                         href={link.href}
-                        className="block text-sm text-gray-700 hover:underline"
+                        className="flex items-center gap-2 text-sm text-gray-700 hover:underline"
                         onClick={() => setIsSidebarOpen(false)}
                       >
+                        {link.icon && <span>{link.icon}</span>}
                         {link.label}
                       </Link>
                     ))}
@@ -131,6 +158,29 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 )}
               </div>
             ))}
+            
+            {/* ОТДЕЛЬНЫЕ КНОПКИ В САЙДБАРЕ */}
+            <div className="mt-6 space-y-2">
+              {/* Кнопка склада в сайдбаре */}
+              <Link 
+                href="/store" 
+                className="flex items-center gap-2 w-full px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm"
+                onClick={() => setIsSidebarOpen(false)}
+              >
+                <Warehouse size={18} />
+                Склад
+              </Link>
+              
+              {/* Кнопка админки БД в сайдбаре */}
+              <Link 
+                href="/admin/database-backup" 
+                className="flex items-center gap-2 w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm"
+                onClick={() => setIsSidebarOpen(false)}
+              >
+                <Database size={18} />
+                Бэкапы БД
+              </Link>
+            </div>
           </nav>
         </aside>
 
@@ -138,6 +188,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="p-4 transition-all duration-300">
           {children}
         </main>
+
+        {/* Оверлей для закрытия меню */}
+        {isSidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
       </body>
     </html>
   );
