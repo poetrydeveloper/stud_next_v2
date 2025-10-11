@@ -1,46 +1,40 @@
-// app/api/brands/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
+import slugify from "slugify";
 
-/**
- * GET /api/brands — список всех брендов
- */
-export async function GET() {
-  try {
-    const brands = await prisma.brand.findMany({
-      orderBy: { name: "asc" },
-    });
-
-    return NextResponse.json({ ok: true, data: brands });
-  } catch (error) {
-    console.error("Ошибка при получении брендов:", error);
-    return NextResponse.json(
-      { ok: false, error: "Не удалось получить бренды" },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * POST /api/brands — создание нового бренда
- * body: { name: string }
- */
 export async function POST(req: Request) {
   try {
     const { name } = await req.json();
 
     if (!name) {
       return NextResponse.json(
-        { ok: false, error: "Название бренда обязательно" },
+        { error: "Название бренда обязательно" },
         { status: 400 }
       );
     }
 
-    // Создаём slug из названия
-    const slug = name
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^\w-]+/g, "");
+    // Проверяем, существует ли бренд с таким именем
+    const existingBrand = await prisma.brand.findFirst({
+      where: {
+        name: {
+          equals: name,
+          mode: 'insensitive'
+        }
+      }
+    });
+
+    if (existingBrand) {
+      return NextResponse.json(
+        { error: `Бренд "${name}" уже существует` },
+        { status: 409 }
+      );
+    }
+
+    const slug = slugify(name, {
+      lower: true,
+      strict: true,
+      locale: "ru"
+    }).replace(/[^\w-]+/g, "");
 
     const brand = await prisma.brand.create({
       data: {
@@ -49,24 +43,48 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({
-      ok: true,
-      message: "Бренд успешно создан",
-      data: brand,
-    });
+    return NextResponse.json({ 
+      ok: true, 
+      data: brand 
+    }, { status: 201 });
   } catch (error: any) {
     console.error("Ошибка при создании бренда:", error);
-
-    // Проверяем ошибку уникальности
-    if (error.code === "P2002") {
+    
+    if (error.code === 'P2002') {
       return NextResponse.json(
-        { ok: false, error: "Бренд с таким названием уже существует" },
-        { status: 400 }
+        { error: "Бренд с таким названием уже существует" },
+        { status: 409 }
       );
     }
-
+    
     return NextResponse.json(
-      { ok: false, error: "Не удалось создать бренд" },
+      { error: "Внутренняя ошибка сервера" },
+      { status: 500 }
+    );
+  }
+}
+
+// ДОБАВЛЯЕМ GET МЕТОД ДЛЯ ПОЛУЧЕНИЯ БРЕНДОВ
+export async function GET() {
+  try {
+    console.log("🔍 GET /api/brands - fetching brands");
+    
+    const brands = await prisma.brand.findMany({
+      orderBy: {
+        name: 'asc',
+      }
+    });
+
+    console.log("✅ Found brands:", brands.length);
+    
+    return NextResponse.json({ 
+      ok: true, 
+      data: brands 
+    });
+  } catch (error: any) {
+    console.error("❌ Error fetching brands:", error);
+    return NextResponse.json(
+      { ok: false, error: "Внутренняя ошибка сервера" },
       { status: 500 }
     );
   }
