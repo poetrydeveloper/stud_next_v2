@@ -20,12 +20,84 @@ export default function StoreSearch({
   selectedStatus,
   onStatusChange
 }: StoreSearchProps) {
+  // Все возможные статусы для фильтрации
   const statusOptions = [
-    { value: "IN_STORE", label: "📦 На складе", description: "Доступные для продажи" },
-    { value: "SOLD", label: "✅ Продано", description: "Проданные товары" },
-    { value: "CREDIT", label: "💳 В кредите", description: "Отданные в кредит" },
     { value: "all", label: "📊 Все статусы", description: "Показать все товары" },
+    { value: "IN_STORE", label: "🏪 На складе", description: "Доступные для продажи" },
+    { value: "CLEAR", label: "🔵 CLEAR", description: "Готовы к работе" },
+    { value: "IN_REQUEST", label: "📋 В заявке", description: "Заказанные товары" },
+    { value: "IN_DELIVERY", label: "🚚 В доставке", description: "В процессе доставки" },
+    { value: "ARRIVED", label: "✅ Прибыл", description: "Недавно прибывшие" },
+    { value: "IN_DISASSEMBLED", label: "🔧 Разобран", description: "Разобранные наборы" },
+    { value: "IN_COLLECTED", label: "🔄 Собран", description: "Собранные наборы" },
+    { value: "SOLD", label: "💰 Продано", description: "Проданные товары" },
+    { value: "CREDIT", label: "💳 В кредите", description: "Отданные в кредит" },
+    { value: "LOST", label: "❌ Утеряно", description: "Утерянные товары" }
   ];
+
+  // Быстрые фильтры (мультистатусы)
+  const quickFilters = [
+    { 
+      value: "all", 
+      label: "Все", 
+      description: "Показать все товары",
+      statuses: ["all"]
+    },
+    { 
+      value: "IN_STORE,CLEAR,ARRIVED", 
+      label: "Активные", 
+      description: "Товары доступные для операций",
+      statuses: ["IN_STORE", "CLEAR", "ARRIVED"]
+    },
+    { 
+      value: "IN_STORE,IN_DISASSEMBLED", 
+      label: "Для сборки", 
+      description: "Можно разбирать/собирать",
+      statuses: ["IN_STORE", "IN_DISASSEMBLED"]
+    },
+    { 
+      value: "IN_STORE,CLEAR,ARRIVED,IN_DISASSEMBLED,IN_COLLECTED", 
+      label: "Без проданных", 
+      description: "Исключить проданные и утерянные",
+      statuses: ["IN_STORE", "CLEAR", "ARRIVED", "IN_DISASSEMBLED", "IN_COLLECTED"]
+    },
+    { 
+      value: "SOLD,CREDIT,LOST", 
+      label: "Архив", 
+      description: "Только проданные/утерянные",
+      statuses: ["SOLD", "CREDIT", "LOST"]
+    }
+  ];
+
+  // Получить описание для выбранного статуса
+  const getCurrentStatusDescription = () => {
+    if (selectedStatus === "all") return "Показать все товары";
+    
+    // Проверяем быстрые фильтры
+    const quickFilter = quickFilters.find(filter => filter.value === selectedStatus);
+    if (quickFilter) return quickFilter.description;
+    
+    // Проверяем одиночные статусы
+    const singleStatus = statusOptions.find(opt => opt.value === selectedStatus);
+    if (singleStatus) return singleStatus.description;
+    
+    // Мультистатус (пользовательский)
+    const statusCount = selectedStatus.split(',').length;
+    return `Показано ${statusCount} статусов`;
+  };
+
+  // Получить лейбл для выбранного статуса
+  const getCurrentStatusLabel = () => {
+    if (selectedStatus === "all") return "Все статусы";
+    
+    const quickFilter = quickFilters.find(filter => filter.value === selectedStatus);
+    if (quickFilter) return quickFilter.label;
+    
+    const singleStatus = statusOptions.find(opt => opt.value === selectedStatus);
+    if (singleStatus) return singleStatus.label;
+    
+    return "Несколько статусов";
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -34,7 +106,7 @@ export default function StoreSearch({
         {/* Поиск по названию и артикулу */}
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            🔍 Поиск товаров в магазине
+            🔍 Поиск товаров
           </label>
           <div className="relative">
             <input
@@ -54,7 +126,7 @@ export default function StoreSearch({
             )}
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            Поиск по всем товарам на складе
+            Поиск по названию, коду, серийному номеру
           </p>
         </div>
 
@@ -80,56 +152,106 @@ export default function StoreSearch({
         {/* Фильтр по статусам */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            📊 Статус товара
+            📊 Статус
           </label>
           <select
             value={selectedStatus}
             onChange={(e) => onStatusChange(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
           >
-            {statusOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
+            {/* Быстрые фильтры */}
+            <optgroup label="Быстрые фильтры">
+              {quickFilters.map(filter => (
+                <option key={filter.value} value={filter.value}>
+                  {filter.label}
+                </option>
+              ))}
+            </optgroup>
+            
+            {/* Все отдельные статусы */}
+            <optgroup label="Отдельные статусы">
+              {statusOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </optgroup>
           </select>
           <p className="text-xs text-gray-500 mt-1">
-            {statusOptions.find(opt => opt.value === selectedStatus)?.description}
+            {getCurrentStatusDescription()}
           </p>
         </div>
 
       </div>
 
-      {/* Быстрые подсказки поиска */}
-      {searchQuery && (
-        <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="text-sm text-blue-800">
-            <strong>Поиск:</strong> "{searchQuery}"
-          </div>
-          <div className="text-xs text-blue-600 mt-1">
-            • Название товара • Артикул • Серийный номер • Бренд
+      {/* Быстрые кнопки фильтров */}
+      <div className="mt-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          🚀 Быстрые фильтры:
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {quickFilters.map((filter) => (
+            <button
+              key={filter.value}
+              onClick={() => onStatusChange(filter.value)}
+              className={`px-3 py-2 text-sm rounded-lg border transition-colors flex items-center space-x-2 ${
+                selectedStatus === filter.value
+                  ? "bg-blue-100 text-blue-800 border-blue-300 shadow-sm"
+                  : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
+              }`}
+            >
+              <span>{filter.label}</span>
+              {filter.statuses.length > 1 && (
+                <span className="text-xs bg-gray-200 px-1.5 py-0.5 rounded">
+                  {filter.statuses.length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Текущие активные фильтры */}
+      {(selectedStatus !== "all" || selectedBrand !== "all" || searchQuery) && (
+        <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="text-sm font-medium text-gray-700 mb-2">Активные фильтры:</div>
+          <div className="flex flex-wrap gap-2">
+            {selectedStatus !== "all" && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                📊 {getCurrentStatusLabel()}
+                <button
+                  onClick={() => onStatusChange("all")}
+                  className="ml-2 text-blue-600 hover:text-blue-800"
+                >
+                  ✕
+                </button>
+              </span>
+            )}
+            {selectedBrand !== "all" && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200">
+                🏷️ {selectedBrand}
+                <button
+                  onClick={() => onBrandChange("all")}
+                  className="ml-2 text-green-600 hover:text-green-800"
+                >
+                  ✕
+                </button>
+              </span>
+            )}
+            {searchQuery && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800 border border-orange-200">
+                🔍 "{searchQuery}"
+                <button
+                  onClick={() => onSearchChange("")}
+                  className="ml-2 text-orange-600 hover:text-orange-800"
+                >
+                  ✕
+                </button>
+              </span>
+            )}
           </div>
         </div>
       )}
-
-      {/* Информация о фильтрах */}
-      <div className="mt-4 flex flex-wrap gap-2">
-        {selectedStatus !== "all" && (
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-            {statusOptions.find(opt => opt.value === selectedStatus)?.label}
-          </span>
-        )}
-        {selectedBrand !== "all" && (
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-            🏷️ {selectedBrand}
-          </span>
-        )}
-        {searchQuery && (
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-            🔍 "{searchQuery}"
-          </span>
-        )}
-      </div>
     </div>
   );
 }

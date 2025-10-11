@@ -1,3 +1,4 @@
+// app/store/AssemblyButton.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,6 +9,7 @@ interface ProductUnit {
   statusProduct: string;
   productName?: string;
   productCode?: string;
+  disassemblyScenarioId?: number;
 }
 
 interface ChildUnit {
@@ -23,6 +25,14 @@ interface ChildUnit {
   };
 }
 
+interface DisassemblyScenario {
+  id: number;
+  name: string;
+  parentProductCode: string;
+  childProductCodes: string[];
+  partsCount: number;
+}
+
 interface AssemblyButtonProps {
   unit: ProductUnit;
   onAssemblySuccess?: () => void;
@@ -34,49 +44,95 @@ export default function AssemblyButton({
 }: AssemblyButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [childUnits, setChildUnits] = useState<ChildUnit[]>([]);
-  const [selectedUnits, setSelectedUnits] = useState<number[]>([]);
-  const [loadingChildren, setLoadingChildren] = useState(false);
+  const [scenario, setScenario] = useState<DisassemblyScenario | null>(null);
+  const [availableUnits, setAvailableUnits] = useState<Record<string, ChildUnit[]>>({});
+  const [selectedUnits, setSelectedUnits] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Загружаем доступные дочерние юниты
-  const loadChildUnits = async () => {
-    setLoadingChildren(true);
-    try {
-      const response = await fetch(`/api/disassembly/unit/${unit.id}/children`);
-      const data = await response.json();
+  // Загружаем сценарий и доступные юниты
+  const loadAssemblyData = async () => {
+    setLoading(true);
+    setError('');
 
-      if (data.ok) {
-        setChildUnits(data.data || []);
-      } else {
-        throw new Error(data.error || 'Ошибка загрузки частей');
+    try {
+      console.log('🔍 AssemblyButton loading data for unit:', unit.id);
+
+      // 1. Загружаем сценарий
+      if (!unit.disassemblyScenarioId) {
+        throw new Error('У родительского unit нет сценария разборки');
       }
+
+      const scenarioResponse = await fetch(`/api/disassembly/scenario/${unit.disassemblyScenarioId}`);
+      const scenarioData = await scenarioResponse.json();
+
+      if (!scenarioData.ok) {
+        throw new Error(scenarioData.error || 'Ошибка загрузки сценария');
+      }
+
+      const loadedScenario = scenarioData.data;
+      console.log('✅ Scenario loaded:', loadedScenario);
+      setScenario(loadedScenario);
+
+      // 2. Для каждого продукта в сценарии ищем доступные юниты
+      const unitsByProduct: Record<string, ChildUnit[]> = {};
+      
+      for (const productCode of loadedScenario.childProductCodes) {
+        const unitsResponse = await fetch(`/api/product-units/by-product-code?productCode=${productCode}&status=IN_STORE`);
+        const unitsData = await unitsResponse.json();
+
+        if (unitsData.ok) {
+          // Фильтруем только MONOLITH и PARTIAL
+          const filteredUnits = unitsData.data.filter((unit: ChildUnit) => 
+            unit.disassemblyStatus === 'MONOLITH' || unit.disassemblyStatus === 'PARTIAL'
+          );
+          unitsByProduct[productCode] = filteredUnits;
+        } else {
+          unitsByProduct[productCode] = [];
+        }
+      }
+
+      console.log('✅ Available units loaded:', unitsByProduct);
+      setAvailableUnits(unitsByProduct);
+
     } catch (err: any) {
+      console.error('💥 AssemblyButton load error:', err);
       setError(err.message);
     } finally {
-      setLoadingChildren(false);
+      setLoading(false);
     }
   };
 
-  // Открываем модальное окно и загружаем детей
+  // Открываем модальное окно и загружаем данные
   const handleOpenModal = async () => {
+    console.log('🔍 AssemblyButton opening modal for unit:', unit.id);
     setShowModal(true);
-    await loadChildUnits();
+    setSelectedUnits({});
+    await loadAssemblyData();
   };
 
-  // Выбор/снятие выбора юнита
-  const toggleUnitSelection = (unitId: number) => {
-    setSelectedUnits(prev => 
-      prev.includes(unitId) 
-        ? prev.filter(id => id !== unitId)
-        : [...prev, unitId]
+  // Выбор юнита для продукта
+  const handleUnitSelect = (productCode: string, unitId: number) => {
+    setSelectedUnits(prev => ({
+      ...prev,
+      [productCode]: unitId
+    }));
+  };
+
+  // Проверяем можно ли выполнить сборку
+  const canAssemble = () => {
+    if (!scenario) return false;
+    
+    // Должны быть выбраны юниты для всех продуктов сценария
+    return scenario.childProductCodes.every(productCode => 
+      selectedUnits[productCode] !== undefined
     );
   };
 
   // Выполнение сборки
   const handleAssembly = async () => {
-    if (selectedUnits.length === 0) {
-      setError('Выберите части для сборки');
+    if (!scenario || !canAssemble()) {
+      setError('Выберите юниты для всех частей сценария');
       return;
     }
 
@@ -84,6 +140,14 @@ export default function AssemblyButton({
     setError('');
 
     try {
+      console.log('🔍 AssemblyButton starting assembly:', {
+        parentUnitId: unit.id,
+        selectedUnits: selectedUnits,
+        scenarioId: scenario.id
+      });
+
+      const childUnitIds = Object.values(selectedUnits);
+
       const response = await fetch('/api/disassembly/assemble', {
         method: 'POST',
         headers: {
@@ -91,7 +155,8 @@ export default function AssemblyButton({
         },
         body: JSON.stringify({
           parentUnitId: unit.id,
-          childUnitIds: selectedUnits
+          childUnitIds: childUnitIds,
+          scenarioId: scenario.id
         }),
       });
 
@@ -101,8 +166,9 @@ export default function AssemblyButton({
         throw new Error(result.error);
       }
 
+      console.log('✅ AssemblyButton assembly successful:', result.data);
       setShowModal(false);
-      setSelectedUnits([]);
+      setSelectedUnits({});
       setError('');
       
       if (onAssemblySuccess) {
@@ -111,24 +177,22 @@ export default function AssemblyButton({
 
       alert('✅ Сборка выполнена успешно!');
     } catch (err: any) {
+      console.error('💥 AssemblyButton assembly error:', err);
       setError(err.message);
+      alert('❌ Ошибка сборки: ' + err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Группируем детей по продуктам
-  const childrenByProduct = childUnits.reduce((acc, child) => {
-    const productCode = child.productCode || child.product?.code || 'unknown';
-    if (!acc[productCode]) {
-      acc[productCode] = {
-        productName: child.productName || child.product?.name || 'Без названия',
-        units: []
-      };
+  // Получаем название продукта по коду
+  const getProductName = (productCode: string) => {
+    const units = availableUnits[productCode];
+    if (units && units.length > 0) {
+      return units[0].productName || units[0].product?.name || productCode;
     }
-    acc[productCode].units.push(child);
-    return acc;
-  }, {} as Record<string, { productName: string; units: ChildUnit[] }>);
+    return productCode;
+  };
 
   return (
     <div>
@@ -153,8 +217,9 @@ export default function AssemblyButton({
                 </h3>
                 <button
                   onClick={() => {
+                    console.log('🔍 AssemblyButton closing modal');
                     setShowModal(false);
-                    setSelectedUnits([]);
+                    setSelectedUnits({});
                     setError('');
                   }}
                   className="text-gray-400 hover:text-gray-600 text-xl"
@@ -165,65 +230,95 @@ export default function AssemblyButton({
               <p className="text-gray-600 mt-2">
                 Выберите конкретные экземпляры для сборки обратно в набор
               </p>
+              {scenario && (
+                <p className="text-sm text-gray-500 mt-1">
+                  Сценарий: {scenario.name} • Частей: {scenario.partsCount}
+                </p>
+              )}
             </div>
 
             <div className="p-6 max-h-96 overflow-y-auto">
-              {loadingChildren ? (
+              {loading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
-                  <p className="mt-2 text-gray-600">Загрузка доступных частей...</p>
+                  <p className="mt-2 text-gray-600">Загрузка данных для сборки...</p>
                 </div>
-              ) : childUnits.length === 0 ? (
+              ) : error ? (
+                <div className="text-center py-8 text-red-500">
+                  <div className="text-4xl mb-2">❌</div>
+                  <p>{error}</p>
+                </div>
+              ) : !scenario ? (
                 <div className="text-center py-8 text-gray-500">
-                  <div className="text-4xl mb-2">📭</div>
-                  <p>Нет доступных частей для сборки</p>
-                  <p className="text-sm mt-1">Все части уже проданы или используются</p>
+                  <div className="text-4xl mb-2">📋</div>
+                  <p>Сценарий сборки не найден</p>
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {Object.entries(childrenByProduct).map(([productCode, { productName, units }]) => (
-                    <div key={productCode} className="border border-gray-200 rounded-lg">
-                      <div className="px-4 py-3 bg-gray-50 border-b">
-                        <h4 className="font-semibold text-gray-900">
-                          {productName}
-                        </h4>
-                        <p className="text-sm text-gray-600">
-                          Код: {productCode} • Доступно: {units.length} ед.
-                        </p>
-                      </div>
-                      <div className="divide-y">
-                        {units.map(child => (
-                          <div key={child.id} className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
-                            <div className="flex items-center space-x-3">
-                              <input
-                                type="checkbox"
-                                checked={selectedUnits.includes(child.id)}
-                                onChange={() => toggleUnitSelection(child.id)}
-                                className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
-                              />
-                              <div>
-                                <div className="font-medium text-gray-900">
-                                  {child.serialNumber}
+                  {scenario.childProductCodes.map((productCode, index) => {
+                    const units = availableUnits[productCode] || [];
+                    const selectedUnitId = selectedUnits[productCode];
+
+                    return (
+                      <div key={productCode} className="border border-gray-200 rounded-lg">
+                        <div className="px-4 py-3 bg-gray-50 border-b">
+                          <h4 className="font-semibold text-gray-900">
+                            Часть {index + 1}: {getProductName(productCode)}
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            Код: {productCode} • Доступно: {units.length} ед.
+                            {selectedUnitId && (
+                              <span className="ml-2 text-green-600">✓ Выбрано</span>
+                            )}
+                          </p>
+                        </div>
+                        
+                        {units.length === 0 ? (
+                          <div className="px-4 py-6 text-center text-gray-500">
+                            <div className="text-2xl mb-2">📭</div>
+                            <p>Нет доступных юнитов</p>
+                            <p className="text-sm">Product Code: {productCode}</p>
+                          </div>
+                        ) : (
+                          <div className="divide-y">
+                            {units.map(unit => (
+                              <div key={unit.id} className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
+                                <div className="flex items-center space-x-3">
+                                  <input
+                                    type="radio"
+                                    name={`product-${productCode}`}
+                                    checked={selectedUnitId === unit.id}
+                                    onChange={() => handleUnitSelect(productCode, unit.id)}
+                                    className="w-4 h-4 text-purple-600 focus:ring-purple-500"
+                                  />
+                                  <div>
+                                    <div className="font-medium text-gray-900">
+                                      {unit.serialNumber}
+                                    </div>
+                                    <div className="text-sm text-gray-600">
+                                      Статус: {unit.statusProduct} • {unit.disassemblyStatus}
+                                    </div>
+                                    <div className="text-xs text-gray-400">
+                                      ID: {unit.id}
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="text-sm text-gray-600">
-                                  Статус: {child.statusProduct} • {child.disassemblyStatus}
+                                <div className="text-xs text-gray-500">
+                                  {unit.productName || unit.product?.name}
                                 </div>
                               </div>
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {child.productName || child.product?.name}
-                            </div>
+                            ))}
                           </div>
-                        ))}
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
 
             <div className="p-6 border-t bg-gray-50">
-              {error && (
+              {error && !loading && (
                 <div className="text-red-600 text-sm mb-4 bg-red-50 p-3 rounded border border-red-200">
                   {error}
                 </div>
@@ -231,13 +326,13 @@ export default function AssemblyButton({
               
               <div className="flex justify-between items-center">
                 <div className="text-sm text-gray-600">
-                  Выбрано: {selectedUnits.length} из {childUnits.length} частей
+                  {scenario && `Выбрано: ${Object.keys(selectedUnits).length} из ${scenario.partsCount} частей`}
                 </div>
                 <div className="flex space-x-3">
                   <button
                     onClick={() => {
                       setShowModal(false);
-                      setSelectedUnits([]);
+                      setSelectedUnits({});
                       setError('');
                     }}
                     className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
@@ -246,10 +341,10 @@ export default function AssemblyButton({
                   </button>
                   <button
                     onClick={handleAssembly}
-                    disabled={isLoading || selectedUnits.length === 0}
+                    disabled={isLoading || !canAssemble()}
                     className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:bg-gray-400 transition-colors"
                   >
-                    {isLoading ? 'Сборка...' : `Собрать (${selectedUnits.length})`}
+                    {isLoading ? 'Сборка...' : `Собрать (${Object.keys(selectedUnits).length}/${scenario?.partsCount || 0})`}
                   </button>
                 </div>
               </div>

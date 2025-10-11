@@ -1,14 +1,17 @@
-// app/api/disassembly/scenario/[id]/route.ts
+//app/api/disassembly/scenario/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 
 // GET /api/disassembly/scenario/[id]
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const scenarioId = Number((await params).id);
+    const { id } = await params;
+    const scenarioId = Number(id);
+
+    console.log("🔍 GET /api/disassembly/scenario/[id]:", { scenarioId });
 
     if (isNaN(scenarioId)) {
       return NextResponse.json(
@@ -28,11 +31,16 @@ export async function GET(
       );
     }
 
+    console.log("✅ GET /api/disassembly/scenario/[id] успешно:", {
+      scenarioId: scenario.id,
+      name: scenario.name
+    });
+
     return NextResponse.json({ ok: true, data: scenario });
   } catch (err: any) {
     console.error("❌ GET /api/disassembly/scenario/[id] ошибка:", err);
     return NextResponse.json(
-      { ok: false, error: "Internal server error" },
+      { ok: false, error: err.message },
       { status: 500 }
     );
   }
@@ -40,13 +48,16 @@ export async function GET(
 
 // PATCH /api/disassembly/scenario/[id]
 export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const scenarioId = Number(params.id);
-    const body = await req.json();
+    const { id } = await params;
+    const scenarioId = Number(id);
+    const body = await request.json();
     const { isActive } = body;
+
+    console.log("🔍 PATCH /api/disassembly/scenario/[id]:", { scenarioId, isActive });
 
     if (isNaN(scenarioId)) {
       return NextResponse.json(
@@ -60,11 +71,16 @@ export async function PATCH(
       data: { isActive }
     });
 
+    console.log("✅ PATCH /api/disassembly/scenario/[id] успешно:", {
+      scenarioId: updatedScenario.id,
+      isActive: updatedScenario.isActive
+    });
+
     return NextResponse.json({ ok: true, data: updatedScenario });
   } catch (err: any) {
     console.error("❌ PATCH /api/disassembly/scenario/[id] ошибка:", err);
     return NextResponse.json(
-      { ok: false, error: "Internal server error" },
+      { ok: false, error: err.message },
       { status: 500 }
     );
   }

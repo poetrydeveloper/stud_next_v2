@@ -30,7 +30,10 @@ export default function DisassemblyButtons({ unit, onOperationSuccess }: Disasse
 
   // Проверяем сценарии при загрузке
   useEffect(() => {
-    if (unit.statusProduct === "IN_STORE" && unit.disassemblyStatus === "MONOLITH") {
+    // ИСПРАВЛЕНИЕ: Добавляем RESTORED в разрешенные статусы
+    const allowedDisassemblyStatuses = ["MONOLITH", "RESTORED"];
+    
+    if (unit.statusProduct === "IN_STORE" && allowedDisassemblyStatuses.includes(unit.disassemblyStatus)) {
       checkUnitScenarios();
     }
   }, [unit]);
@@ -69,7 +72,7 @@ export default function DisassemblyButtons({ unit, onOperationSuccess }: Disasse
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           scenarioId: scenario.id,
-          unitId: unit.id // ← ИСПРАВЛЕНО: добавлен unitId
+          unitId: unit.id
         })
       });
 
@@ -100,8 +103,9 @@ export default function DisassemblyButtons({ unit, onOperationSuccess }: Disasse
     }
   };
 
-  // Условия для показа кнопок
-  const canShowButtons = unit.statusProduct === "IN_STORE" && unit.disassemblyStatus === "MONOLITH";
+  // ИСПРАВЛЕНИЕ: Добавляем RESTORED в разрешенные статусы
+  const allowedDisassemblyStatuses = ["MONOLITH", "RESTORED"];
+  const canShowButtons = unit.statusProduct === "IN_STORE" && allowedDisassemblyStatuses.includes(unit.disassemblyStatus);
   const canDisassemble = hasScenario && scenarios.some(s => s.isActive);
   const canCreateScenario = !hasScenario;
 

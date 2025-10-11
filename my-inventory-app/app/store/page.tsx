@@ -1,4 +1,5 @@
 // app/store/page.tsx
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -57,7 +58,7 @@ interface Category {
 export default function StorePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
-  const [selectedStatus, setSelectedStatus] = useState<string>("IN_STORE");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all"); // ← ИЗМЕНЕНО: "all" вместо "IN_STORE"
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [spines, setSpines] = useState<Spine[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -85,18 +86,12 @@ export default function StorePage() {
         setLoading(true);
         setError(null);
         
-        const params = new URLSearchParams();
-        params.append('status', 'IN_STORE,IN_DISASSEMBLED');
-        
-        if (selectedCategory) {
-          params.append('categoryId', selectedCategory.toString());
-        }
-        
-        const response = await fetch(`/api/spines?${params}`);
+        // ИСПРАВЛЕНО: используем /api/store и убираем параметры статуса
+        const response = await fetch('/api/store');
         const data = await response.json();
         
         if (data.ok) {
-          setSpines(data.spines || []);
+          setSpines(data.data || []); // ← Обратите внимание: data.data, а не data.spines
         } else {
           setError(data.error || "Ошибка загрузки данных");
         }

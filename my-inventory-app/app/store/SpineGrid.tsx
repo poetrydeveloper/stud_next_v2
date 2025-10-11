@@ -88,11 +88,24 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
     }
   };
 
+  // ИСПРАВЛЕННАЯ ФИЛЬТРАЦИЯ ДЛЯ МУЛЬТИСТАТУСОВ
   const getFilteredUnits = (spine: Spine) => {
     if (!spine.productUnits) return [];
+
     return spine.productUnits.filter(unit => {
       const brandMatch = selectedBrand === "all" || unit.product?.brand?.name === selectedBrand;
-      const statusMatch = selectedStatus === "all" || unit.statusCard === selectedStatus || unit.statusProduct === selectedStatus;
+      
+      // ФИКС: Правильная фильтрация по мультистатусам
+      let statusMatch = true;
+      if (selectedStatus !== "all") {
+        const statuses = selectedStatus.split(',').map(s => s.trim());
+        
+        // Проверяем совпадение unit.statusCard ИЛИ unit.statusProduct с любым из статусов в массиве
+        statusMatch = statuses.some(status => 
+          unit.statusCard === status || unit.statusProduct === status
+        );
+      }
+      
       return brandMatch && statusMatch;
     });
   };
@@ -151,6 +164,13 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
     });
   };
 
+  // ДОБАВЛЕНО: Отладочная информация для фильтрации
+  console.log('🔍 SpineGrid фильтрация:', {
+    selectedStatus,
+    spinesCount: spines.length,
+    allUnitsCount: spines.reduce((acc, spine) => acc + (spine.productUnits?.length || 0), 0)
+  });
+
   if (spines.length === 0) {
     return (
       <div className="text-center py-12 bg-white rounded-lg border-2 border-dashed border-gray-300">
@@ -168,6 +188,14 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
         const unitsByBrand = getUnitsByBrand(filteredUnits);
         const stats = getSpineStats(spine);
         const isExpanded = expandedSpines[spine.id];
+
+        // ДОБАВЛЕНО: Отладочная информация для каждого spine
+        console.log('🔍 Spine:', {
+          name: spine.name,
+          totalUnits: spine.productUnits?.length || 0,
+          filteredUnits: filteredUnits.length,
+          selectedStatus
+        });
 
         return (
           <div key={spine.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -207,6 +235,9 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
                   <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed">
                     <div className="text-4xl mb-2">📭</div>
                     <p>Нет товаров по выбранным фильтрам</p>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Статус: {selectedStatus} • Бренд: {selectedBrand}
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-6">
@@ -228,13 +259,6 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
                           {brandUnits.map(unit => {
                             const productStatus = getStatusConfig(unit.statusProduct);
                             const cardStatus = getStatusConfig(unit.statusCard);
-
-                            // ДОБАВЛЕНО: Отладочная информация
-                            console.log('🔍 DEBUG Unit:', {
-                              id: unit.id,
-                              statusProduct: unit.statusProduct, 
-                              shouldShowAssembly: unit.statusProduct === "IN_DISASSEMBLED"
-                            });
 
                             return (
                               <div key={unit.id} className="px-4 py-3 hover:bg-gray-50 transition-colors">
@@ -314,22 +338,16 @@ export default function SpineGrid({ spines, selectedBrand, selectedStatus }: Spi
                                     </div>
                                   </div>
 
-                                  {/* Действия - ИСПРАВЛЕННЫЙ БЛОК */}
                                   <div className="flex-shrink-0 ml-4 space-y-2">
                                     <SaleButtons 
                                       unit={unit}
                                       onSaleSuccess={() => window.location.reload()}
                                     />
-                                    {/* ДОБАВЛЕНА ПРОВЕРКА ДЛЯ ОТЛАДКИ */}
-                                    {unit.statusProduct === "IN_DISASSEMBLED" ? (
+                                    {unit.statusProduct === "IN_DISASSEMBLED" && (
                                       <AssemblyButton 
                                         unit={unit}
                                         onAssemblySuccess={() => window.location.reload()}
                                       />
-                                    ) : (
-                                      <div className="text-xs text-gray-500 text-center">
-                                        Статус: {unit.statusProduct}
-                                      </div>
                                     )}
                                   </div>
                                 </div>

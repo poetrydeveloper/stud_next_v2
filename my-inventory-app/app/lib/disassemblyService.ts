@@ -1,28 +1,27 @@
-// app/lib/disassemblyService.ts (ПОЛНОСТЬЮ ПЕРЕПИСАННЫЙ)
 import { ProductUnitPhysicalStatus, UnitDisassemblyStatus } from "@prisma/client";
 import prisma from "./prisma";
 
 interface CreateScenarioData {
   name: string;
-  parentProductCode: string; // ← ИЗМЕНЕНО: код продукта вместо unitId
-  childProductCodes: string[]; // ← ИЗМЕНЕНО: коды продуктов вместо ID
+  parentProductCode: string;
+  childProductCodes: string[];
 }
 
 interface ExecuteDisassemblyData {
-  unitId: number; // ← ИЗМЕНЕНО: конкретный unit для разборки
-  scenarioId: number; // ← шаблон сценария
+  unitId: number;
+  scenarioId: number;
 }
 
 interface ExecuteAssemblyData {
   parentUnitId: number;
   childUnitIds: number[];
+  scenarioId?: number;
 }
 
 export class DisassemblyService {
   
-  // Создание сценария разборки (ШАБЛОН)
+  // Создание сценария разборки
   static async createScenario(data: CreateScenarioData) {
-    // Проверяем что родительский продукт существует
     const parentProduct = await prisma.product.findUnique({
       where: { code: data.parentProductCode }
     });
@@ -31,7 +30,6 @@ export class DisassemblyService {
       throw new Error(`Родительский продукт с кодом "${data.parentProductCode}" не найден`);
     }
 
-    // Проверяем что все дочерние продукты существуют
     const childProducts = await prisma.product.findMany({
       where: { code: { in: data.childProductCodes } }
     });
@@ -42,7 +40,6 @@ export class DisassemblyService {
       throw new Error(`Дочерние продукты не найдены: ${missingCodes.join(', ')}`);
     }
 
-    // Проверяем существующие сценарии для этого продукта
     const existingScenario = await prisma.disassemblyScenario.findFirst({
       where: { 
         parentProductCode: data.parentProductCode,
@@ -65,9 +62,11 @@ export class DisassemblyService {
     });
   }
 
-  // Выполнение разборки (применение шаблона к конкретному unit)
+  // Выполнение разборки
   static async executeDisassembly(data: ExecuteDisassemblyData) {
     return prisma.$transaction(async (tx) => {
+      console.log('🔍 DisassemblyService.executeDisassembly:', data);
+
       const scenario = await tx.disassemblyScenario.findUnique({
         where: { id: data.scenarioId }
       });
@@ -80,7 +79,6 @@ export class DisassemblyService {
         throw new Error('Сценарий не активен');
       }
 
-      // Находим unit для разборки
       const parentUnit = await tx.productUnit.findUnique({
         where: { id: data.unitId },
         include: { product: true }
@@ -90,18 +88,22 @@ export class DisassemblyService {
         throw new Error('Unit не найден');
       }
 
-      // ВАЛИДАЦИЯ: проверяем что код продукта unit совпадает с родительским кодом в сценарии
       const unitProductCode = parentUnit.productCode || parentUnit.product?.code;
       if (unitProductCode !== scenario.parentProductCode) {
         throw new Error(`Сценарий не подходит для этого unit. Ожидается продукт: ${scenario.parentProductCode}, получен: ${unitProductCode}`);
       }
 
+      // ИСПРАВЛЕНИЕ: Добавляем RESTORED в разрешенные статусы для разборки
+      const allowedDisassemblyStatuses = [
+        UnitDisassemblyStatus.MONOLITH,
+        UnitDisassemblyStatus.RESTORED
+      ];
+
       if (parentUnit.statusProduct !== ProductUnitPhysicalStatus.IN_STORE ||
-          parentUnit.disassemblyStatus !== UnitDisassemblyStatus.MONOLITH) {
-        throw new Error('Unit должен быть IN_STORE и MONOLITH для разборки');
+          !allowedDisassemblyStatuses.includes(parentUnit.disassemblyStatus)) {
+        throw new Error('Unit должен быть IN_STORE и MONOLITH или RESTORED для разборки');
       }
 
-      // Находим дочерние продукты по кодам из сценария
       const childProducts = await tx.product.findMany({
         where: { code: { in: scenario.childProductCodes as string[] } }
       });
@@ -141,7 +143,7 @@ export class DisassemblyService {
           statusProduct: ProductUnitPhysicalStatus.IN_DISASSEMBLED,
           disassemblyStatus: UnitDisassemblyStatus.DISASSEMBLED,
           isParsingAlgorithm: false,
-          disassemblyScenarioId: scenario.id // ← связываем с использованным сценарием
+          disassemblyScenarioId: scenario.id
         }
       });
 
@@ -164,6 +166,12 @@ export class DisassemblyService {
         });
       }
 
+      console.log('✅ DisassemblyService.executeDisassembly успешно:', {
+        parentUnitId: updatedParent.id,
+        childUnitsCount: childUnits.length,
+        scenarioId: scenario.id
+      });
+
       return {
         parentUnit: updatedParent,
         childUnits,
@@ -172,27 +180,66 @@ export class DisassemblyService {
     });
   }
 
-  // Выполнение сборки (без изменений - работает с конкретными юнитами)
+  // Выполнение сборки
   static async executeAssembly(data: ExecuteAssemblyData) {
     return prisma.$transaction(async (tx) => {
+      console.log('🔍 DisassemblyService.executeAssembly:', data);
+
       const parentUnit = await tx.productUnit.findUnique({
         where: { id: data.parentUnitId }
       });
 
-      if (!parentUnit || parentUnit.statusProduct !== ProductUnitPhysicalStatus.IN_DISASSEMBLED) {
-        throw new Error('Родительский Unit не найден или не в статусе IN_DISASSEMBLED');
+      if (!parentUnit) {
+        throw new Error('Родительский Unit не найден');
       }
 
+      if (parentUnit.statusProduct !== ProductUnitPhysicalStatus.IN_DISASSEMBLED) {
+        throw new Error('Родительский Unit не в статусе IN_DISASSEMBLED');
+      }
+
+      // Ищем дочерние units с улучшенной проверкой
       const childUnits = await tx.productUnit.findMany({
         where: { 
           id: { in: data.childUnitIds },
           statusProduct: ProductUnitPhysicalStatus.IN_STORE,
-          disassemblyStatus: UnitDisassemblyStatus.PARTIAL
+          disassemblyStatus: {
+            in: [UnitDisassemblyStatus.PARTIAL, UnitDisassemblyStatus.MONOLITH]
+          }
         }
       });
 
+      console.log('🔍 Available child units for assembly:', {
+        requestedIds: data.childUnitIds,
+        foundIds: childUnits.map(u => u.id),
+        foundCount: childUnits.length,
+        requestedCount: data.childUnitIds.length
+      });
+
+      // Детальная проверка доступности
       if (childUnits.length !== data.childUnitIds.length) {
-        throw new Error('Не все дочерние Unit доступны для сборки');
+        const foundIds = childUnits.map(u => u.id);
+        const missingIds = data.childUnitIds.filter(id => !foundIds.includes(id));
+        
+        // Получаем информацию о недоступных units для отладки
+        const unavailableUnits = await tx.productUnit.findMany({
+          where: { id: { in: missingIds } },
+          select: {
+            id: true,
+            statusProduct: true,
+            disassemblyStatus: true,
+            serialNumber: true
+          }
+        });
+
+        console.error('❌ Unavailable units for assembly:', unavailableUnits);
+        
+        throw new Error(
+          `Не все дочерние Unit доступны для сборки. ` +
+          `Недоступны: ${missingIds.join(', ')}. ` +
+          `Причина: ${unavailableUnits.map(u => 
+            `ID ${u.id} (${u.serialNumber}): status=${u.statusProduct}, disassembly=${u.disassemblyStatus}`
+          ).join('; ')}`
+        );
       }
 
       // Обновляем статусы детей
@@ -200,7 +247,8 @@ export class DisassemblyService {
         where: { id: { in: data.childUnitIds } },
         data: {
           statusProduct: ProductUnitPhysicalStatus.IN_COLLECTED,
-          disassemblyStatus: UnitDisassemblyStatus.COLLECTED
+          disassemblyStatus: UnitDisassemblyStatus.COLLECTED,
+          disassembledParentId: null
         }
       });
 
@@ -210,7 +258,7 @@ export class DisassemblyService {
         data: {
           statusProduct: ProductUnitPhysicalStatus.IN_STORE,
           disassemblyStatus: UnitDisassemblyStatus.RESTORED,
-          disassemblyScenarioId: null // ← очищаем ссылку на сценарий
+          disassemblyScenarioId: data.scenarioId || null
         }
       });
 
@@ -220,16 +268,24 @@ export class DisassemblyService {
           data: {
             productUnitId: unit.id,
             type: 'ASSEMBLY_OPERATION',
-            message: `Выполнена сборка. Родитель: ${parentUnit.id}`,
+            message: `Выполнена сборка. Родитель: ${parentUnit.id}, Дети: ${data.childUnitIds.join(', ')}`,
             meta: {
               operation: 'assembly', 
               parentUnitId: parentUnit.id,
               childUnitIds: data.childUnitIds,
+              scenarioId: data.scenarioId,
               timestamp: new Date()
             }
           }
         });
       }
+
+      console.log('✅ DisassemblyService.executeAssembly успешно:', {
+        parentUnitId: restoredParent.id,
+        childUnitsCount: childUnits.length,
+        newParentStatus: restoredParent.statusProduct,
+        newParentDisassemblyStatus: restoredParent.disassemblyStatus
+      });
 
       return {
         parentUnit: restoredParent,
@@ -272,7 +328,7 @@ export class DisassemblyService {
     });
   }
 
-  // Получение доступных сценариев для unit (по коду продукта)
+  // Получение доступных сценариев для unit - ИСПРАВЛЕННЫЙ МЕТОД
   static async getUnitScenarios(unitId: number) {
     const unit = await prisma.productUnit.findUnique({
       where: { id: unitId },
@@ -280,6 +336,17 @@ export class DisassemblyService {
     });
 
     if (!unit) {
+      return [];
+    }
+
+    // ИСПРАВЛЕНИЕ: Проверяем разрешенные статусы для разборки
+    const allowedDisassemblyStatuses = [
+      UnitDisassemblyStatus.MONOLITH,
+      UnitDisassemblyStatus.RESTORED  // ДОБАВЛЕНО RESTORED
+    ];
+
+    if (!allowedDisassemblyStatuses.includes(unit.disassemblyStatus) || 
+        unit.statusProduct !== ProductUnitPhysicalStatus.IN_STORE) {
       return [];
     }
 

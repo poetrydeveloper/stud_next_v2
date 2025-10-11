@@ -40,7 +40,9 @@ export async function GET(
       where: {
         disassembledParentId: parseInt(unitId),
         statusProduct: 'IN_STORE', // Только доступные для сборки
-        disassemblyStatus: 'PARTIAL'
+        disassemblyStatus: {
+          in: ['PARTIAL', 'MONOLITH'] // ← ИСПРАВЛЕНО: добавили MONOLITH
+        }
       },
       select: {
         id: true,
