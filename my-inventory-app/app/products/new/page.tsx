@@ -152,50 +152,45 @@ export default function NewProductPage() {
     }
 
     try {
-      const productData = {
-        name: formData.name,
-        code: formData.code,
-        description: formData.description,
-        categoryId: Number(formData.categoryId),
-        spineId: formData.spineId ? Number(formData.spineId) : null,
-        brandId: formData.brandId ? Number(formData.brandId) : null,
-      };
+      // Создаем FormData вместо JSON
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("code", formData.code);
+      formDataToSend.append("description", formData.description || "");
+      formDataToSend.append("categoryId", formData.categoryId);
+      
+      if (formData.spineId) {
+        formDataToSend.append("spineId", formData.spineId);
+      }
+      
+      if (formData.brandId) {
+        formDataToSend.append("brandId", formData.brandId);
+      }
 
-      console.log("📤 Отправка данных продукта:", productData);
+      // Добавляем изображения
+      images.forEach((image) => {
+        formDataToSend.append("images", image);
+      });
+
+      console.log("📤 Отправка FormData:");
+      for (let [key, value] of formDataToSend.entries()) {
+        if (value instanceof File) {
+          console.log(`  ${key}: File ${value.name} (${value.size} bytes)`);
+        } else {
+          console.log(`  ${key}: ${value}`);
+        }
+      }
 
       const res = await fetch("/api/products", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(productData),
+        // НЕ добавляем заголовок Content-Type - браузер сам установит multipart/form-data с boundary
+        body: formDataToSend,
       });
 
       const data = await res.json();
 
       if (!res.ok) {
         throw new Error(data.error || "Ошибка при создании продукта");
-      }
-
-      // Загрузка изображений если есть
-      if (images.length > 0 && data.id) {
-        console.log("🖼️ Загрузка изображений...");
-        const productId = data.id;
-        
-        for (const image of images) {
-          const imageFormData = new FormData();
-          imageFormData.append("productId", productId.toString());
-          imageFormData.append("image", image);
-
-          const imageRes = await fetch("/api/product-images", {
-            method: "POST",
-            body: imageFormData,
-          });
-
-          if (!imageRes.ok) {
-            console.error("Ошибка загрузки изображения:", await imageRes.json());
-          }
-        }
       }
 
       alert("✅ Продукт создан успешно!");
