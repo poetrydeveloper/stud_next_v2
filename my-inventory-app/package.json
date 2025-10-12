@@ -10,9 +10,10 @@
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "backup": "node scripts/backup-node.js",
-    "restore": "node scripts/restore-node.js",
-    "backup-daily": "node scripts/backup-node.js && git add backups/ && git commit -m \"Daily backup\" || true"
+    "backup": "node scripts/backup-manager.js",
+    "backup:create": "node scripts/backup-native.js",
+    "backup:restore": "node scripts/restore-native.js",
+    "backup:list": "dir backups\\*.sql"
   },
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.7",
@@ -26,6 +27,7 @@
     "next-auth": "^4.24.11",
     "octokit": "^5.0.3",
     "pg": "^8.16.3",
+    "pg-dump": "^0.10.0",
     "promise": "^8.3.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
