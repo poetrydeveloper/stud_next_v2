@@ -1,0 +1,988 @@
+{
+  "Supplier": [],
+  "Customer": [],
+  "User": [],
+  "Category": [
+    {
+      "id": 1,
+      "name": "Ручной инструмент",
+      "slug": "ruchnoy-instrument",
+      "path": "/ruchnoy-instrument"
+    },
+    {
+      "id": 2,
+      "name": "Головки торцовые",
+      "slug": "golovki-tortsovye",
+      "path": "/ruchnoy-instrument/golovki-tortsovye"
+    },
+    {
+      "id": 3,
+      "name": "1/2\" ударные короткие",
+      "slug": "1-2-udarnye-korotkie",
+      "path": "/ruchnoy-instrument/golovki-tortsovye/1-2-udarnye-korotkie"
+    },
+    {
+      "id": 4,
+      "name": "Е-профиль",
+      "slug": "e-profil",
+      "path": "/ruchnoy-instrument/golovki-tortsovye/e-profil"
+    },
+    {
+      "id": 5,
+      "name": "E-Инструмент 1/4\"",
+      "slug": "e-instrument-1-4",
+      "path": "/ruchnoy-instrument/golovki-tortsovye/e-profil/e-instrument-1-4"
+    },
+    {
+      "id": 6,
+      "name": "Ключи",
+      "slug": "klyuchi",
+      "path": "/ruchnoy-instrument/klyuchi"
+    },
+    {
+      "id": 7,
+      "name": "E-типа",
+      "slug": "e-tipa",
+      "path": "/ruchnoy-instrument/klyuchi/e-tipa"
+    },
+    {
+      "id": 8,
+      "name": "1/2\" короткие",
+      "slug": "1-2-korotkie",
+      "path": "/ruchnoy-instrument/golovki-tortsovye/1-2-korotkie"
+    },
+    {
+      "id": 9,
+      "name": "Оборудование",
+      "slug": "oborudovanie",
+      "path": "/oborudovanie"
+    },
+    {
+      "id": 10,
+      "name": "Подъемное",
+      "slug": "pod-emnoe",
+      "path": "/oborudovanie/pod-emnoe"
+    },
+    {
+      "id": 11,
+      "name": "Подставки",
+      "slug": "podstavki",
+      "path": "/oborudovanie/pod-emnoe/podstavki"
+    },
+    {
+      "id": 12,
+      "name": "Специальный инструмент",
+      "slug": "spetsial-nyy-instrument",
+      "path": "/spetsial-nyy-instrument"
+    },
+    {
+      "id": 13,
+      "name": "Ходовая часть",
+      "slug": "hodovaya-chast",
+      "path": "/spetsial-nyy-instrument/hodovaya-chast"
+    },
+    {
+      "id": 14,
+      "name": "Тяги, шаровые опоры",
+      "slug": "tyagi-sharovye-opory",
+      "path": "/spetsial-nyy-instrument/hodovaya-chast/tyagi-sharovye-opory"
+    },
+    {
+      "id": 15,
+      "name": "Съемник рулевых тяг",
+      "slug": "s-emnik-rulevyh-tyag",
+      "path": "/spetsial-nyy-instrument/hodovaya-chast/tyagi-sharovye-opory/s-emnik-rulevyh-tyag"
+    },
+    {
+      "id": 16,
+      "name": "Металлообработка",
+      "slug": "metalloobrabotka",
+      "path": "/ruchnoy-instrument/metalloobrabotka"
+    },
+    {
+      "id": 17,
+      "name": "Сверла, фрезы",
+      "slug": "sverla-frezy",
+      "path": "/ruchnoy-instrument/metalloobrabotka/sverla-frezy"
+    },
+    {
+      "id": 18,
+      "name": "Сверло ступенчатое",
+      "slug": "sverlo-stupenchatoe",
+      "path": "/ruchnoy-instrument/metalloobrabotka/sverla-frezy/sverlo-stupenchatoe"
+    },
+    {
+      "id": 19,
+      "name": "Трещеточные",
+      "slug": "treschetochnye",
+      "path": "/ruchnoy-instrument/klyuchi/treschetochnye"
+    },
+    {
+      "id": 20,
+      "name": "Ключ комбинированный трещоточный",
+      "slug": "klyuch-kombinirovannyy-treschotochnyy",
+      "path": "/ruchnoy-instrument/klyuchi/treschetochnye/klyuch-kombinirovannyy-treschotochnyy"
+    },
+    {
+      "id": 21,
+      "name": "Биты",
+      "slug": "bity",
+      "path": "/ruchnoy-instrument/bity"
+    },
+    {
+      "id": 22,
+      "name": "10мм длинные",
+      "slug": "10mm-dlinnye",
+      "path": "/ruchnoy-instrument/bity/10mm-dlinnye"
+    }
+  ],
+  "Brand": [
+    {
+      "id": 1,
+      "name": "Force",
+      "slug": "force",
+      "createdAt": "2025-10-14T09:20:26.650Z",
+      "updatedAt": "2025-10-14T09:20:26.650Z"
+    },
+    {
+      "id": 2,
+      "name": "Forsage",
+      "slug": "forsage",
+      "createdAt": "2025-10-14T09:20:34.521Z",
+      "updatedAt": "2025-10-14T09:20:34.521Z"
+    },
+    {
+      "id": 3,
+      "name": "RockFORCE",
+      "slug": "rockforce",
+      "createdAt": "2025-10-14T09:23:19.676Z",
+      "updatedAt": "2025-10-14T09:23:19.676Z"
+    },
+    {
+      "id": 4,
+      "name": "Дело техники",
+      "slug": "delo-tehniki",
+      "createdAt": "2025-10-14T10:13:36.002Z",
+      "updatedAt": "2025-10-14T10:13:36.002Z"
+    },
+    {
+      "id": 5,
+      "name": "JCB",
+      "slug": "jcb",
+      "createdAt": "2025-10-14T11:42:04.291Z",
+      "updatedAt": "2025-10-14T11:42:04.291Z"
+    },
+    {
+      "id": 6,
+      "name": "Partner",
+      "slug": "partner",
+      "createdAt": "2025-10-14T12:05:05.836Z",
+      "updatedAt": "2025-10-14T12:05:05.836Z"
+    }
+  ],
+  "Spine": [
+    {
+      "id": 1,
+      "name": "Головка ударная 36мм (12гр.), 1/2''",
+      "slug": "golovka-udarnaya-36mm-12gr-1-2",
+      "categoryId": 3,
+      "imagePath": null,
+      "brandData": {
+        "RockFORCE": {
+          "displayName": "Головка ударная 36мм (12гр.), 1/2''",
+          "imagePath": "/img/products/RF-44836/RF-44836_1760433877993_1.jpg",
+          "productCode": "RF-44836",
+          "updatedAt": "2025-10-14T09:24:43.255Z"
+        }
+      },
+      "createdAt": "2025-10-14T09:22:10.795Z",
+      "updatedAt": "2025-10-14T09:24:43.256Z",
+      "category": {
+        "id": 3,
+        "name": "1/2\" ударные короткие",
+        "slug": "1-2-udarnye-korotkie",
+        "path": "/ruchnoy-instrument/golovki-tortsovye/1-2-udarnye-korotkie"
+      }
+    },
+    {
+      "id": 2,
+      "name": "Головка TORX E10 1/4\"",
+      "slug": "golovka-torx-e10-1-4",
+      "categoryId": 5,
+      "imagePath": null,
+      "brandData": {
+        "Дело техники": {
+          "displayName": "Головка TORX E10 1/4\"",
+          "imagePath": "/img/products/603010/603010_1760440514859_1.jpg",
+          "productCode": "603010",
+          "updatedAt": "2025-10-14T11:15:45.701Z"
+        }
+      },
+      "createdAt": "2025-10-14T10:16:36.080Z",
+      "updatedAt": "2025-10-14T11:15:45.703Z",
+      "category": {
+        "id": 5,
+        "name": "E-Инструмент 1/4\"",
+        "slug": "e-instrument-1-4",
+        "path": "/ruchnoy-instrument/golovki-tortsovye/e-profil/e-instrument-1-4"
+      }
+    },
+    {
+      "id": 3,
+      "name": "Ключ накидной Е-профиль Е10хЕ12",
+      "slug": "klyuch-nakidnoy-e-profil-e10he12",
+      "categoryId": 7,
+      "imagePath": null,
+      "brandData": {
+        "Дело техники": {
+          "displayName": "Ключ накидной TORX Е10×Е12",
+          "imagePath": "/img/products/514412/514412_1760441496965_1.jpg",
+          "productCode": "514412",
+          "updatedAt": "2025-10-14T11:32:00.959Z"
+        }
+      },
+      "createdAt": "2025-10-14T11:30:27.900Z",
+      "updatedAt": "2025-10-14T11:32:00.960Z",
+      "category": {
+        "id": 7,
+        "name": "E-типа",
+        "slug": "e-tipa",
+        "path": "/ruchnoy-instrument/klyuchi/e-tipa"
+      }
+    },
+    {
+      "id": 4,
+      "name": "Головка 30мм (12гр.), 1/2''",
+      "slug": "golovka-30mm-12gr-1-2",
+      "categoryId": 8,
+      "imagePath": null,
+      "brandData": {
+        "Дело техники": {
+          "displayName": "Головка двенадцатигранная 30мм 1/2\"",
+          "imagePath": "/img/products/622030/622030_1760441908955_1.jpg",
+          "productCode": "622030",
+          "updatedAt": "2025-10-14T11:38:45.144Z"
+        }
+      },
+      "createdAt": "2025-10-14T11:37:11.202Z",
+      "updatedAt": "2025-10-14T11:38:45.145Z",
+      "category": {
+        "id": 8,
+        "name": "1/2\" короткие",
+        "slug": "1-2-korotkie",
+        "path": "/ruchnoy-instrument/golovki-tortsovye/1-2-korotkie"
+      }
+    },
+    {
+      "id": 5,
+      "name": "Подставка ремонтная 2т",
+      "slug": "podstavka-remontnaya-2t",
+      "categoryId": 11,
+      "imagePath": null,
+      "brandData": {
+        "JCB": {
+          "displayName": "Подставка ремонтная 2т (h min 278mm, h max 425mm), к-т 2шт",
+          "imagePath": "/img/products/JCB-TH52002C/JCB-TH52002C_1760442274730_1.jpg",
+          "productCode": "JCB-TH52002C",
+          "updatedAt": "2025-10-14T11:45:59.703Z"
+        }
+      },
+      "createdAt": "2025-10-14T11:43:24.821Z",
+      "updatedAt": "2025-10-14T11:45:59.704Z",
+      "category": {
+        "id": 11,
+        "name": "Подставки",
+        "slug": "podstavki",
+        "path": "/oborudovanie/pod-emnoe/podstavki"
+      }
+    },
+    {
+      "id": 6,
+      "name": "Съемник рулевых тяг универсальный 27-42мм, 1/2''",
+      "slug": "s-emnik-rulevyh-tyag-universal-nyy-27-42mm-1-2",
+      "categoryId": 15,
+      "imagePath": null,
+      "brandData": {
+        "RockFORCE": {
+          "displayName": "Съемник рулевых тяг универсальный 27-42мм, 1/2''",
+          "imagePath": "/img/products/RF-9T0801/RF-9T0801_1760443265093_1.jpg",
+          "productCode": "RF-9T0801",
+          "updatedAt": "2025-10-14T12:01:13.756Z"
+        }
+      },
+      "createdAt": "2025-10-14T11:53:42.745Z",
+      "updatedAt": "2025-10-14T12:01:13.757Z",
+      "category": {
+        "id": 15,
+        "name": "Съемник рулевых тяг",
+        "slug": "s-emnik-rulevyh-tyag",
+        "path": "/spetsial-nyy-instrument/hodovaya-chast/tyagi-sharovye-opory/s-emnik-rulevyh-tyag"
+      }
+    },
+    {
+      "id": 7,
+      "name": "Сверло ступенчатое HSS 4241(4-32мм)",
+      "slug": "sverlo-stupenchatoe-hss-4241-4-32mm",
+      "categoryId": 18,
+      "imagePath": null,
+      "brandData": {
+        "Partner": {
+          "displayName": "Сверло ступенчатое HSS 4241(4-32мм), в блистере",
+          "imagePath": "/img/products/PA-44740/PA-44740_1760443667328_1.jpg",
+          "productCode": "PA-44740",
+          "updatedAt": "2025-10-14T12:07:53.526Z"
+        }
+      },
+      "createdAt": "2025-10-14T12:06:25.903Z",
+      "updatedAt": "2025-10-14T12:07:53.527Z",
+      "category": {
+        "id": 18,
+        "name": "Сверло ступенчатое",
+        "slug": "sverlo-stupenchatoe",
+        "path": "/ruchnoy-instrument/metalloobrabotka/sverla-frezy/sverlo-stupenchatoe"
+      }
+    },
+    {
+      "id": 8,
+      "name": "Ключ комбинированный трещоточный 13мм",
+      "slug": "klyuch-kombinirovannyy-treschotochnyy-13mm",
+      "categoryId": 20,
+      "imagePath": null,
+      "brandData": {
+        "RockFORCE": {
+          "displayName": "Ключ комбинированный трещоточный 13мм",
+          "imagePath": "/img/products/RF-75713/RF-75713_1760443947997_1.jpg",
+          "productCode": "RF-75713",
+          "updatedAt": "2025-10-14T12:12:41.366Z"
+        }
+      },
+      "createdAt": "2025-10-14T12:11:25.113Z",
+      "updatedAt": "2025-10-14T12:12:41.367Z",
+      "category": {
+        "id": 20,
+        "name": "Ключ комбинированный трещоточный",
+        "slug": "klyuch-kombinirovannyy-treschotochnyy",
+        "path": "/ruchnoy-instrument/klyuchi/treschetochnye/klyuch-kombinirovannyy-treschotochnyy"
+      }
+    },
+    {
+      "id": 9,
+      "name": "Бита 6-гранная H5х75ммL,10мм",
+      "slug": "bita-6-grannaya-h5h75mml-10mm",
+      "categoryId": 22,
+      "imagePath": null,
+      "brandData": {
+        "RockFORCE": {
+          "displayName": "Бита 6-гранная H5х75ммL,10мм",
+          "imagePath": "/img/products/RF-1747505 Premium/RF-1747505 Premium_1760444227594_1.jpg",
+          "productCode": "RF-1747505 Premium",
+          "updatedAt": "2025-10-14T12:17:13.435Z"
+        }
+      },
+      "createdAt": "2025-10-14T12:15:49.721Z",
+      "updatedAt": "2025-10-14T12:17:13.436Z",
+      "category": {
+        "id": 22,
+        "name": "10мм длинные",
+        "slug": "10mm-dlinnye",
+        "path": "/ruchnoy-instrument/bity/10mm-dlinnye"
+      }
+    }
+  ],
+  "Product": [
+    {
+      "id": 1,
+      "code": "RF-44836",
+      "name": "Головка ударная 36мм (12гр.), 1/2''",
+      "description": "",
+      "categoryId": 3,
+      "brandId": 3,
+      "spineId": 1,
+      "createdAt": "2025-10-14T09:24:37.981Z",
+      "updatedAt": "2025-10-14T09:24:37.981Z",
+      "category": {
+        "id": 3,
+        "name": "1/2\" ударные короткие",
+        "slug": "1-2-udarnye-korotkie",
+        "path": "/ruchnoy-instrument/golovki-tortsovye/1-2-udarnye-korotkie"
+      },
+      "brand": {
+        "id": 3,
+        "name": "RockFORCE",
+        "slug": "rockforce",
+        "createdAt": "2025-10-14T09:23:19.676Z",
+        "updatedAt": "2025-10-14T09:23:19.676Z"
+      },
+      "spine": {
+        "id": 1,
+        "name": "Головка ударная 36мм (12гр.), 1/2''",
+        "slug": "golovka-udarnaya-36mm-12gr-1-2",
+        "categoryId": 3,
+        "imagePath": null,
+        "brandData": {
+          "RockFORCE": {
+            "displayName": "Головка ударная 36мм (12гр.), 1/2''",
+            "imagePath": "/img/products/RF-44836/RF-44836_1760433877993_1.jpg",
+            "productCode": "RF-44836",
+            "updatedAt": "2025-10-14T09:24:43.255Z"
+          }
+        },
+        "createdAt": "2025-10-14T09:22:10.795Z",
+        "updatedAt": "2025-10-14T09:24:43.256Z"
+      },
+      "images": [
+        {
+          "id": 1,
+          "productId": 1,
+          "filename": "RF-44836_1760433877993_1.jpg",
+          "path": "/img/products/RF-44836/RF-44836_1760433877993_1.jpg",
+          "isMain": true,
+          "createdAt": "2025-10-14T09:24:37.995Z",
+          "localPath": null,
+          "githubUrl": null,
+          "storageType": "local"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "code": "603010",
+      "name": "Головка TORX E10 1/4\"",
+      "description": "",
+      "categoryId": 5,
+      "brandId": 4,
+      "spineId": 2,
+      "createdAt": "2025-10-14T11:15:14.843Z",
+      "updatedAt": "2025-10-14T11:15:14.843Z",
+      "category": {
+        "id": 5,
+        "name": "E-Инструмент 1/4\"",
+        "slug": "e-instrument-1-4",
+        "path": "/ruchnoy-instrument/golovki-tortsovye/e-profil/e-instrument-1-4"
+      },
+      "brand": {
+        "id": 4,
+        "name": "Дело техники",
+        "slug": "delo-tehniki",
+        "createdAt": "2025-10-14T10:13:36.002Z",
+        "updatedAt": "2025-10-14T10:13:36.002Z"
+      },
+      "spine": {
+        "id": 2,
+        "name": "Головка TORX E10 1/4\"",
+        "slug": "golovka-torx-e10-1-4",
+        "categoryId": 5,
+        "imagePath": null,
+        "brandData": {
+          "Дело техники": {
+            "displayName": "Головка TORX E10 1/4\"",
+            "imagePath": "/img/products/603010/603010_1760440514859_1.jpg",
+            "productCode": "603010",
+            "updatedAt": "2025-10-14T11:15:45.701Z"
+          }
+        },
+        "createdAt": "2025-10-14T10:16:36.080Z",
+        "updatedAt": "2025-10-14T11:15:45.703Z"
+      },
+      "images": [
+        {
+          "id": 2,
+          "productId": 2,
+          "filename": "603010_1760440514859_1.jpg",
+          "path": "/img/products/603010/603010_1760440514859_1.jpg",
+          "isMain": true,
+          "createdAt": "2025-10-14T11:15:14.861Z",
+          "localPath": null,
+          "githubUrl": null,
+          "storageType": "local"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "code": "514412",
+      "name": "Ключ накидной TORX Е10×Е12",
+      "description": "",
+      "categoryId": 7,
+      "brandId": 4,
+      "spineId": 3,
+      "createdAt": "2025-10-14T11:31:36.953Z",
+      "updatedAt": "2025-10-14T11:31:36.953Z",
+      "category": {
+        "id": 7,
+        "name": "E-типа",
+        "slug": "e-tipa",
+        "path": "/ruchnoy-instrument/klyuchi/e-tipa"
+      },
+      "brand": {
+        "id": 4,
+        "name": "Дело техники",
+        "slug": "delo-tehniki",
+        "createdAt": "2025-10-14T10:13:36.002Z",
+        "updatedAt": "2025-10-14T10:13:36.002Z"
+      },
+      "spine": {
+        "id": 3,
+        "name": "Ключ накидной Е-профиль Е10хЕ12",
+        "slug": "klyuch-nakidnoy-e-profil-e10he12",
+        "categoryId": 7,
+        "imagePath": null,
+        "brandData": {
+          "Дело техники": {
+            "displayName": "Ключ накидной TORX Е10×Е12",
+            "imagePath": "/img/products/514412/514412_1760441496965_1.jpg",
+            "productCode": "514412",
+            "updatedAt": "2025-10-14T11:32:00.959Z"
+          }
+        },
+        "createdAt": "2025-10-14T11:30:27.900Z",
+        "updatedAt": "2025-10-14T11:32:00.960Z"
+      },
+      "images": [
+        {
+          "id": 3,
+          "productId": 3,
+          "filename": "514412_1760441496965_1.jpg",
+          "path": "/img/products/514412/514412_1760441496965_1.jpg",
+          "isMain": true,
+          "createdAt": "2025-10-14T11:31:36.967Z",
+          "localPath": null,
+          "githubUrl": null,
+          "storageType": "local"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "code": "622030",
+      "name": "Головка двенадцатигранная 30мм 1/2\"",
+      "description": "",
+      "categoryId": 8,
+      "brandId": 4,
+      "spineId": 4,
+      "createdAt": "2025-10-14T11:38:11.525Z",
+      "updatedAt": "2025-10-14T11:38:28.953Z",
+      "category": {
+        "id": 8,
+        "name": "1/2\" короткие",
+        "slug": "1-2-korotkie",
+        "path": "/ruchnoy-instrument/golovki-tortsovye/1-2-korotkie"
+      },
+      "brand": {
+        "id": 4,
+        "name": "Дело техники",
+        "slug": "delo-tehniki",
+        "createdAt": "2025-10-14T10:13:36.002Z",
+        "updatedAt": "2025-10-14T10:13:36.002Z"
+      },
+      "spine": {
+        "id": 4,
+        "name": "Головка 30мм (12гр.), 1/2''",
+        "slug": "golovka-30mm-12gr-1-2",
+        "categoryId": 8,
+        "imagePath": null,
+        "brandData": {
+          "Дело техники": {
+            "displayName": "Головка двенадцатигранная 30мм 1/2\"",
+            "imagePath": "/img/products/622030/622030_1760441908955_1.jpg",
+            "productCode": "622030",
+            "updatedAt": "2025-10-14T11:38:45.144Z"
+          }
+        },
+        "createdAt": "2025-10-14T11:37:11.202Z",
+        "updatedAt": "2025-10-14T11:38:45.145Z"
+      },
+      "images": [
+        {
+          "id": 4,
+          "productId": 4,
+          "filename": "622030_1760441908955_1.jpg",
+          "path": "/img/products/622030/622030_1760441908955_1.jpg",
+          "isMain": true,
+          "createdAt": "2025-10-14T11:38:28.956Z",
+          "localPath": null,
+          "githubUrl": null,
+          "storageType": "local"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "code": "JCB-TH52002C",
+      "name": "Подставка ремонтная 2т (h min 278mm, h max 425mm), к-т 2шт",
+      "description": "",
+      "categoryId": 11,
+      "brandId": 5,
+      "spineId": 5,
+      "createdAt": "2025-10-14T11:44:34.718Z",
+      "updatedAt": "2025-10-14T11:44:34.718Z",
+      "category": {
+        "id": 11,
+        "name": "Подставки",
+        "slug": "podstavki",
+        "path": "/oborudovanie/pod-emnoe/podstavki"
+      },
+      "brand": {
+        "id": 5,
+        "name": "JCB",
+        "slug": "jcb",
+        "createdAt": "2025-10-14T11:42:04.291Z",
+        "updatedAt": "2025-10-14T11:42:04.291Z"
+      },
+      "spine": {
+        "id": 5,
+        "name": "Подставка ремонтная 2т",
+        "slug": "podstavka-remontnaya-2t",
+        "categoryId": 11,
+        "imagePath": null,
+        "brandData": {
+          "JCB": {
+            "displayName": "Подставка ремонтная 2т (h min 278mm, h max 425mm), к-т 2шт",
+            "imagePath": "/img/products/JCB-TH52002C/JCB-TH52002C_1760442274730_1.jpg",
+            "productCode": "JCB-TH52002C",
+            "updatedAt": "2025-10-14T11:45:59.703Z"
+          }
+        },
+        "createdAt": "2025-10-14T11:43:24.821Z",
+        "updatedAt": "2025-10-14T11:45:59.704Z"
+      },
+      "images": [
+        {
+          "id": 5,
+          "productId": 5,
+          "filename": "JCB-TH52002C_1760442274730_1.jpg",
+          "path": "/img/products/JCB-TH52002C/JCB-TH52002C_1760442274730_1.jpg",
+          "isMain": true,
+          "createdAt": "2025-10-14T11:44:34.731Z",
+          "localPath": null,
+          "githubUrl": null,
+          "storageType": "local"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "code": "JCB-TH52002C-Part",
+      "name": "Подставка ремонтная 2т (h min 278mm, h max 425mm)",
+      "description": "ОДНА ПОДСТАВКА",
+      "categoryId": 11,
+      "brandId": 5,
+      "spineId": 5,
+      "createdAt": "2025-10-14T11:45:43.758Z",
+      "updatedAt": "2025-10-14T11:45:43.758Z",
+      "category": {
+        "id": 11,
+        "name": "Подставки",
+        "slug": "podstavki",
+        "path": "/oborudovanie/pod-emnoe/podstavki"
+      },
+      "brand": {
+        "id": 5,
+        "name": "JCB",
+        "slug": "jcb",
+        "createdAt": "2025-10-14T11:42:04.291Z",
+        "updatedAt": "2025-10-14T11:42:04.291Z"
+      },
+      "spine": {
+        "id": 5,
+        "name": "Подставка ремонтная 2т",
+        "slug": "podstavka-remontnaya-2t",
+        "categoryId": 11,
+        "imagePath": null,
+        "brandData": {
+          "JCB": {
+            "displayName": "Подставка ремонтная 2т (h min 278mm, h max 425mm), к-т 2шт",
+            "imagePath": "/img/products/JCB-TH52002C/JCB-TH52002C_1760442274730_1.jpg",
+            "productCode": "JCB-TH52002C",
+            "updatedAt": "2025-10-14T11:45:59.703Z"
+          }
+        },
+        "createdAt": "2025-10-14T11:43:24.821Z",
+        "updatedAt": "2025-10-14T11:45:59.704Z"
+      },
+      "images": [
+        {
+          "id": 6,
+          "productId": 6,
+          "filename": "JCB-TH52002C-Part_1760442343761_1.jpg",
+          "path": "/img/products/JCB-TH52002C-Part/JCB-TH52002C-Part_1760442343761_1.jpg",
+          "isMain": true,
+          "createdAt": "2025-10-14T11:45:43.762Z",
+          "localPath": null,
+          "githubUrl": null,
+          "storageType": "local"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "code": "JCB-TH52002C-Part2",
+      "name": "Подставка ремонтная 2т (h min 278mm, h max 425mm)",
+      "description": "",
+      "categoryId": 11,
+      "brandId": 5,
+      "spineId": 5,
+      "createdAt": "2025-10-14T11:48:26.666Z",
+      "updatedAt": "2025-10-14T11:48:26.666Z",
+      "category": {
+        "id": 11,
+        "name": "Подставки",
+        "slug": "podstavki",
+        "path": "/oborudovanie/pod-emnoe/podstavki"
+      },
+      "brand": {
+        "id": 5,
+        "name": "JCB",
+        "slug": "jcb",
+        "createdAt": "2025-10-14T11:42:04.291Z",
+        "updatedAt": "2025-10-14T11:42:04.291Z"
+      },
+      "spine": {
+        "id": 5,
+        "name": "Подставка ремонтная 2т",
+        "slug": "podstavka-remontnaya-2t",
+        "categoryId": 11,
+        "imagePath": null,
+        "brandData": {
+          "JCB": {
+            "displayName": "Подставка ремонтная 2т (h min 278mm, h max 425mm), к-т 2шт",
+            "imagePath": "/img/products/JCB-TH52002C/JCB-TH52002C_1760442274730_1.jpg",
+            "productCode": "JCB-TH52002C",
+            "updatedAt": "2025-10-14T11:45:59.703Z"
+          }
+        },
+        "createdAt": "2025-10-14T11:43:24.821Z",
+        "updatedAt": "2025-10-14T11:45:59.704Z"
+      },
+      "images": [
+        {
+          "id": 7,
+          "productId": 7,
+          "filename": "JCB-TH52002C-Part2_1760442506678_1.jpg",
+          "path": "/img/products/JCB-TH52002C-Part2/JCB-TH52002C-Part2_1760442506678_1.jpg",
+          "isMain": true,
+          "createdAt": "2025-10-14T11:48:26.680Z",
+          "localPath": null,
+          "githubUrl": null,
+          "storageType": "local"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "code": "RF-9T0801",
+      "name": "Съемник рулевых тяг универсальный 27-42мм, 1/2''",
+      "description": "",
+      "categoryId": 15,
+      "brandId": 3,
+      "spineId": 6,
+      "createdAt": "2025-10-14T12:01:05.080Z",
+      "updatedAt": "2025-10-14T12:01:05.080Z",
+      "category": {
+        "id": 15,
+        "name": "Съемник рулевых тяг",
+        "slug": "s-emnik-rulevyh-tyag",
+        "path": "/spetsial-nyy-instrument/hodovaya-chast/tyagi-sharovye-opory/s-emnik-rulevyh-tyag"
+      },
+      "brand": {
+        "id": 3,
+        "name": "RockFORCE",
+        "slug": "rockforce",
+        "createdAt": "2025-10-14T09:23:19.676Z",
+        "updatedAt": "2025-10-14T09:23:19.676Z"
+      },
+      "spine": {
+        "id": 6,
+        "name": "Съемник рулевых тяг универсальный 27-42мм, 1/2''",
+        "slug": "s-emnik-rulevyh-tyag-universal-nyy-27-42mm-1-2",
+        "categoryId": 15,
+        "imagePath": null,
+        "brandData": {
+          "RockFORCE": {
+            "displayName": "Съемник рулевых тяг универсальный 27-42мм, 1/2''",
+            "imagePath": "/img/products/RF-9T0801/RF-9T0801_1760443265093_1.jpg",
+            "productCode": "RF-9T0801",
+            "updatedAt": "2025-10-14T12:01:13.756Z"
+          }
+        },
+        "createdAt": "2025-10-14T11:53:42.745Z",
+        "updatedAt": "2025-10-14T12:01:13.757Z"
+      },
+      "images": [
+        {
+          "id": 8,
+          "productId": 8,
+          "filename": "RF-9T0801_1760443265093_1.jpg",
+          "path": "/img/products/RF-9T0801/RF-9T0801_1760443265093_1.jpg",
+          "isMain": true,
+          "createdAt": "2025-10-14T12:01:05.096Z",
+          "localPath": null,
+          "githubUrl": null,
+          "storageType": "local"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "code": "PA-44740",
+      "name": "Сверло ступенчатое HSS 4241(4-32мм), в блистере",
+      "description": "",
+      "categoryId": 18,
+      "brandId": 6,
+      "spineId": 7,
+      "createdAt": "2025-10-14T12:07:47.324Z",
+      "updatedAt": "2025-10-14T12:07:47.324Z",
+      "category": {
+        "id": 18,
+        "name": "Сверло ступенчатое",
+        "slug": "sverlo-stupenchatoe",
+        "path": "/ruchnoy-instrument/metalloobrabotka/sverla-frezy/sverlo-stupenchatoe"
+      },
+      "brand": {
+        "id": 6,
+        "name": "Partner",
+        "slug": "partner",
+        "createdAt": "2025-10-14T12:05:05.836Z",
+        "updatedAt": "2025-10-14T12:05:05.836Z"
+      },
+      "spine": {
+        "id": 7,
+        "name": "Сверло ступенчатое HSS 4241(4-32мм)",
+        "slug": "sverlo-stupenchatoe-hss-4241-4-32mm",
+        "categoryId": 18,
+        "imagePath": null,
+        "brandData": {
+          "Partner": {
+            "displayName": "Сверло ступенчатое HSS 4241(4-32мм), в блистере",
+            "imagePath": "/img/products/PA-44740/PA-44740_1760443667328_1.jpg",
+            "productCode": "PA-44740",
+            "updatedAt": "2025-10-14T12:07:53.526Z"
+          }
+        },
+        "createdAt": "2025-10-14T12:06:25.903Z",
+        "updatedAt": "2025-10-14T12:07:53.527Z"
+      },
+      "images": [
+        {
+          "id": 9,
+          "productId": 9,
+          "filename": "PA-44740_1760443667328_1.jpg",
+          "path": "/img/products/PA-44740/PA-44740_1760443667328_1.jpg",
+          "isMain": true,
+          "createdAt": "2025-10-14T12:07:47.330Z",
+          "localPath": null,
+          "githubUrl": null,
+          "storageType": "local"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "code": "RF-75713",
+      "name": "Ключ комбинированный трещоточный 13мм",
+      "description": "",
+      "categoryId": 20,
+      "brandId": 3,
+      "spineId": 8,
+      "createdAt": "2025-10-14T12:12:27.985Z",
+      "updatedAt": "2025-10-14T12:12:27.985Z",
+      "category": {
+        "id": 20,
+        "name": "Ключ комбинированный трещоточный",
+        "slug": "klyuch-kombinirovannyy-treschotochnyy",
+        "path": "/ruchnoy-instrument/klyuchi/treschetochnye/klyuch-kombinirovannyy-treschotochnyy"
+      },
+      "brand": {
+        "id": 3,
+        "name": "RockFORCE",
+        "slug": "rockforce",
+        "createdAt": "2025-10-14T09:23:19.676Z",
+        "updatedAt": "2025-10-14T09:23:19.676Z"
+      },
+      "spine": {
+        "id": 8,
+        "name": "Ключ комбинированный трещоточный 13мм",
+        "slug": "klyuch-kombinirovannyy-treschotochnyy-13mm",
+        "categoryId": 20,
+        "imagePath": null,
+        "brandData": {
+          "RockFORCE": {
+            "displayName": "Ключ комбинированный трещоточный 13мм",
+            "imagePath": "/img/products/RF-75713/RF-75713_1760443947997_1.jpg",
+            "productCode": "RF-75713",
+            "updatedAt": "2025-10-14T12:12:41.366Z"
+          }
+        },
+        "createdAt": "2025-10-14T12:11:25.113Z",
+        "updatedAt": "2025-10-14T12:12:41.367Z"
+      },
+      "images": [
+        {
+          "id": 10,
+          "productId": 10,
+          "filename": "RF-75713_1760443947997_1.jpg",
+          "path": "/img/products/RF-75713/RF-75713_1760443947997_1.jpg",
+          "isMain": true,
+          "createdAt": "2025-10-14T12:12:27.998Z",
+          "localPath": null,
+          "githubUrl": null,
+          "storageType": "local"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "code": "RF-1747505 Premium",
+      "name": "Бита 6-гранная H5х75ммL,10мм",
+      "description": "",
+      "categoryId": 22,
+      "brandId": 3,
+      "spineId": 9,
+      "createdAt": "2025-10-14T12:17:07.591Z",
+      "updatedAt": "2025-10-14T12:17:07.591Z",
+      "category": {
+        "id": 22,
+        "name": "10мм длинные",
+        "slug": "10mm-dlinnye",
+        "path": "/ruchnoy-instrument/bity/10mm-dlinnye"
+      },
+      "brand": {
+        "id": 3,
+        "name": "RockFORCE",
+        "slug": "rockforce",
+        "createdAt": "2025-10-14T09:23:19.676Z",
+        "updatedAt": "2025-10-14T09:23:19.676Z"
+      },
+      "spine": {
+        "id": 9,
+        "name": "Бита 6-гранная H5х75ммL,10мм",
+        "slug": "bita-6-grannaya-h5h75mml-10mm",
+        "categoryId": 22,
+        "imagePath": null,
+        "brandData": {
+          "RockFORCE": {
+            "displayName": "Бита 6-гранная H5х75ммL,10мм",
+            "imagePath": "/img/products/RF-1747505 Premium/RF-1747505 Premium_1760444227594_1.jpg",
+            "productCode": "RF-1747505 Premium",
+            "updatedAt": "2025-10-14T12:17:13.435Z"
+          }
+        },
+        "createdAt": "2025-10-14T12:15:49.721Z",
+        "updatedAt": "2025-10-14T12:17:13.436Z"
+      },
+      "images": [
+        {
+          "id": 11,
+          "productId": 11,
+          "filename": "RF-1747505 Premium_1760444227594_1.jpg",
+          "path": "/img/products/RF-1747505 Premium/RF-1747505 Premium_1760444227594_1.jpg",
+          "isMain": true,
+          "createdAt": "2025-10-14T12:17:07.595Z",
+          "localPath": null,
+          "githubUrl": null,
+          "storageType": "local"
+        }
+      ]
+    }
+  ]
+}

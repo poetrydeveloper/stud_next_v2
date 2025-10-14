@@ -41,8 +41,9 @@ class CoreDataManager {
         console.log(`  📊 Экспортируем ${table}...`);
         
         try {
+          const includeConfig = this.getIncludes(table);
           const data = await prisma[table.toLowerCase()].findMany({
-            include: this.getIncludes(table)
+            include: includeConfig
           });
           
           coreData[table] = data;
@@ -148,29 +149,27 @@ class CoreDataManager {
 
   // Вспомогательные методы
   getIncludes(table) {
-    const includes = {
-      product: {
-        include: {
+    const tableLower = table.toLowerCase();
+    
+    switch (tableLower) {
+      case 'product':
+        return {
           category: true,
           brand: true,
           spine: true,
-          supplier: true,
           images: true
-        }
-      },
-      spine: {
-        include: {
+        };
+      case 'spine':
+        return {
           category: true
-        }
-      },
-      productimage: {
-        include: {
+        };
+      case 'productimage':
+        return {
           product: true
-        }
-      }
-    };
-    
-    return includes[table.toLowerCase()] || {};
+        };
+      default:
+        return {};
+    }
   }
 
   async importTableData(tableName, data) {

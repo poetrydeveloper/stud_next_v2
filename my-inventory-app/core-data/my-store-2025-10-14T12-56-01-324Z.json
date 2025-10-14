@@ -1,0 +1,183 @@
+{
+  "Supplier": [],
+  "Customer": [],
+  "User": [],
+  "Category": [
+    {
+      "id": 1,
+      "name": "Ручной инструмент",
+      "slug": "ruchnoy-instrument",
+      "path": "/ruchnoy-instrument"
+    },
+    {
+      "id": 2,
+      "name": "Головки торцовые",
+      "slug": "golovki-tortsovye",
+      "path": "/ruchnoy-instrument/golovki-tortsovye"
+    },
+    {
+      "id": 3,
+      "name": "1/2\" ударные короткие",
+      "slug": "1-2-udarnye-korotkie",
+      "path": "/ruchnoy-instrument/golovki-tortsovye/1-2-udarnye-korotkie"
+    },
+    {
+      "id": 4,
+      "name": "Е-профиль",
+      "slug": "e-profil",
+      "path": "/ruchnoy-instrument/golovki-tortsovye/e-profil"
+    },
+    {
+      "id": 5,
+      "name": "E-Инструмент 1/4\"",
+      "slug": "e-instrument-1-4",
+      "path": "/ruchnoy-instrument/golovki-tortsovye/e-profil/e-instrument-1-4"
+    },
+    {
+      "id": 6,
+      "name": "Ключи",
+      "slug": "klyuchi",
+      "path": "/ruchnoy-instrument/klyuchi"
+    },
+    {
+      "id": 7,
+      "name": "E-типа",
+      "slug": "e-tipa",
+      "path": "/ruchnoy-instrument/klyuchi/e-tipa"
+    },
+    {
+      "id": 8,
+      "name": "1/2\" короткие",
+      "slug": "1-2-korotkie",
+      "path": "/ruchnoy-instrument/golovki-tortsovye/1-2-korotkie"
+    },
+    {
+      "id": 9,
+      "name": "Оборудование",
+      "slug": "oborudovanie",
+      "path": "/oborudovanie"
+    },
+    {
+      "id": 10,
+      "name": "Подъемное",
+      "slug": "pod-emnoe",
+      "path": "/oborudovanie/pod-emnoe"
+    },
+    {
+      "id": 11,
+      "name": "Подставки",
+      "slug": "podstavki",
+      "path": "/oborudovanie/pod-emnoe/podstavki"
+    },
+    {
+      "id": 12,
+      "name": "Специальный инструмент",
+      "slug": "spetsial-nyy-instrument",
+      "path": "/spetsial-nyy-instrument"
+    },
+    {
+      "id": 13,
+      "name": "Ходовая часть",
+      "slug": "hodovaya-chast",
+      "path": "/spetsial-nyy-instrument/hodovaya-chast"
+    },
+    {
+      "id": 14,
+      "name": "Тяги, шаровые опоры",
+      "slug": "tyagi-sharovye-opory",
+      "path": "/spetsial-nyy-instrument/hodovaya-chast/tyagi-sharovye-opory"
+    },
+    {
+      "id": 15,
+      "name": "Съемник рулевых тяг",
+      "slug": "s-emnik-rulevyh-tyag",
+      "path": "/spetsial-nyy-instrument/hodovaya-chast/tyagi-sharovye-opory/s-emnik-rulevyh-tyag"
+    },
+    {
+      "id": 16,
+      "name": "Металлообработка",
+      "slug": "metalloobrabotka",
+      "path": "/ruchnoy-instrument/metalloobrabotka"
+    },
+    {
+      "id": 17,
+      "name": "Сверла, фрезы",
+      "slug": "sverla-frezy",
+      "path": "/ruchnoy-instrument/metalloobrabotka/sverla-frezy"
+    },
+    {
+      "id": 18,
+      "name": "Сверло ступенчатое",
+      "slug": "sverlo-stupenchatoe",
+      "path": "/ruchnoy-instrument/metalloobrabotka/sverla-frezy/sverlo-stupenchatoe"
+    },
+    {
+      "id": 19,
+      "name": "Трещеточные",
+      "slug": "treschetochnye",
+      "path": "/ruchnoy-instrument/klyuchi/treschetochnye"
+    },
+    {
+      "id": 20,
+      "name": "Ключ комбинированный трещоточный",
+      "slug": "klyuch-kombinirovannyy-treschotochnyy",
+      "path": "/ruchnoy-instrument/klyuchi/treschetochnye/klyuch-kombinirovannyy-treschotochnyy"
+    },
+    {
+      "id": 21,
+      "name": "Биты",
+      "slug": "bity",
+      "path": "/ruchnoy-instrument/bity"
+    },
+    {
+      "id": 22,
+      "name": "10мм длинные",
+      "slug": "10mm-dlinnye",
+      "path": "/ruchnoy-instrument/bity/10mm-dlinnye"
+    }
+  ],
+  "Brand": [
+    {
+      "id": 1,
+      "name": "Force",
+      "slug": "force",
+      "createdAt": "2025-10-14T09:20:26.650Z",
+      "updatedAt": "2025-10-14T09:20:26.650Z"
+    },
+    {
+      "id": 2,
+      "name": "Forsage",
+      "slug": "forsage",
+      "createdAt": "2025-10-14T09:20:34.521Z",
+      "updatedAt": "2025-10-14T09:20:34.521Z"
+    },
+    {
+      "id": 3,
+      "name": "RockFORCE",
+      "slug": "rockforce",
+      "createdAt": "2025-10-14T09:23:19.676Z",
+      "updatedAt": "2025-10-14T09:23:19.676Z"
+    },
+    {
+      "id": 4,
+      "name": "Дело техники",
+      "slug": "delo-tehniki",
+      "createdAt": "2025-10-14T10:13:36.002Z",
+      "updatedAt": "2025-10-14T10:13:36.002Z"
+    },
+    {
+      "id": 5,
+      "name": "JCB",
+      "slug": "jcb",
+      "createdAt": "2025-10-14T11:42:04.291Z",
+      "updatedAt": "2025-10-14T11:42:04.291Z"
+    },
+    {
+      "id": 6,
+      "name": "Partner",
+      "slug": "partner",
+      "createdAt": "2025-10-14T12:05:05.836Z",
+      "updatedAt": "2025-10-14T12:05:05.836Z"
+    }
+  ]
+}
