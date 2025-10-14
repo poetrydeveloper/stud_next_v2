@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { ProductUnitPhysicalStatus } from "@prisma/client";
-import { CashDayService } from "@/app/lib/cashDayService";
+import { CashEventService, CashValidationService } from "@/app/lib/cash";
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const { id } = await params;
@@ -23,7 +23,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
     // Проверяем что день открыт (для не-кредитных продаж)
     if (!isCredit && salePrice > 0) {
-      await CashDayService.validateCashDayOpen();
+      await CashValidationService.validateCashDayOpen();
     }
 
     const unit = await prisma.productUnit.findUnique({
@@ -93,20 +93,13 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         data: updateData
       });
 
-      // Создаем CashEvent для не-кредитных продаж
+      // Создаем CashEvent для не-кредитных продаж через новый сервис
       if (!isCredit && salePrice > 0) {
-        const currentCashDay = await CashDayService.getCurrentCashDay();
-        if (currentCashDay) {
-          await tx.cashEvent.create({
-            data: {
-              type: "SALE",
-              amount: salePrice,
-              notes: `Продажа: ${unit.productName || 'товар'}`,
-              cashDayId: currentCashDay.id,
-              productUnitId: unitId
-            }
-          });
-        }
+        await CashEventService.createSaleEvent(
+          unitId,
+          salePrice,
+          unit.productName || 'товар'
+        );
       }
 
       return soldUnit;

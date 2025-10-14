@@ -1,4 +1,4 @@
-// app/product-units/CompactUnitsView.tsx (ИСПРАВЛЕННАЯ ВЕРСИЯ)
+// app/product-units/CompactUnitsView.tsx (ОБНОВЛЕННАЯ ВЕРСИЯ)
 "use client";
 
 import React, { useState } from "react";
@@ -116,6 +116,32 @@ export default function CompactUnitsView({ units }: CompactUnitsViewProps) {
     }
   };
 
+  // НОВАЯ ФУНКЦИЯ: Откат из IN_STORE в IN_REQUEST
+  const handleRevertToRequest = async (unitId: number) => {
+    if (!confirm("Вернуть товар в статус IN_REQUEST? Это отменит доставку.")) {
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/product-units/revert-to-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ unitId }),
+      });
+
+      const data = await res.json();
+      
+      if (data.ok) {
+        alert("Товар успешно возвращен в статус IN_REQUEST!");
+        window.location.reload();
+      } else {
+        alert("Ошибка: " + data.error);
+      }
+    } catch (err) {
+      alert("Произошла ошибка при возврате товара");
+    }
+  };
+
   const setActiveBrand = (spineId: number, brandIndex: number) => {
     setActiveSpineBrands(prev => ({ ...prev, [spineId]: brandIndex }));
   };
@@ -224,7 +250,7 @@ export default function CompactUnitsView({ units }: CompactUnitsViewProps) {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                         Цены
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
                         Действия
                       </th>
                     </tr>
@@ -316,6 +342,18 @@ export default function CompactUnitsView({ units }: CompactUnitsViewProps) {
                                     </button>
                                   </>
                                 )}
+                                
+                                {/* НОВАЯ КНОПКА: Откат из IN_STORE в IN_REQUEST */}
+                                {unit.statusProduct === "IN_STORE" && (
+                                  <button
+                                    onClick={() => handleRevertToRequest(unit.id)}
+                                    className="px-2 py-1 bg-orange-600 text-white text-xs rounded hover:bg-orange-700 transition-colors"
+                                    title="Вернуть в статус IN_REQUEST"
+                                  >
+                                    Откат
+                                  </button>
+                                )}
+                                
                                 <button
                                   onClick={() => toggleExpanded(unit.id)}
                                   className="px-2 py-1 text-gray-600 border border-gray-300 text-xs rounded hover:bg-gray-50 transition-colors"

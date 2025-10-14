@@ -1,20 +1,54 @@
 // app/api/product-units/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
-import { ProductUnitCardStatus } from "@prisma/client";
+import { ProductUnitCardStatus, ProductUnitPhysicalStatus } from "@prisma/client"; // Добавляем оба enum
 import { recalcProductUnitStats } from "./helpers";
+import { getInventoryByStatus } from "./helpers/inventoryHelper";
 
 /**
- * GET /api/product-units?productId=
+ * GET /api/product-units?productId=&status=
  */
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const productId = url.searchParams.get("productId");
+  const status = url.searchParams.get("status");
 
-  console.log("🔍 GET /api/product-units:", { productId });
+  console.log("🔍 GET /api/product-units:", { productId, status });
 
+  // Если запрашивают только остатки по статусу (для экспорта)
+  if (status && !productId) {
+    try {
+      const inventoryMap = await getInventoryByStatus(status);
+      const inventoryData = Array.from(inventoryMap.entries()).map(([code, count]) => ({
+        code,
+        count
+      }));
+
+      return NextResponse.json({
+        ok: true,
+        data: inventoryData
+      });
+    } catch (error) {
+      console.error("❌ GET /api/product-units inventory error:", error);
+      return NextResponse.json({ 
+        ok: false, 
+        error: "Internal server error" 
+      }, { status: 500 });
+    }
+  }
+
+  // Обычный запрос для получения юнитов
   const where: any = {};
   if (productId) where.productId = Number(productId);
+  if (status) {
+    // Проверяем валидность статуса
+    const validStatuses = Object.values(ProductUnitPhysicalStatus);
+    if (validStatuses.includes(status as ProductUnitPhysicalStatus)) {
+      where.statusProduct = status;
+    } else {
+      console.warn("⚠️ Invalid status requested:", status);
+    }
+  }
 
   try {
     const units = await prisma.productUnit.findMany({
@@ -33,7 +67,6 @@ export async function GET(req: Request) {
         spine: { include: { category: true } },
         supplier: true,
         customer: true,
-        // 🔥 ВАЖНО: ВКЛЮЧАЕМ ЛОГИ С СОРТИРОВКОЙ
         logs: {
           orderBy: { createdAt: 'desc' }
         },
@@ -45,14 +78,22 @@ export async function GET(req: Request) {
       firstUnit: units[0] ? {
         id: units[0].id,
         serialNumber: units[0].serialNumber,
+        statusCard: units[0].statusCard,
+        statusProduct: units[0].statusProduct,
         logsCount: units[0].logs?.length || 0
       } : 'no units'
     });
 
-    return NextResponse.json({ ok: true, data: units });
+    return NextResponse.json({ 
+      ok: true, 
+      data: units 
+    });
   } catch (error) {
     console.error("❌ GET /api/product-units ошибка:", error);
-    return NextResponse.json({ ok: false, error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ 
+      ok: false, 
+      error: "Internal server error" 
+    }, { status: 500 });
   }
 }
 
@@ -69,7 +110,10 @@ export async function PATCH(req: Request) {
     console.log("🔍 PATCH /api/product-units:", { unitId, quantity });
 
     if (!unitId) {
-      return NextResponse.json({ ok: false, error: "unitId required" }, { status: 400 });
+      return NextResponse.json({ 
+        ok: false, 
+        error: "unitId required" 
+      }, { status: 400 });
     }
 
     const unit = await prisma.productUnit.findUnique({
@@ -78,7 +122,10 @@ export async function PATCH(req: Request) {
     });
 
     if (!unit) {
-      return NextResponse.json({ ok: false, error: "ProductUnit not found" }, { status: 404 });
+      return NextResponse.json({ 
+        ok: false, 
+        error: "ProductUnit not found" 
+      }, { status: 404 });
     }
 
     const updatedUnit = await prisma.productUnit.update({
@@ -110,9 +157,15 @@ export async function PATCH(req: Request) {
 
     await recalcProductUnitStats(unit.productId);
 
-    return NextResponse.json({ ok: true, data: updatedUnit });
+    return NextResponse.json({ 
+      ok: true, 
+      data: updatedUnit 
+    });
   } catch (err: any) {
     console.error("❌ PATCH /api/product-units error:", err);
-    return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
+    return NextResponse.json({ 
+      ok: false, 
+      error: err.message 
+    }, { status: 500 });
   }
 }

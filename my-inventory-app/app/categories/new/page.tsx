@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 interface Category {
   id: number;
@@ -35,7 +36,7 @@ export default function CategoriesAndSpinesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
 
-  // === Уведомления ===
+  // === Уведомления === - ПЕРЕМЕЩАЕМ В НАЧАЛО
   const [notification, setNotification] = useState<string | null>(null);
 
   useEffect(() => {
@@ -263,17 +264,36 @@ export default function CategoriesAndSpinesPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-8 max-w-4xl">
-      <h1 className="text-2xl font-bold mb-4">Создание категорий и спайнов</h1>
-
+      {/* Уведомление должно быть здесь, после объявления notification */}
       {notification && (
         <div className="fixed top-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow-lg animate-fade-in z-50">
           {notification}
         </div>
       )}
 
+      {/* Заголовок с кнопкой перехода к редактированию */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Создание категорий и спайнов</h1>
+        
+        {/* Кнопка перехода к редактированию категорий */}
+        <Link
+          href="/categories"
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
+        >
+          <span>✏️</span>
+          <span>Редактировать категории</span>
+        </Link>
+      </div>
+
       {/* === Блок создания категории === */}
       <section className="p-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold mb-4">Создать категорию</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Создать категорию</h2>
+          <div className="text-sm text-gray-500">
+            Всего категорий: {countAllCategories(categories)}
+          </div>
+        </div>
+        
         <form onSubmit={handleCreateCategory} className="space-y-4">
           <div>
             <label className="block font-medium mb-2">Название категории</label>
@@ -321,13 +341,23 @@ export default function CategoriesAndSpinesPage() {
             </p>
           </div>
 
-          <button
-            type="submit"
-            className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 disabled:opacity-50 transition-colors"
-            disabled={loadingCategory}
-          >
-            {loadingCategory ? "Создание..." : "Создать категорию"}
-          </button>
+          <div className="flex space-x-3">
+            <button
+              type="submit"
+              className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 disabled:opacity-50 transition-colors"
+              disabled={loadingCategory}
+            >
+              {loadingCategory ? "Создание..." : "Создать категорию"}
+            </button>
+
+            <Link
+              href="/categories"
+              className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors flex items-center space-x-2"
+            >
+              <span>📋</span>
+              <span>Все категории</span>
+            </Link>
+          </div>
         </form>
       </section>
 
@@ -448,4 +478,21 @@ export default function CategoriesAndSpinesPage() {
       )}
     </div>
   );
+}
+
+// Вспомогательная функция для подсчета всех категорий
+function countAllCategories(categories: Category[]): number {
+  let count = 0;
+  
+  function countRecursive(cats: Category[]) {
+    cats.forEach(cat => {
+      count++;
+      if (cat.children && cat.children.length > 0) {
+        countRecursive(cat.children);
+      }
+    });
+  }
+  
+  countRecursive(categories);
+  return count;
 }
