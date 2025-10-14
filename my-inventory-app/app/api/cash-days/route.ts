@@ -1,12 +1,12 @@
 // app/api/cash-days/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
-import { CashDayService } from "@/app/lib/cashDayService";
-
+//import { CashDayService } from "@/app/lib/cashDayService";
+import { CashDayCoreService, CashEventService } from "@/app/lib/cash";
 // GET /api/cash-days - получить историю кассовых дней
 export async function GET() {
   try {
-    const cashDays = await CashDayService.getCashDayHistory(7); // Последние 7 дней
+    const cashDays = await CashDayCoreService.getCashDayHistory(7); // Последние 7 дней
     
     return NextResponse.json({ 
       ok: true, 
@@ -24,7 +24,7 @@ export async function GET() {
 // POST /api/cash-days - открыть новый кассовый день
 export async function POST() {
   try {
-    const cashDay = await CashDayService.openCashDay();
+    const cashDay = await CashDayCoreService.openCashDay();
     
     return NextResponse.json({ 
       ok: true, 

@@ -21,38 +21,73 @@ interface WeeklyStats {
 export default function WeeklyStats() {
   const [stats, setStats] = useState<WeeklyStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month'>('week');
 
   useEffect(() => {
-    loadWeeklyStats();
-  }, []);
+    loadStats();
+  }, [selectedPeriod]);
 
-  const loadWeeklyStats = async () => {
+  const loadStats = async () => {
     try {
-      // В реальном приложении здесь будет вызов API
-      // const response = await fetch("/api/cash-days/weekly-stats");
+      const days = selectedPeriod === 'week' ? 7 : 30;
+      const response = await fetch(`/api/cash-days?days=${days}`);
+      const result = await response.json();
       
-      // Заглушка с моковыми данными
-      const mockStats: WeeklyStats = {
-        days: [
-          { date: '2024-10-07', total: 15000, salesCount: 8, returnsCount: 1, averageTicket: 1875 },
-          { date: '2024-10-08', total: 22000, salesCount: 12, returnsCount: 0, averageTicket: 1833 },
-          { date: '2024-10-09', total: 18000, salesCount: 10, returnsCount: 2, averageTicket: 1800 },
-          { date: '2024-10-10', total: 25000, salesCount: 15, returnsCount: 1, averageTicket: 1667 },
-          { date: '2024-10-11', total: 19000, salesCount: 11, returnsCount: 0, averageTicket: 1727 },
-          { date: '2024-10-12', total: 28000, salesCount: 16, returnsCount: 3, averageTicket: 1750 },
-          { date: '2024-10-13', total: 12000, salesCount: 7, returnsCount: 1, averageTicket: 1714 },
-        ],
-        weekTotal: 139000,
-        weekAverage: 19857,
-        bestDay: { date: '2024-10-12', total: 28000, salesCount: 16, returnsCount: 3, averageTicket: 1750 }
-      };
-      
-      setStats(mockStats);
+      if (result.ok) {
+        const realStats = calculateRealStats(result.data, days);
+        setStats(realStats);
+      }
     } catch (error) {
       console.error("Ошибка загрузки статистики:", error);
+      // Fallback на заглушку если API не работает
+      setStats(getFallbackStats());
     } finally {
       setLoading(false);
     }
+  };
+
+  const calculateRealStats = (cashDays: any[], periodDays: number): WeeklyStats => {
+    // Фильтруем только закрытые дни и преобразуем данные
+    const closedDays = cashDays
+      .filter(day => day.isClosed)
+      .map(day => {
+        const salesEvents = day.events.filter((event: any) => event.type === 'SALE');
+        const returnEvents = day.events.filter((event: any) => event.type === 'RETURN');
+        
+        return {
+          date: day.date,
+          total: day.total,
+          salesCount: salesEvents.length,
+          returnsCount: returnEvents.length,
+          averageTicket: salesEvents.length > 0 ? day.total / salesEvents.length : 0
+        };
+      })
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, periodDays); // Берем только последние N дней
+
+    const weekTotal = closedDays.reduce((sum, day) => sum + day.total, 0);
+    const weekAverage = closedDays.length > 0 ? weekTotal / closedDays.length : 0;
+    
+    const bestDay = closedDays.length > 0 
+      ? closedDays.reduce((best, day) => day.total > best.total ? day : best, closedDays[0])
+      : null;
+
+    return {
+      days: closedDays,
+      weekTotal,
+      weekAverage,
+      bestDay
+    };
+  };
+
+  const getFallbackStats = (): WeeklyStats => {
+    // Заглушка только если API полностью не работает
+    return {
+      days: [],
+      weekTotal: 0,
+      weekAverage: 0,
+      bestDay: null
+    };
   };
 
   const formatCurrency = (amount: number) => {
@@ -65,8 +100,7 @@ export default function WeeklyStats() {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ru-RU', {
       day: 'numeric',
-      month: 'short',
-      weekday: 'short'
+      month: 'short'
     });
   };
 
@@ -94,20 +128,51 @@ export default function WeeklyStats() {
           Статистика недоступна
         </h3>
         <p className="text-gray-600">
-          Не удалось загрузить данные за неделю
+          Не удалось загрузить данные
         </p>
+        <button 
+          onClick={loadStats}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Повторить загрузку
+        </button>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Общая статистика недели */}
+      {/* Заголовок и переключатель периода */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
-          📊 Статистика за неделю
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold text-gray-900">
+            📊 Статистика продаж
+          </h2>
+          <div className="flex space-x-2 bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setSelectedPeriod('week')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                selectedPeriod === 'week'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              7 дней
+            </button>
+            <button
+              onClick={() => setSelectedPeriod('month')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                selectedPeriod === 'month'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              30 дней
+            </button>
+          </div>
+        </div>
         
+        {/* Общая статистика */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
             <div className="text-2xl font-bold text-green-900">
@@ -129,148 +194,140 @@ export default function WeeklyStats() {
           </div>
           <div className="text-center p-4 bg-orange-50 rounded-lg border border-orange-200">
             <div className="text-2xl font-bold text-orange-900">
-              {stats.bestDay ? formatDate(stats.bestDay.date) : '-'}
+              {stats.bestDay ? formatCurrency(stats.bestDay.total) : '0'}
             </div>
             <div className="text-sm text-orange-600">Лучший день</div>
           </div>
         </div>
+
+        {/* Информация о данных */}
+        <div className="text-sm text-gray-600 text-center">
+          {stats.days.length === 0 ? (
+            <p>Нет данных за выбранный период</p>
+          ) : (
+            <p>Показано {stats.days.length} закрытых дней</p>
+          )}
+        </div>
       </div>
 
-      {/* Таблица по дням */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">
-            📈 Детальная статистика по дням
-          </h3>
-        </div>
+      {/* Таблица по дням - только если есть данные */}
+      {stats.days.length > 0 && (
+        <>
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">
+                📈 Детальная статистика по дням
+              </h3>
+            </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  День недели
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Дата
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Выручка
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Продажи
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Возвраты
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Средний чек
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {stats.days.map((day, index) => (
-                <tr 
-                  key={day.date} 
-                  className={`hover:bg-gray-50 transition-colors ${
-                    stats.bestDay && day.date === stats.bestDay.date ? 'bg-green-50' : ''
-                  }`}
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <span className="text-lg mr-2">
-                        {index === 0 ? '🟢' : '⚫'}
-                      </span>
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {getDayName(day.date)}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      День недели
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Дата
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Выручка
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Продажи
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Возвраты
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Средний чек
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {stats.days.map((day, index) => (
+                    <tr 
+                      key={day.date} 
+                      className={`hover:bg-gray-50 transition-colors ${
+                        stats.bestDay && day.date === stats.bestDay.date ? 'bg-green-50' : ''
+                      }`}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <span className="text-lg mr-2">
+                            {stats.bestDay && day.date === stats.bestDay.date ? '🏆' : '📅'}
+                          </span>
+                          <div className="text-sm font-medium text-gray-900">
+                            {getDayName(day.date)}
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {formatDate(day.date)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className="text-sm font-semibold text-gray-900">
-                      {formatCurrency(day.total)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className="text-sm text-gray-900">
-                      {day.salesCount} шт.
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className={`text-sm ${
-                      day.returnsCount > 0 ? 'text-red-600' : 'text-gray-900'
-                    }`}>
-                      {day.returnsCount} шт.
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className="text-sm text-gray-900">
-                      {formatCurrency(day.averageTicket)}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot className="bg-gray-50">
-              <tr>
-                <td colSpan={2} className="px-6 py-4 text-sm font-semibold text-gray-900">
-                  Итого за неделю:
-                </td>
-                <td className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
-                  {formatCurrency(stats.weekTotal)}
-                </td>
-                <td className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
-                  {stats.days.reduce((sum, day) => sum + day.salesCount, 0)} шт.
-                </td>
-                <td className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
-                  {stats.days.reduce((sum, day) => sum + day.returnsCount, 0)} шт.
-                </td>
-                <td className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
-                  {formatCurrency(stats.weekAverage)}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {formatDate(day.date)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <div className="text-sm font-semibold text-gray-900">
+                          {formatCurrency(day.total)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <div className="text-sm text-gray-900">
+                          {day.salesCount} шт.
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <div className={`text-sm ${
+                          day.returnsCount > 0 ? 'text-red-600' : 'text-gray-900'
+                        }`}>
+                          {day.returnsCount} шт.
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <div className="text-sm text-gray-900">
+                          {formatCurrency(day.averageTicket)}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-      {/* График выручки (простая визуализация) */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          📊 Визуализация выручки по дням
-        </h3>
-        
-        <div className="flex items-end justify-between h-48 space-x-2">
-          {stats.days.map((day, index) => {
-            const maxRevenue = Math.max(...stats.days.map(d => d.total));
-            const height = (day.total / maxRevenue) * 80; // 80% от максимальной высоты
+          {/* График выручки */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              📊 Визуализация выручки по дням
+            </h3>
             
-            return (
-              <div key={day.date} className="flex-1 flex flex-col items-center">
-                <div 
-                  className={`w-full rounded-t transition-all ${
-                    stats.bestDay && day.date === stats.bestDay.date 
-                      ? 'bg-green-500' 
-                      : 'bg-blue-500'
-                  }`}
-                  style={{ height: `${height}%` }}
-                ></div>
-                <div className="text-xs text-gray-600 mt-2 text-center">
-                  <div>{formatDate(day.date).split(' ')[0]}</div>
-                  <div className="font-semibold">{formatCurrency(day.total)}</div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+            <div className="flex items-end justify-between h-48 space-x-2 px-4">
+              {stats.days.map((day) => {
+                const maxRevenue = Math.max(...stats.days.map(d => d.total));
+                const height = maxRevenue > 0 ? (day.total / maxRevenue) * 80 : 0;
+                
+                return (
+                  <div key={day.date} className="flex-1 flex flex-col items-center">
+                    <div 
+                      className={`w-full rounded-t transition-all ${
+                        stats.bestDay && day.date === stats.bestDay.date 
+                          ? 'bg-green-500' 
+                          : 'bg-blue-500'
+                      }`}
+                      style={{ height: `${height}%` }}
+                    ></div>
+                    <div className="text-xs text-gray-600 mt-2 text-center">
+                      <div>{formatDate(day.date).split(' ')[0]}</div>
+                      <div className="font-semibold">{formatCurrency(day.total)}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

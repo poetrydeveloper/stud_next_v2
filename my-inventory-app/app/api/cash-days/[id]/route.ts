@@ -1,29 +1,27 @@
-// app/api/cash-days/[id]/close/route.ts
+// app/api/cash-days/[id]/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/app/lib/prisma";
 import { CashDayCoreService, CashEventService } from "@/app/lib/cash";
 
-// POST /api/cash-days/[id]/close - закрыть кассовый день
-export async function POST(
+// GET /api/cash-days/[id] - получить кассовый день по ID
+export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
     const cashDayId = Number(params.id);
-    const cashDay = await CashDayCoreService.closeCashDay(cashDayId);
+    const cashDay = await CashDayCoreService.getCashDayById(cashDayId);
     
     return NextResponse.json({ 
       ok: true, 
-      message: "Кассовый день закрыт",
       data: cashDay 
     });
   } catch (error: any) {
-    console.error("POST /api/cash-days/[id]/close error:", error);
+    console.error(`GET /api/cash-days/${params.id} error:`, error);
     
-    if (error.message.includes("не найден") || error.message.includes("уже закрыт")) {
+    if (error.message.includes("не найден")) {
       return NextResponse.json(
         { ok: false, error: error.message },
-        { status: 400 }
+        { status: 404 }
       );
     }
     
