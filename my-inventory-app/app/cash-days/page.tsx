@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import ActiveCashDay from "./components/ActiveCashDay";
 import ClosedCashDays from "./components/ClosedCashDays";
 import WeeklyStats from "./components/WeeklyStats";
+import Link from "next/link";
 
 export default function CashDaysPage() {
   const [activeTab, setActiveTab] = useState<'active' | 'closed' | 'stats'>('active');
@@ -23,6 +24,14 @@ export default function CashDaysPage() {
                 Отслеживание операций и статистика продаж
               </p>
             </div>
+            
+            {/* ДОБАВЛЯЕМ КНОПКУ ИНВЕНТАРЯ ЗДЕСЬ */}
+            <Link 
+              href="/inventory"
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+            >
+              📦 Инвентарь
+            </Link>
           </div>
         </div>
 

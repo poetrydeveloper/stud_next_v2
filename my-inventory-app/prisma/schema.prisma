@@ -191,6 +191,11 @@ model ProductUnit {
   updatedAt   DateTime @updatedAt @map("updated_at")
   cashEvents  CashEvent[]
 
+  inventorySnapshots InventorySnapshot[]
+  salesHistory       ProductSalesHistory[]
+  inventoryForecasts InventoryForecast[]   
+  reorderPoints      ReorderPoint[]        
+
   @@map("product_units")
 }
 
@@ -217,6 +222,8 @@ model CashEvent {
   productUnitId Int?      @map("product_unit_id")
   productUnit   ProductUnit? @relation(fields: [productUnitId], references: [id], onDelete: SetNull)
   createdAt DateTime      @default(now()) @map("created_at")
+
+  salesHistory ProductSalesHistory[]
 
   @@map("cash_events")
 }
@@ -255,4 +262,95 @@ model ProductUnitLog {
   createdAt     DateTime    @default(now())
 
   @@map("product_unit_logs")
+}
+
+model InventorySnapshot {
+  id            Int      @id @default(autoincrement())
+  snapshotDate  DateTime
+  
+  // СВЯЗЬ С PRODUCT_UNIT ДЛЯ ДЕТАЛЬНОЙ АНАЛИТИКИ
+  productUnitId Int?
+  productUnit   ProductUnit? @relation(fields: [productUnitId], references: [id])
+  
+  // ДАННЫЕ НА МОМЕНТ СНИМКА
+  statusProduct ProductUnitPhysicalStatus? // Статус на момент снимка
+  salePrice     Float?                     // Цена на момент снимка
+  stockValue    Float?                     // Стоимость этой единицы
+  
+  periodType    String // "daily", "weekly", "monthly"
+  
+  createdAt DateTime @default(now())
+  
+  @@map("inventory_snapshots")
+  @@unique([snapshotDate, productUnitId, periodType])
+}
+
+model ProductSalesHistory {
+  id          Int      @id @default(autoincrement())
+  
+  // СВЯЗЬ С PRODUCT_UNIT (какая единица продана)
+  productUnitId Int
+  productUnit   ProductUnit @relation(fields: [productUnitId], references: [id])
+  
+  // СВЯЗЬ С CASH_EVENT (факт продажи)
+  cashEventId   Int
+  cashEvent     CashEvent @relation(fields: [cashEventId], references: [id])
+  
+  periodDate  DateTime // Дата периода продажи
+  periodType  String   // "daily", "weekly", "monthly"
+  
+  // ДАННЫЕ ПРОДАЖИ
+  salePrice    Float   // Цена продажи
+  soldAt       DateTime // Дата продажи
+  
+  createdAt DateTime @default(now())
+  
+  @@map("product_sales_history")
+  @@unique([productUnitId, cashEventId])
+}
+
+model InventoryForecast {
+  id          Int      @id @default(autoincrement())
+  
+  // СВЯЗЬ С PRODUCT_UNIT (а не с Product)
+  productUnitId Int
+  productUnit   ProductUnit @relation(fields: [productUnitId], references: [id])
+  
+  forecastDate DateTime
+  periodStart  DateTime
+  periodEnd    DateTime
+  periodType   String
+  
+  predictedSales Int
+  recommendedOrder Int
+  confidence     Float
+  actualSales    Int?
+  accuracy       Float?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("inventory_forecasts")
+  @@unique([productUnitId, periodStart, periodType])
+}
+
+model ReorderPoint {
+  id          Int      @id @default(autoincrement())
+  
+  // СВЯЗЬ С PRODUCT_UNIT (а не с Product)
+  productUnitId Int
+  productUnit   ProductUnit @relation(fields: [productUnitId], references: [id])
+  
+  minStock    Int
+  maxStock    Int
+  reorderQty  Int
+  leadTime    Int
+  safetyStock Int
+  
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("reorder_points")
+  @@unique([productUnitId])
 }
