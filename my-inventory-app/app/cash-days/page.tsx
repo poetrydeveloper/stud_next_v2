@@ -25,13 +25,27 @@ export default function CashDaysPage() {
               </p>
             </div>
             
-            {/* ДОБАВЛЯЕМ КНОПКУ ИНВЕНТАРЯ ЗДЕСЬ */}
-            <Link 
-              href="/inventory"
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
-            >
-              📦 Инвентарь
-            </Link>
+            {/* КНОПКИ ДЛЯ ПЕРЕХОДА */}
+            <div className="flex gap-2">
+              <Link 
+                href="/inventory"
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+              >
+                📦 Инвентарь
+              </Link>
+              <Link 
+                href="/inventory/visual"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+              >
+                🧪 Визуализация
+              </Link>
+              <Link 
+                href="/analytics"
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+              >
+                📊 Аналитика
+              </Link>
+            </div>
           </div>
         </div>
 
