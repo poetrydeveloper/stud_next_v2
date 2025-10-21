@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { ProductUnitCardStatus } from "@prisma/client";
-import { generateSlug } from "@/app/lib/translit";
+import { generateSlug } from "@/lib/translit";
 import { generateSerialNumber, copyProductDataToUnit, updateSpineBrandData } from "@/app/api/product-units/helpers";
 import { nodeIndexService } from "@/app/lib/node-index/NodeIndexService";
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
-import { generateSlug } from "@/app/lib/translit";
+import { generateSlug } from "@/lib/translit";
 import { ProductUnitPhysicalStatus } from "@prisma/client";
 import { nodeIndexService } from "@/app/lib/node-index/NodeIndexService";
 

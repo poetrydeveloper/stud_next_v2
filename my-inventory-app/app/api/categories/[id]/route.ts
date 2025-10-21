@@ -1,7 +1,7 @@
 // app/api/categories/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
-import { generateSlug } from "@/app/lib/translit";
+import { generateSlug } from "@/lib/translit";
 
 /**
  * GET /api/categories/[id] - получить категорию по ID
