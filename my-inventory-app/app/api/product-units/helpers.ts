@@ -1,4 +1,4 @@
-// app/api/product-units/helpers.ts// app/api/product-units/helpers.ts
+// app/api/product-units/helpers.ts/
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();

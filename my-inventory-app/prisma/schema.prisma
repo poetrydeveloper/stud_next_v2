@@ -39,11 +39,22 @@ model Category {
   name     String
   slug     String    @unique
   path     String    @unique
+
+  // НОВЫЕ ПОЛЯ для системы индексов
+  node_index   String?   @unique  // "0_1V01_2V03_3V01" - машинный индекс
+  human_path   String?             // "/Инструмент/Ручной/Биты/10мм" - человеческий путь
+  parent_id    Int?                // резервная связь для целостности
   products Product[]
   spines   Spine[]
 
+  // СВЯЗЬ ДЛЯ parent_id
+  parent   Category?   @relation("CategoryChildren", fields: [parent_id], references: [id])
+  children Category[]  @relation("CategoryChildren")
+
   @@map("categories")
   @@index([path])
+  @@index([node_index])           // индекс для быстрого поиска по node_index
+  @@index([parent_id])            // индекс для родительских связей
 }
 
 model Brand {
@@ -72,10 +83,16 @@ model Product {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  // НОВЫЕ ПОЛЯ для системы индексов
+  node_index   String?   @unique  // "0_1V01_2V03_3V01_S[kluch_10mm]_P[f75510]"
+  human_path   String?             // "/Инструмент/Ручной/Биты/10мм/Ключ 10мм/Арт. f75510"
+
+  // СВЯЗИ (сохраняем существующие)
   images       ProductImage[]
   productUnits ProductUnit[]
 
   @@map("products")
+  @@index([node_index])  // индекс для быстрого поиска
 }
 
 model ProductImage {
@@ -246,10 +263,16 @@ model Spine {
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 
+  // НОВЫЕ ПОЛЯ для системы индексов
+  node_index   String?   @unique  // "0_1V01_2V03_3V01_S[kluch_10mm]"
+  human_path   String?             // "/Инструмент/Ручной/Биты/10мм/Ключ 10мм"
+
+  // СВЯЗИ (сохраняем существующие)
   products     Product[]
   productUnits ProductUnit[]
 
   @@map("spines")
+  @@index([node_index])  // индекс для быстрого поиска
 }
 
 model ProductUnitLog {

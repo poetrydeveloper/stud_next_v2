@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { generateSlug } from "@/app/lib/translit";
+import { nodeIndexService } from "@/app/lib/node-index/NodeIndexService";
 
 /**
  * GET — Получить список всех категорий (плоский список)
@@ -9,12 +10,15 @@ import { generateSlug } from "@/app/lib/translit";
 export async function GET() {
   try {
     const categories = await prisma.category.findMany({
-      orderBy: { path: "asc" },
+      orderBy: { node_index: "asc" }, // Сортируем по node_index
       select: {
         id: true,
         name: true,
         slug: true,
         path: true,
+        node_index: true,
+        human_path: true,
+        parent_id: true,
       },
     });
 
@@ -32,7 +36,7 @@ export async function GET() {
 }
 
 /**
- * POST — Создать новую категорию с Materialized Path
+ * POST — Создать новую категорию с Node Index системой
  */
 export async function POST(req: Request) {
   try {
@@ -59,25 +63,31 @@ export async function POST(req: Request) {
       counter++;
     }
 
-    // === Определяем path на основе родителя ===
-    let finalPath = `/${slug}`;
-
+    // === Находим родительскую категорию ===
+    let parentCategory = null;
     if (parentId) {
-      const parent = await prisma.category.findUnique({
-        where: { id: parentId },
-        select: { path: true }
+      parentCategory = await prisma.category.findUnique({
+        where: { id: parentId }
       });
 
-      if (!parent) {
+      if (!parentCategory) {
         return NextResponse.json(
           { ok: false, error: "Родительская категория не найдена" },
           { status: 404 }
         );
       }
-      finalPath = `${parent.path}/${slug}`;
     }
 
-    // === Проверяем уникальность path ===
+    // === Генерируем Node Index и Human Path ===
+    const indexes = await nodeIndexService.generateCategoryIndex(parentCategory, trimmedName);
+
+    // === Определяем path на основе родителя (для совместимости) ===
+    let finalPath = `/${slug}`;
+    if (parentCategory) {
+      finalPath = `${parentCategory.path}/${slug}`;
+    }
+
+    // === Проверяем уникальность path (для совместимости) ===
     const existingPath = await prisma.category.findUnique({
       where: { path: finalPath }
     });
@@ -89,20 +99,42 @@ export async function POST(req: Request) {
       );
     }
 
-    // === Создаем категорию за один запрос ===
+    // === Проверяем уникальность node_index ===
+    const existingNodeIndex = await prisma.category.findUnique({
+      where: { node_index: indexes.node_index }
+    });
+
+    if (existingNodeIndex) {
+      return NextResponse.json(
+        { ok: false, error: "Конфликт node_index" },
+        { status: 409 }
+      );
+    }
+
+    // === Создаем категорию ===
     const category = await prisma.category.create({
       data: {
         name: trimmedName,
         slug,
-        path: finalPath,
+        path: finalPath,           // для совместимости
+        node_index: indexes.node_index,
+        human_path: indexes.human_path,
+        parent_id: parentId || null,
       },
+    });
+
+    console.log("✅ Категория создана с node_index:", {
+      id: category.id,
+      name: category.name,
+      node_index: category.node_index,
+      human_path: category.human_path
     });
 
     return NextResponse.json(
       {
         ok: true,
         data: category,
-        message: "Категория успешно создана"
+        message: "Категория успешно создана с Node Index системой"
       },
       { status: 201 }
     );
@@ -110,6 +142,7 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error("Ошибка при создании категории:", error);
 
+    // Обработка ошибок уникальности
     if (error?.code === "P2002") {
       const target = error.meta?.target;
       if (target?.includes('slug')) {
@@ -124,12 +157,20 @@ export async function POST(req: Request) {
           { status: 409 }
         );
       }
-      if (target?.includes('id')) {
+      if (target?.includes('node_index')) {
         return NextResponse.json(
-          { ok: false, error: "Конфликт ID категории" },
+          { ok: false, error: "Конфликт node_index" },
           { status: 409 }
         );
       }
+    }
+
+    // Обработка ошибок из NodeIndexService
+    if (error.message?.includes('node_index') || error.message?.includes('родитель')) {
+      return NextResponse.json(
+        { ok: false, error: error.message },
+        { status: 400 }
+      );
     }
 
     return NextResponse.json(

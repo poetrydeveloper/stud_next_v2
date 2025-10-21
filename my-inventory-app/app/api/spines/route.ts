@@ -2,13 +2,15 @@ import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { generateSlug } from "@/app/lib/translit";
 import { ProductUnitPhysicalStatus } from "@prisma/client";
+import { nodeIndexService } from "@/app/lib/node-index/NodeIndexService";
 
+// GET метод оставляем без изменений
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const statusFilter = searchParams.get('status');
     const categoryId = searchParams.get('categoryId');
-    const includeEmpty = searchParams.get('includeEmpty') !== 'false'; // по умолчанию true
+    const includeEmpty = searchParams.get('includeEmpty') !== 'false';
 
     // Активные статусы для отображения (включая разобранные)
     const activeStatuses: ProductUnitPhysicalStatus[] = [
@@ -24,20 +26,17 @@ export async function GET(request: Request) {
     // Парсим статус фильтр - может быть строкой или массивом
     let statusWhereCondition = {};
     if (statusFilter) {
-      // Если статус содержит запятую - это несколько статусов
       if (statusFilter.includes(',')) {
         const statuses = statusFilter.split(',').filter(s => s.trim() !== '') as ProductUnitPhysicalStatus[];
         statusWhereCondition = {
           statusProduct: { in: statuses }
         };
       } else {
-        // Один статус
         statusWhereCondition = {
           statusProduct: statusFilter as ProductUnitPhysicalStatus
         };
       }
     } else {
-      // По умолчанию - все активные статусы
       statusWhereCondition = {
         statusProduct: { in: activeStatuses }
       };
@@ -130,8 +129,7 @@ export async function GET(request: Request) {
 }
 
 /**
- * POST /api/spines — создание нового Spine
- * body: { name: string, categoryId?: number, imagePath?: string }
+ * POST /api/spines — создание нового Spine с Node Index
  */
 export async function POST(req: Request) {
   try {
@@ -144,36 +142,79 @@ export async function POST(req: Request) {
       );
     }
 
+    // Проверка категории - ОБЯЗАТЕЛЬНА для Spine
+    if (!categoryId) {
+      return NextResponse.json(
+        { ok: false, error: "categoryId обязателен для создания Spine" },
+        { status: 400 }
+      );
+    }
+
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+    });
+
+    if (!category) {
+      return NextResponse.json(
+        { ok: false, error: "Категория не найдена" },
+        { status: 404 }
+      );
+    }
+
+    // Проверяем что категория имеет node_index
+    if (!category.node_index) {
+      return NextResponse.json(
+        { ok: false, error: "Категория не имеет node_index" },
+        { status: 400 }
+      );
+    }
+
+    const trimmedName = name.trim();
+
     // Генерация slug
-    let slug = generateSlug(name.trim());
+    let slug = generateSlug(trimmedName);
     const originalSlug = slug;
     let counter = 1;
 
+    // Проверяем уникальность slug (ГЛОБАЛЬНО)
     while (await prisma.spine.findUnique({ where: { slug } })) {
       slug = `${originalSlug}-${counter}`;
       counter++;
     }
 
-    // Проверка категории если указана
-    if (categoryId) {
-      const categoryExists = await prisma.category.findUnique({
-        where: { id: categoryId },
-      });
-      if (!categoryExists) {
-        return NextResponse.json(
-          { ok: false, error: "Категория не найдена" },
-          { status: 404 }
-        );
-      }
+    // Генерируем Node Index и Human Path для Spine
+    const indexes = await nodeIndexService.generateSpineIndex(category, slug, trimmedName);
+
+    // Проверяем уникальность node_index
+    const existingNodeIndex = await prisma.spine.findUnique({
+      where: { node_index: indexes.node_index }
+    });
+
+    if (existingNodeIndex) {
+      return NextResponse.json(
+        { ok: false, error: "Spine с таким node_index уже существует" },
+        { status: 409 }
+      );
     }
 
+    // Создаем Spine
     const spine = await prisma.spine.create({
       data: {
-        name: name.trim(),
+        name: trimmedName,
         slug,
-        categoryId: categoryId || null,
+        categoryId: categoryId,
         imagePath: imagePath || null,
+        node_index: indexes.node_index,
+        human_path: indexes.human_path,
       },
+    });
+
+    console.log("✅ Spine создан с node_index:", {
+      id: spine.id,
+      name: spine.name,
+      node_index: spine.node_index,
+      human_path: spine.human_path,
+      category: category.name
     });
 
     return NextResponse.json({
@@ -184,9 +225,27 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error("Ошибка при создании Spine:", error);
 
-    if (error.code === "P2002") {
+    // Обработка ошибок уникальности
+    if (error?.code === "P2002") {
+      const target = error.meta?.target;
+      if (target?.includes('slug')) {
+        return NextResponse.json(
+          { ok: false, error: "Spine с таким названием уже существует" },
+          { status: 400 }
+        );
+      }
+      if (target?.includes('node_index')) {
+        return NextResponse.json(
+          { ok: false, error: "Конфликт node_index" },
+          { status: 409 }
+        );
+      }
+    }
+
+    // Обработка ошибок из NodeIndexService
+    if (error.message.includes('node_index') || error.message.includes('Категория')) {
       return NextResponse.json(
-        { ok: false, error: "Spine с таким названием уже существует" },
+        { ok: false, error: error.message },
         { status: 400 }
       );
     }

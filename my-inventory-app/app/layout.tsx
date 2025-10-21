@@ -3,7 +3,7 @@
 import "./globals.css";
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, ChevronDown, Database, Warehouse } from "lucide-react";
+import { Menu, ChevronDown, Database, Warehouse, PlusCircle } from "lucide-react";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -23,6 +23,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         { href: "/categories/new", label: "Создать категорию/спайн" },
         { href: "/api/categories/tree", label: "Дерево категорий" },
         { href: "/spines/tree", label: "Дерево Spine" },
+        // ДОБАВЛЕНА ССЫЛКА НА SUPER ADD
+        { href: "/super-add", label: "⚡ SUPER ADD", icon: "⚡" },
       ],
     },
     {
@@ -88,6 +90,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <h1 className="text-xl font-bold">Магазин</h1>
           </div>
           <div className="flex items-center gap-4">
+            {/* КНОПКА SUPER ADD */}
+            <Link 
+              href="/super-add" 
+              className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition text-sm font-medium shadow-md"
+            >
+              <PlusCircle size={18} />
+              ⚡ SUPER ADD
+            </Link>
+            
             {/* Кнопка склада */}
             <Link 
               href="/store" 
@@ -161,6 +172,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             
             {/* ОТДЕЛЬНЫЕ КНОПКИ В САЙДБАРЕ */}
             <div className="mt-6 space-y-2">
+              {/* Кнопка SUPER ADD в сайдбаре */}
+              <Link 
+                href="/super-add" 
+                className="flex items-center gap-2 w-full px-3 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition text-sm font-medium shadow-md"
+                onClick={() => setIsSidebarOpen(false)}
+              >
+                <PlusCircle size={18} />
+                ⚡ SUPER ADD
+              </Link>
+              
               {/* Кнопка склада в сайдбаре */}
               <Link 
                 href="/store" 
