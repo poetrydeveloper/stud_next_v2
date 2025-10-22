@@ -1,3 +1,4 @@
+// app\api\images\[...path]/route
 import { NextRequest, NextResponse } from 'next/server';
 import { ImageSyncService } from '@/app/lib/image-sync-service';
 

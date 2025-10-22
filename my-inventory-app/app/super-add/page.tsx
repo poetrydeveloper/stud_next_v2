@@ -1,11 +1,12 @@
 //app/super-add/page.tsx
+//app/super-add/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import TreeView from './components/TreeView';
 import CategoryModal from './components/CategoryModal';
 import SpineModal from './components/SpineModal';
-import ProductModal from './components/ProductModal';
+import ProductModal from './components/ProductModal/index'; // ← ИМПОРТ ИЗ ПАПКИ INDEX
 import { TreeNode } from './types';
 
 export default function SuperAddPage() {
@@ -33,36 +34,35 @@ export default function SuperAddPage() {
   };
 
   const handleCreateCategory = async (name: string) => {
-  try {
-    // ФИКС: убираем добавление structure/ - теперь StructureService сам обрабатывает пути
-    const response = await fetch('/api/structure/category', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        name, 
-        parentPath: selectedPath // ← ПЕРЕДАЕМ selectedPath как есть
-      }),
-    });
-    
-    const result = await response.json();
-    
-    if (!response.ok) {
-      console.error('API Error:', result);
-      throw new Error(result.error || `HTTP error! status: ${response.status}`);
+    try {
+      const response = await fetch('/api/structure/category', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          name, 
+          parentPath: selectedPath
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        console.error('API Error:', result);
+        throw new Error(result.error || `HTTP error! status: ${response.status}`);
+      }
+      
+      if (result.success) {
+        setActiveModal(null);
+        loadTree();
+        alert('Категория успешно создана!');
+      } else {
+        alert(`Ошибка: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Full error:', error);
+      alert(`Ошибка создания категории: ${error.message}`);
     }
-    
-    if (result.success) {
-      setActiveModal(null);
-      loadTree();
-      alert('Категория успешно создана!');
-    } else {
-      alert(`Ошибка: ${result.error}`);
-    }
-  } catch (error) {
-    console.error('Full error:', error);
-    alert(`Ошибка создания категории: ${error.message}`);
-  }
-};
+  };
 
   const handleCreateSpine = async (name: string) => {
     try {
@@ -76,6 +76,7 @@ export default function SuperAddPage() {
       if (result.success) {
         setActiveModal(null);
         loadTree();
+        alert('Spine успешно создан!');
       } else {
         alert(`Ошибка: ${result.error}`);
       }
@@ -84,32 +85,13 @@ export default function SuperAddPage() {
     }
   };
 
+  // 🔄 ОБНОВЛЕННЫЙ handleCreateProduct - теперь просто закрывает модальное окно
   const handleCreateProduct = async (code: string, name: string, description: string = '', brandId?: number, supplierId?: number) => {
-    try {
-      const response = await fetch('/api/structure/product', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          code, 
-          name, 
-          description,
-          brandId,
-          supplierId,
-          parentPath: selectedPath 
-        }),
-      });
-      
-      const result = await response.json();
-      if (result.success) {
-        setActiveModal(null);
-        loadTree();
-        alert('Продукт успешно создан!');
-      } else {
-        alert(`Ошибка: ${result.error}`);
-      }
-    } catch (error) {
-      alert('Ошибка создания продукта');
-    }
+    // Новый ProductModal сам отправляет FormData на /api/products
+    // Эта функция теперь просто закрывает модальное окно и обновляет дерево
+    setActiveModal(null);
+    loadTree();
+    // Alert показывается внутри ProductModal после успешного создания
   };
 
   if (loading) {
@@ -156,11 +138,25 @@ export default function SuperAddPage() {
           + Создать Spine
         </button>
         <button 
-          onClick={() => setActiveModal('product')}
+          onClick={() => {
+            if (!selectedPath) {
+              alert('❌ Сначала выберите категорию или spine в дереве!');
+              return;
+            }
+            setActiveModal('product');
+          }}
           className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
         >
           + Создать Продукт
         </button>
+        
+        {/* НОВАЯ КНОПКА - переход к продуктам */}
+        <a
+          href="/products"
+          className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+        >
+          📦 Все продукты
+        </a>
       </div>
 
       {selectedPath && (
@@ -189,6 +185,7 @@ export default function SuperAddPage() {
         <ProductModal 
           onClose={() => setActiveModal(null)}
           onSubmit={handleCreateProduct}
+          selectedPath={selectedPath}
         />
       )}
     </div>

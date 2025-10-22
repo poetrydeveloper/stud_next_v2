@@ -1,13 +1,8 @@
 {
-  "code": "апрапра",
-  "name": "апрапр",
+  "code": "ййй4",
+  "name": "цццц",
   "description": "",
-  "brand": {
-    "id": 1,
-    "name": "Force",
-    "slug": "force"
-  },
-  "supplier": null,
+  "brand": null,
   "category": {
     "id": 2,
     "name": "Ручной инструмент",
@@ -20,6 +15,6 @@
     "node_index": "structure/d_instrument/d_ruchnoy-instrument/s_klyuchi",
     "human_path": "structure / instrument / ruchnoy-instrument / klyuchi"
   },
-  "node_index": "structure/d_instrument/d_ruchnoy-instrument/s_klyuchi/p_aprapra",
-  "created_at": "2025-10-22T09:22:48.164Z"
+  "node_index": "structure/d_instrument/d_ruchnoy-instrument/s_klyuchi_P[ййй4]",
+  "created_at": "2025-10-22T11:42:46.622Z"
 }
