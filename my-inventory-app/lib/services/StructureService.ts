@@ -16,9 +16,62 @@ export class StructureService {
     return this.createDirectory(slug, parentPath);
   }
 
-  async createProduct(code: string, parentPath: string = ''): Promise<string> {
+  async createProduct(code: string, name: string, description: string = '', brandData?: any, supplierData?: any, categoryData?: any, spineData?: any, parentPath: string = ''): Promise<string> {
     const slug = `p_${generateValidSlug(code)}`;
-    return this.createDirectory(slug, parentPath);
+    
+    // ФИКС: нормализуем и очищаем parentPath от дублирования structure/
+    const cleanParentPath = this.normalizeAndCleanPath(parentPath);
+    
+    // Генерируем node_index
+    const nodeIndex = `structure/${path.join(cleanParentPath, slug)}`.replace(/\\/g, '/');
+    
+    // Создаем JSON данные
+    const jsonData = {
+      code,
+      name,
+      description: description || '',
+      brand: brandData ? {
+        id: brandData.id,
+        name: brandData.name,
+        slug: brandData.slug
+      } : null,
+      supplier: supplierData ? {
+        id: supplierData.id,
+        name: supplierData.name
+      } : null,
+      category: categoryData ? {
+        id: categoryData.id,
+        name: categoryData.name,
+        node_index: categoryData.node_index,
+        human_path: categoryData.human_path
+      } : null,
+      spine: spineData ? {
+        id: spineData.id,
+        name: spineData.name,
+        node_index: spineData.node_index,
+        human_path: spineData.human_path
+      } : null,
+      node_index: nodeIndex,
+      created_at: new Date().toISOString()
+    };
+
+    // Создаем путь к JSON файлу
+    const jsonFilePath = path.join(this.basePath, cleanParentPath, `${slug}.json`);
+    
+    try {
+      // Убеждаемся что родительская директория существует
+      await fs.mkdir(path.dirname(jsonFilePath), { recursive: true });
+      
+      // Создаем JSON файл
+      await fs.writeFile(jsonFilePath, JSON.stringify(jsonData, null, 2), 'utf-8');
+      
+      return nodeIndex;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
+        throw new StructureError(`Файл уже существует: ${nodeIndex}`);
+      }
+      throw new StructureError(`Ошибка создания файла: ${error}`);
+    }
   }
 
   private async createDirectory(slug: string, parentPath: string): Promise<string> {
@@ -77,6 +130,14 @@ export class StructureService {
             path: relativePath,
             children: await this.scanDirectory(fullPath)
           };
+        } else if (item.isFile() && item.name.endsWith('.json') && item.name.startsWith('p_')) {
+          // Добавляем JSON файлы продуктов в дерево
+          const productName = item.name.replace('.json', '').replace('p_', '');
+          tree[item.name] = {
+            type: 'product',
+            path: relativePath,
+            children: {} // У продуктов нет детей
+          };
         }
       }
 
@@ -89,7 +150,8 @@ export class StructureService {
   private getNodeType(name: string): string {
     if (name.startsWith('d_')) return 'category';
     if (name.startsWith('s_')) return 'spine';
-    if (name.startsWith('p_')) return 'product';
+    if (name.startsWith('p_') && name.endsWith('.json')) return 'product';
+    if (name.startsWith('p_')) return 'product'; // для директорий (если остались)
     return 'unknown';
   }
 
@@ -98,7 +160,13 @@ export class StructureService {
     const fullPath = path.join(this.basePath, cleanPath);
     
     try {
-      await fs.rm(fullPath, { recursive: true, force: true });
+      // Проверяем, это файл или директория
+      const stats = await fs.stat(fullPath);
+      if (stats.isFile()) {
+        await fs.rm(fullPath, { force: true });
+      } else {
+        await fs.rm(fullPath, { recursive: true, force: true });
+      }
     } catch (error) {
       throw new StructureError(`Ошибка удаления: ${error}`);
     }

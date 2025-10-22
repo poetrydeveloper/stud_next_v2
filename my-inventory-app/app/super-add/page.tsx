@@ -84,18 +84,26 @@ export default function SuperAddPage() {
     }
   };
 
-  const handleCreateProduct = async (code: string, name: string) => {
+  const handleCreateProduct = async (code: string, name: string, description: string = '', brandId?: number, supplierId?: number) => {
     try {
       const response = await fetch('/api/structure/product', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, name, parentPath: selectedPath }),
+        body: JSON.stringify({ 
+          code, 
+          name, 
+          description,
+          brandId,
+          supplierId,
+          parentPath: selectedPath 
+        }),
       });
       
       const result = await response.json();
       if (result.success) {
         setActiveModal(null);
         loadTree();
+        alert('Продукт успешно создан!');
       } else {
         alert(`Ошибка: ${result.error}`);
       }

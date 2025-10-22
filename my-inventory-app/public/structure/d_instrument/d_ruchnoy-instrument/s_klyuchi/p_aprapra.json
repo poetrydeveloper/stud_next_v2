@@ -1,0 +1,25 @@
+{
+  "code": "апрапра",
+  "name": "апрапр",
+  "description": "",
+  "brand": {
+    "id": 1,
+    "name": "Force",
+    "slug": "force"
+  },
+  "supplier": null,
+  "category": {
+    "id": 2,
+    "name": "Ручной инструмент",
+    "node_index": "structure/d_instrument/d_ruchnoy-instrument",
+    "human_path": "structure / instrument / ruchnoy-instrument"
+  },
+  "spine": {
+    "id": 1,
+    "name": "Ключи",
+    "node_index": "structure/d_instrument/d_ruchnoy-instrument/s_klyuchi",
+    "human_path": "structure / instrument / ruchnoy-instrument / klyuchi"
+  },
+  "node_index": "structure/d_instrument/d_ruchnoy-instrument/s_klyuchi/p_aprapra",
+  "created_at": "2025-10-22T09:22:48.164Z"
+}
