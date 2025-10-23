@@ -7,7 +7,7 @@ import {
   copyProductDataToUnit,
   updateSpineBrandData
 } from "@/app/api/product-units/helpers";
-import { UnitCloneHelper } from "@/app/lib/unitCloneHelper"; // ✅ ИМПОРТИРУЕМ СУЩЕСТВУЮЩИЙ
+import { UnitCloneHelper } from "@/app/lib/helper_product_units/unitCloneHelper"; // ✅ ИМПОРТИРУЕМ СУЩЕСТВУЮЩИЙ
 
 export async function POST(req: Request) {
   console.log("=== API: CREATE PRODUCT UNIT ===");
