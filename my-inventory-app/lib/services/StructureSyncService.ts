@@ -1,4 +1,4 @@
-//lib/services/StructureSyncService.ts
+// lib/services/StructureSyncService.ts
 import { PrismaClient } from '@prisma/client';
 import { StructureService } from './StructureService';
 import { CategorySync } from './sync/CategorySync';
@@ -23,8 +23,21 @@ export class StructureSyncService {
     return this.spineSync.sync(name, parentPath, categoryId);
   }
 
-  async syncProduct(code: string, name: string, parentPath: string = '', spineId?: number, brandId?: number, categoryId?: number) {
-    return this.productSync.sync(code, name, parentPath, spineId, brandId, categoryId);
+  // ОБНОВЛЯЕМ ДЛЯ ПЕРЕДАЧИ ИЗОБРАЖЕНИЙ
+  async syncProduct(
+    code: string, 
+    name: string, 
+    parentPath: string = '', 
+    spineId?: number, 
+    brandId?: number, 
+    categoryId?: number,
+    description?: string,
+    supplierId?: number,
+    images: any[] = [] // ← ДОБАВЛЯЕМ ИЗОБРАЖЕНИЯ
+  ) {
+    return this.productSync.sync(
+      code, name, parentPath, spineId, brandId, categoryId, description, supplierId, images
+    );
   }
 
   async safeDeleteNode(nodePath: string) {

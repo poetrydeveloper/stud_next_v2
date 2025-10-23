@@ -1,4 +1,4 @@
-//app/super-add/page.tsx
+// app/super-add/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -33,36 +33,35 @@ export default function SuperAddPage() {
   };
 
   const handleCreateCategory = async (name: string) => {
-  try {
-    // ФИКС: убираем добавление structure/ - теперь StructureService сам обрабатывает пути
-    const response = await fetch('/api/structure/category', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        name, 
-        parentPath: selectedPath // ← ПЕРЕДАЕМ selectedPath как есть
-      }),
-    });
-    
-    const result = await response.json();
-    
-    if (!response.ok) {
-      console.error('API Error:', result);
-      throw new Error(result.error || `HTTP error! status: ${response.status}`);
+    try {
+      const response = await fetch('/api/structure/category', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          name, 
+          parentPath: selectedPath
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        console.error('API Error:', result);
+        throw new Error(result.error || `HTTP error! status: ${response.status}`);
+      }
+      
+      if (result.success) {
+        setActiveModal(null);
+        loadTree();
+        alert('Категория успешно создана!');
+      } else {
+        alert(`Ошибка: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Full error:', error);
+      alert(`Ошибка создания категории: ${error.message}`);
     }
-    
-    if (result.success) {
-      setActiveModal(null);
-      loadTree();
-      alert('Категория успешно создана!');
-    } else {
-      alert(`Ошибка: ${result.error}`);
-    }
-  } catch (error) {
-    console.error('Full error:', error);
-    alert(`Ошибка создания категории: ${error.message}`);
-  }
-};
+  };
 
   const handleCreateSpine = async (name: string) => {
     try {
@@ -84,22 +83,45 @@ export default function SuperAddPage() {
     }
   };
 
-  const handleCreateProduct = async (code: string, name: string, description: string = '', brandId?: number, supplierId?: number) => {
+  const handleCreateProduct = async (
+    code: string, 
+    name: string, 
+    description: string = '', 
+    brandId?: number, 
+    supplierId?: number,
+    images?: File[] // ← ДОБАВЛЯЕМ ИЗОБРАЖЕНИЯ
+  ) => {
     try {
+      console.log('🔄 SuperAddPage: Создание продукта с изображениями', {
+        code, name, imagesCount: images?.length || 0
+      });
+
+      // СОЗДАЕМ FORMDATA вместо JSON
+      const formData = new FormData();
+      formData.append('code', code);
+      formData.append('name', name);
+      formData.append('description', description);
+      formData.append('parentPath', selectedPath);
+      
+      if (brandId) formData.append('brandId', brandId.toString());
+      if (supplierId) formData.append('supplierId', supplierId.toString());
+
+      // ДОБАВЛЯЕМ ИЗОБРАЖЕНИЯ если есть
+      if (images && images.length > 0) {
+        images.forEach((image, index) => {
+          formData.append('images', image);
+        });
+        console.log('📸 SuperAddPage: Добавлено изображений:', images.length);
+      }
+
       const response = await fetch('/api/structure/product', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          code, 
-          name, 
-          description,
-          brandId,
-          supplierId,
-          parentPath: selectedPath 
-        }),
+        // НЕ УКАЗЫВАЕМ Content-Type - браузер сам установит multipart/form-data
+        body: formData,
       });
       
       const result = await response.json();
+      
       if (result.success) {
         setActiveModal(null);
         loadTree();
@@ -108,6 +130,7 @@ export default function SuperAddPage() {
         alert(`Ошибка: ${result.error}`);
       }
     } catch (error) {
+      console.error('❌ SuperAddPage: Ошибка создания продукта:', error);
       alert('Ошибка создания продукта');
     }
   };

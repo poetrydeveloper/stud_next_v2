@@ -1,11 +1,12 @@
 // app/super-add/components/ProductModal/index.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { ModalProps } from '../../types';
 import { useBrandsSuppliers } from './hooks/useBrandsSuppliers';
 import { useCreateEntities } from './hooks/useCreateEntities';
 import { ProductForm } from './components/ProductForm';
+import { ImageUpload } from './components/ImageUpload';
 
 export default function ProductModal({ onClose, onSubmit }: ModalProps) {
   console.log('🔍 ProductModal: Компонент загружен');
@@ -17,6 +18,8 @@ export default function ProductModal({ onClose, onSubmit }: ModalProps) {
   const [supplierId, setSupplierId] = useState<number | ''>('');
   const [newBrand, setNewBrand] = useState('');
   const [newSupplier, setNewSupplier] = useState('');
+  const [images, setImages] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [creatingBrand, setCreatingBrand] = useState(false);
   const [creatingSupplier, setCreatingSupplier] = useState(false);
@@ -29,6 +32,25 @@ export default function ProductModal({ onClose, onSubmit }: ModalProps) {
 
   const { brands, suppliers, reload } = useBrandsSuppliers();
   const { createBrand, createSupplier } = useCreateEntities(reload);
+
+  const handleImagesChange = (files: File[]) => {
+    console.log('📸 ProductModal: Изображения изменены', files.length);
+    
+    // Создаем preview URLs
+    const urls = files.map(file => URL.createObjectURL(file));
+    setPreviewUrls(urls);
+    setImages(files);
+  };
+
+  const handleRemoveImage = (index: number) => {
+    console.log('🗑️ ProductModal: Удаление изображения', index);
+    
+    const newUrls = previewUrls.filter((_, i) => i !== index);
+    const newFiles = images.filter((_, i) => i !== index);
+    
+    setPreviewUrls(newUrls);
+    setImages(newFiles);
+  };
 
   const handleCreateBrand = async () => {
     console.log('🔄 ProductModal: Создание бренда');
@@ -118,15 +140,17 @@ export default function ProductModal({ onClose, onSubmit }: ModalProps) {
     setLoading(true);
     try {
       console.log('📤 ProductModal: Отправка данных продукта', {
-        code, name, description, brandId, supplierId
+        code, name, description, brandId, supplierId, imagesCount: images.length
       });
       
+      // ПЕРЕДАЕМ ИЗОБРАЖЕНИЯ В ONSUBMIT
       await onSubmit(
         code.trim(), 
         name.trim(), 
         description.trim(), 
         brandId || undefined, 
-        supplierId || undefined
+        supplierId || undefined,
+        images // ← ДОБАВЛЯЕМ ИЗОБРАЖЕНИЯ
       );
       
       console.log('✅ ProductModal: Продукт успешно создан');
@@ -141,32 +165,43 @@ export default function ProductModal({ onClose, onSubmit }: ModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <ProductForm
-        code={code}
-        name={name}
-        description={description}
-        brandId={brandId}
-        supplierId={supplierId}
-        newBrand={newBrand}
-        newSupplier={newSupplier}
-        brands={brands}
-        suppliers={suppliers}
-        loading={loading}
-        creatingBrand={creatingBrand}
-        creatingSupplier={creatingSupplier}
-        errors={errors}
-        onCodeChange={setCode}
-        onNameChange={setName}
-        onDescriptionChange={setDescription}
-        onBrandChange={setBrandId}
-        onSupplierChange={setSupplierId}
-        onNewBrandChange={setNewBrand}
-        onNewSupplierChange={setNewSupplier}
-        onCreateBrand={handleCreateBrand}
-        onCreateSupplier={handleCreateSupplier}
-        onSubmit={handleSubmit}
-        onClose={onClose}
-      />
+      <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <h3 className="text-xl font-semibold mb-4">Создать Продукт</h3>
+        
+        {/* КОМПОНЕНТ ЗАГРУЗКИ ИЗОБРАЖЕНИЙ */}
+        <ImageUpload
+          previewUrls={previewUrls}
+          onImagesChange={handleImagesChange}
+          onRemoveImage={handleRemoveImage}
+        />
+        
+        <ProductForm
+          code={code}
+          name={name}
+          description={description}
+          brandId={brandId}
+          supplierId={supplierId}
+          newBrand={newBrand}
+          newSupplier={newSupplier}
+          brands={brands}
+          suppliers={suppliers}
+          loading={loading}
+          creatingBrand={creatingBrand}
+          creatingSupplier={creatingSupplier}
+          errors={errors}
+          onCodeChange={setCode}
+          onNameChange={setName}
+          onDescriptionChange={setDescription}
+          onBrandChange={setBrandId}
+          onSupplierChange={setSupplierId}
+          onNewBrandChange={setNewBrand}
+          onNewSupplierChange={setNewSupplier}
+          onCreateBrand={handleCreateBrand}
+          onCreateSupplier={handleCreateSupplier}
+          onSubmit={handleSubmit}
+          onClose={onClose}
+        />
+      </div>
     </div>
   );
 }

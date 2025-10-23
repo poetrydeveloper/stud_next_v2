@@ -18,7 +18,9 @@
     "core:import": "node scripts/core-data-manager.js import",
     "core:clear": "node scripts/core-data-manager.js clear",
     "core:list": "node scripts/core-data-manager.js list",
-    "core:help": "node scripts/core-data-manager.js"
+    "core:help": "node scripts/core-data-manager.js",
+    "token:generate": "npx tsx scripts/generate-token.ts",
+    "token:help": "echo 'Используйте: npm run token:generate для создания зашифрованного GitHub токена'"
   },
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.7",
