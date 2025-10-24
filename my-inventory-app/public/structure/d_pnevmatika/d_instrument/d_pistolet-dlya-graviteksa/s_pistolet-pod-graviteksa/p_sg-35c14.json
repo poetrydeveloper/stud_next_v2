@@ -1,0 +1,29 @@
+{
+  "code": "SG-35C14",
+  "name": "Пистолет для антикоррозионных покрытий SG-35C14 ECO со шлангом",
+  "description": "",
+  "brand": {
+    "id": 1,
+    "name": "Eco",
+    "slug": "eco"
+  },
+  "supplier": {
+    "id": 1,
+    "name": "TT"
+  },
+  "category": {
+    "id": 3,
+    "name": "Пистолет для гравитекса",
+    "node_index": "structure/d_pnevmatika/d_instrument/d_pistolet-dlya-graviteksa",
+    "human_path": "structure / pnevmatika / instrument / pistolet-dlya-graviteksa"
+  },
+  "spine": {
+    "id": 1,
+    "name": "Пистолет под гравитекса",
+    "node_index": "structure/d_pnevmatika/d_instrument/d_pistolet-dlya-graviteksa/s_pistolet-pod-graviteksa",
+    "human_path": "structure / pnevmatika / instrument / pistolet-dlya-graviteksa / pistolet-pod-graviteksa"
+  },
+  "images": [],
+  "node_index": "structure/d_pnevmatika/d_instrument/d_pistolet-dlya-graviteksa/s_pistolet-pod-graviteksa/p_sg-35c14",
+  "created_at": "2025-10-24T12:29:55.737Z"
+}
