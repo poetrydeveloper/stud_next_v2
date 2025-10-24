@@ -1,0 +1,29 @@
+{
+  "code": "F-BG-02",
+  "name": "Пневмопистолет для гравитекса с распылителем + гибкий шланг 600мм(внутр. Øсопла 5мм,рабоч.давление 2-8бар,max давление 10бар,350 л/мин, штуцер 1/4'')",
+  "description": "",
+  "brand": {
+    "id": 2,
+    "name": "Forsage",
+    "slug": "forsage"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "ФОРСАЖ"
+  },
+  "category": {
+    "id": 3,
+    "name": "Пистолеты для гравитекса",
+    "node_index": "structure/d_pnevmatika/d_instrument/d_pistolety-dlya-graviteksa",
+    "human_path": "structure / pnevmatika / instrument / pistolety-dlya-graviteksa"
+  },
+  "spine": {
+    "id": 1,
+    "name": "Пневмопистолет для гравитекса с распылителем",
+    "node_index": "structure/d_pnevmatika/d_instrument/d_pistolety-dlya-graviteksa/s_pnevmopistolet-dlya-graviteksa-s-raspylitelem",
+    "human_path": "structure / pnevmatika / instrument / pistolety-dlya-graviteksa / pnevmopistolet-dlya-graviteksa-s-raspylitelem"
+  },
+  "images": [],
+  "node_index": "structure/d_pnevmatika/d_instrument/d_pistolety-dlya-graviteksa/s_pnevmopistolet-dlya-graviteksa-s-raspylitelem/p_f-bg-02",
+  "created_at": "2025-10-24T08:18:52.804Z"
+}

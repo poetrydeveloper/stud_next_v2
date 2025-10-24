@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import UnitMiniCard from "./UnitMiniCard";
+import UnitMiniCard from "../../product-units/components/unit/UnitMiniCard";
 
 interface Spine {
   id: number;
