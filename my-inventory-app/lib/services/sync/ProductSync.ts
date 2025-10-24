@@ -6,7 +6,18 @@ import path from 'path';
 const prisma = new PrismaClient();
 
 export class ProductSync extends BaseSync {
-  async sync(code: string, name: string, parentPath: string = '', spineId?: number, brandId?: number, categoryId?: number, description?: string, supplierId?: number) {
+  // ОБНОВЛЯЕМ МЕТОД SYNC ДЛЯ ИЗОБРАЖЕНИЙ
+  async sync(
+    code: string, 
+    name: string, 
+    parentPath: string = '', 
+    spineId?: number, 
+    brandId?: number, 
+    categoryId?: number, 
+    description?: string, 
+    supplierId?: number,
+    images: any[] = [] // ← ДОБАВЛЯЕМ ИЗОБРАЖЕНИЯ
+  ) {
     let node_index: string;
     let createdFilePath: string | null = null;
 
@@ -18,7 +29,7 @@ export class ProductSync extends BaseSync {
         let spineData: any = null;
 
         console.log('🔄 ProductSync: Начало создания продукта', {
-          code, name, parentPath, spineId, brandId, categoryId, description, supplierId
+          code, name, parentPath, spineId, brandId, categoryId, description, supplierId, imagesCount: images.length
         });
 
         // Получаем данные бренда если указан
@@ -66,10 +77,10 @@ export class ProductSync extends BaseSync {
         }
 
         console.log('📁 ProductSync: Данные для создания', {
-          spineId, categoryId, brandId, supplierId
+          spineId, categoryId, brandId, supplierId, imagesCount: images.length
         });
 
-        // 1. Создаем JSON файл через StructureService
+        // 1. Создаем JSON файл через StructureService С ИЗОБРАЖЕНИЯМИ
         node_index = await this.structureService.createProduct(
           code, 
           name, 
@@ -78,7 +89,8 @@ export class ProductSync extends BaseSync {
           supplierData, 
           categoryData, 
           spineData, 
-          parentPath
+          parentPath,
+          images // ← ПЕРЕДАЕМ ИЗОБРАЖЕНИЯ
         );
 
         // Запоминаем путь к созданному файлу для отката
@@ -114,7 +126,6 @@ export class ProductSync extends BaseSync {
       });
 
     } catch (error) {
-      // ФИКС: Обработка типа unknown
       console.error('❌ ProductSync: Ошибка создания продукта:', error);
       
       if (error instanceof Error) {

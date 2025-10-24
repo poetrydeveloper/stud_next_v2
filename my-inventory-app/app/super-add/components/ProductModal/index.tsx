@@ -1,12 +1,12 @@
 // app/super-add/components/ProductModal/index.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { ModalProps } from '../../types';
 import { useBrandsSuppliers } from './hooks/useBrandsSuppliers';
 import { useCreateEntities } from './hooks/useCreateEntities';
-import { useImageUpload } from './hooks/useImageUpload';
-import { ImageUploadSection } from './components/ImageUploadSection';
+import { ProductForm } from './components/ProductForm';
+import { ImageUpload } from './components/ImageUpload';
 
 interface ProductModalProps extends ModalProps {
   selectedPath?: string; // ← ДОБАВИТЬ ЭТОТ ПРОПС
@@ -22,6 +22,8 @@ export default function ProductModal({ onClose, onSubmit, selectedPath }: Produc
   const [supplierId, setSupplierId] = useState<number | ''>('');
   const [newBrand, setNewBrand] = useState('');
   const [newSupplier, setNewSupplier] = useState('');
+  const [images, setImages] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [creatingBrand, setCreatingBrand] = useState(false);
   const [creatingSupplier, setCreatingSupplier] = useState(false);
@@ -35,6 +37,25 @@ export default function ProductModal({ onClose, onSubmit, selectedPath }: Produc
   const { brands, suppliers, reload } = useBrandsSuppliers();
   const { createBrand, createSupplier } = useCreateEntities(reload);
   const { images, previewUrls, handleImageSelect, removeImage, clearImages } = useImageUpload();
+
+  const handleImagesChange = (files: File[]) => {
+    console.log('📸 ProductModal: Изображения изменены', files.length);
+    
+    // Создаем preview URLs
+    const urls = files.map(file => URL.createObjectURL(file));
+    setPreviewUrls(urls);
+    setImages(files);
+  };
+
+  const handleRemoveImage = (index: number) => {
+    console.log('🗑️ ProductModal: Удаление изображения', index);
+    
+    const newUrls = previewUrls.filter((_, i) => i !== index);
+    const newFiles = images.filter((_, i) => i !== index);
+    
+    setPreviewUrls(newUrls);
+    setImages(newFiles);
+  };
 
   const handleCreateBrand = async () => {
     console.log('🔄 ProductModal: Создание бренда');
@@ -128,64 +149,22 @@ export default function ProductModal({ onClose, onSubmit, selectedPath }: Produc
 
     setLoading(true);
     try {
-        // ПОЛУЧАЕМ SPINE ID ИЗ ВЫБРАННОГО ПУТИ
-        let spineId: number | undefined;
-        
-        // Ищем spine по selectedPath
-        const spineResponse = await fetch(`/api/structure/find-spine?path=${encodeURIComponent(selectedPath)}`);
-        const spineData = await spineResponse.json();
-        
-        if (spineData.ok && spineData.data) {
-        spineId = spineData.data.id;
-        console.log('✅ Найден spine:', spineData.data);
-        } else {
-        throw new Error('Не удалось найти spine по выбранному пути. Убедитесь что выбрана категория со spine.');
-        }
-
-        // Создаем FormData
-        const formData = new FormData();
-        formData.append('code', code.trim());
-        formData.append('name', name.trim());
-        formData.append('description', description.trim());
-        formData.append('spineId', spineId.toString()); // ← ОБЯЗАТЕЛЬНО!
-        
-        if (brandId) formData.append('brandId', brandId.toString());
-        if (supplierId) formData.append('supplierId', supplierId.toString());
-        
-        images.forEach(image => {
-        formData.append('images', image);
-        });
-
-        console.log('📤 Отправка FormData со spineId:', spineId);
-
-        const response = await fetch('/api/products', {
-        method: 'POST',
-        body: formData,
-        });
-
-        const result = await response.json();
-        
-        if (!response.ok) {
-        throw new Error(result.error || `HTTP error! status: ${response.status}`);
-        }
-
-        if (result.ok) {
-        console.log('✅ Продукт создан успешно');
-        clearImages();
-        setCode('');
-        setName('');
-        setDescription('');
-        setBrandId('');
-        setSupplierId('');
-        onClose();
-        
-        if (confirm(`Продукт "${name}" создан! Перейти к продуктам?`)) {
-            window.location.href = '/products';
-        }
-        } else {
-        throw new Error(result.error);
-        }
-        
+      console.log('📤 ProductModal: Отправка данных продукта', {
+        code, name, description, brandId, supplierId, imagesCount: images.length
+      });
+      
+      // ПЕРЕДАЕМ ИЗОБРАЖЕНИЯ В ONSUBMIT
+      await onSubmit(
+        code.trim(), 
+        name.trim(), 
+        description.trim(), 
+        brandId || undefined, 
+        supplierId || undefined,
+        images // ← ДОБАВЛЯЕМ ИЗОБРАЖЕНИЯ
+      );
+      
+      console.log('✅ ProductModal: Продукт успешно создан');
+      
     } catch (error) {
         console.error('❌ Ошибка:', error);
         alert(`Ошибка: ${error.message}`);
@@ -196,188 +175,42 @@ export default function ProductModal({ onClose, onSubmit, selectedPath }: Produc
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <h3 className="text-xl font-semibold mb-4">Создать Продукт</h3>
-        <form onSubmit={handleSubmit}>
-          {/* Основные поля */}
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Артикул/Код *
-              </label>
-              <input
-                type="text"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Например: FR75510"
-                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 ${
-                  errors.code 
-                    ? 'border-red-500 focus:ring-red-500' 
-                    : 'border-gray-300 focus:ring-purple-500'
-                }`}
-                autoFocus
-              />
-              {errors.code && (
-                <p className="text-red-500 text-sm mt-1">{errors.code}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Название продукта *
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Например: Ключ рожковый 10мм"
-                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 ${
-                  errors.name 
-                    ? 'border-red-500 focus:ring-red-500' 
-                    : 'border-gray-300 focus:ring-purple-500'
-                }`}
-              />
-              {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Описание */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Описание
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Описание товара (необязательно)"
-              rows={3}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-            />
-          </div>
-
-          {/* Загрузка изображений */}
-          <ImageUploadSection
-            images={images}
-            previewUrls={previewUrls}
-            onImageSelect={handleImageSelect}
-            onRemoveImage={removeImage}
-          />
-
-          {/* Бренд и поставщик */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            {/* Бренд секция */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Бренд
-              </label>
-              <select
-                value={brandId}
-                onChange={(e) => setBrandId(e.target.value ? Number(e.target.value) : '')}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              >
-                <option value="">Выберите бренд</option>
-                {brands.map(brand => (
-                  <option key={brand.id} value={brand.id}>
-                    {brand.name}
-                  </option>
-                ))}
-              </select>
-              
-              <div className="mt-2">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newBrand}
-                    onChange={(e) => setNewBrand(e.target.value)}
-                    placeholder="Создать новый бренд"
-                    className={`flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                      errors.newBrand 
-                        ? 'border-red-500 focus:ring-red-500' 
-                        : 'border-gray-300 focus:ring-blue-500'
-                    }`}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleCreateBrand}
-                    disabled={creatingBrand || !newBrand.trim()}
-                    className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {creatingBrand ? '...' : '+'}
-                  </button>
-                </div>
-                {errors.newBrand && (
-                  <p className="text-red-500 text-sm mt-1">{errors.newBrand}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Поставщик секция */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Поставщик
-              </label>
-              <select
-                value={supplierId}
-                onChange={(e) => setSupplierId(e.target.value ? Number(e.target.value) : '')}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              >
-                <option value="">Выберите поставщика</option>
-                {suppliers.map(supplier => (
-                  <option key={supplier.id} value={supplier.id}>
-                    {supplier.name}
-                  </option>
-                ))}
-              </select>
-              
-              <div className="mt-2">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newSupplier}
-                    onChange={(e) => setNewSupplier(e.target.value)}
-                    placeholder="Создать нового поставщика"
-                    className={`flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                      errors.newSupplier 
-                        ? 'border-red-500 focus:ring-red-500' 
-                        : 'border-gray-300 focus:ring-blue-500'
-                    }`}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleCreateSupplier}
-                    disabled={creatingSupplier || !newSupplier.trim()}
-                    className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {creatingSupplier ? '...' : '+'}
-                  </button>
-                </div>
-                {errors.newSupplier && (
-                  <p className="text-red-500 text-sm mt-1">{errors.newSupplier}</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex gap-3 justify-end">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50"
-            >
-              Отмена
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Создание...' : 'Создать продукт'}
-            </button>
-          </div>
-        </form>
+        
+        {/* КОМПОНЕНТ ЗАГРУЗКИ ИЗОБРАЖЕНИЙ */}
+        <ImageUpload
+          previewUrls={previewUrls}
+          onImagesChange={handleImagesChange}
+          onRemoveImage={handleRemoveImage}
+        />
+        
+        <ProductForm
+          code={code}
+          name={name}
+          description={description}
+          brandId={brandId}
+          supplierId={supplierId}
+          newBrand={newBrand}
+          newSupplier={newSupplier}
+          brands={brands}
+          suppliers={suppliers}
+          loading={loading}
+          creatingBrand={creatingBrand}
+          creatingSupplier={creatingSupplier}
+          errors={errors}
+          onCodeChange={setCode}
+          onNameChange={setName}
+          onDescriptionChange={setDescription}
+          onBrandChange={setBrandId}
+          onSupplierChange={setSupplierId}
+          onNewBrandChange={setNewBrand}
+          onNewSupplierChange={setNewSupplier}
+          onCreateBrand={handleCreateBrand}
+          onCreateSupplier={handleCreateSupplier}
+          onSubmit={handleSubmit}
+          onClose={onClose}
+        />
       </div>
     </div>
   );

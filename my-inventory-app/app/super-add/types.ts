@@ -1,4 +1,4 @@
-//app/super-add/types.ts
+// app/super-add/types.ts
 export interface TreeNode {
   [key: string]: {
     type: string;
@@ -15,5 +15,12 @@ export interface TreeViewProps {
 
 export interface ModalProps {
   onClose: () => void;
-  onSubmit: (...args: any[]) => void;
+  onSubmit: (
+    code: string, 
+    name: string, 
+    description?: string, 
+    brandId?: number, 
+    supplierId?: number,
+    images?: File[] // ← ДОБАВЛЯЕМ ИЗОБРАЖЕНИЯ
+  ) => Promise<void>;
 }

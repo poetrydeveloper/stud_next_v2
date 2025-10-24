@@ -1,4 +1,6 @@
+
 //app/hooks/iseImage.ts
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,7 +12,6 @@ export function useImage(imagePath: string | null) {
   useEffect(() => {
     if (!imagePath) {
       setIsLoading(false);
-      setImageUrl('/images/placeholder.svg');
       return;
     }
 
@@ -29,7 +30,7 @@ export function useImage(imagePath: string | null) {
         }
       } catch (error) {
         console.error('Error loading image:', error);
-        setImageUrl('/images/placeholder.svg'); // ← ДОБАВИЛ ПЛЕЙСХОЛДЕР
+        setImageUrl('/images/placeholder.svg');
       } finally {
         setIsLoading(false);
       }

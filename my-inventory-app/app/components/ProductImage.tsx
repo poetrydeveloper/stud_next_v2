@@ -1,7 +1,9 @@
 //app/components/ProductImage.tsx
+
 'use client';
 
-import { useImage } from '@/hooks/useImage';
+import { useImage } from '@/app/hooks/useImage';
+
 
 interface ProductImageProps {
   imagePath: string | null;

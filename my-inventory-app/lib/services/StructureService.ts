@@ -1,4 +1,4 @@
-//lib/services/StructureService.ts
+// lib/services/StructureService.ts
 import fs from 'fs/promises';
 import path from 'path';
 import { validateSlug, StructureError, generateValidSlug } from '@/lib/helpers/structure-helpers';
@@ -16,7 +16,17 @@ export class StructureService {
     return this.createDirectory(slug, parentPath);
   }
 
-  async createProduct(code: string, name: string, description: string = '', brandData?: any, supplierData?: any, categoryData?: any, spineData?: any, parentPath: string = ''): Promise<string> {
+  async createProduct(
+    code: string, 
+    name: string, 
+    description: string = '', 
+    brandData?: any, 
+    supplierData?: any, 
+    categoryData?: any, 
+    spineData?: any, 
+    parentPath: string = '',
+    images: any[] = [] // ← ДОБАВЛЯЕМ ИЗОБРАЖЕНИЯ
+  ): Promise<string> {
     const slug = `p_${generateValidSlug(code)}`;
     
     // ФИКС: нормализуем и очищаем parentPath от дублирования structure/
@@ -51,6 +61,13 @@ export class StructureService {
         node_index: spineData.node_index,
         human_path: spineData.human_path
       } : null,
+      // ДОБАВЛЯЕМ ИНФОРМАЦИЮ ОБ ИЗОБРАЖЕНИЯХ
+      images: images.map((img, index) => ({
+        filename: img.filename,
+        path: img.path,
+        isMain: index === 0, // первое изображение - главное
+        order: index
+      })),
       node_index: nodeIndex,
       created_at: new Date().toISOString()
     };
@@ -74,6 +91,7 @@ export class StructureService {
     }
   }
 
+  // ВСЕ ОСТАЛЬНЫЕ МЕТОДЫ СОХРАНЯЕМ БЕЗ ИЗМЕНЕНИЙ
   private async createDirectory(slug: string, parentPath: string): Promise<string> {
     validateSlug(slug);
     

@@ -1,5 +1,4 @@
 //app/super-add/components/TreeView.tsx
-//app/super-add/components/TreeView.tsx
 import { TreeViewProps, TreeNode } from '../types';
 
 export default function TreeView({ tree, selectedPath, onSelect }: TreeViewProps) {
