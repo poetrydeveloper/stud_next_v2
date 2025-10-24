@@ -1,7 +1,7 @@
 // app/api/cash-days/[id]/close/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
-import { CashDayCoreService, CashEventService } from "@/app/lib/cash";
+import { CashDayCoreService, CashEventService } from "@/lib/cash";
 
 // POST /api/cash-days/[id]/close - закрыть кассовый день
 export async function POST(

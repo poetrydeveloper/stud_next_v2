@@ -1,6 +1,6 @@
 // app/api/cash-days/[id]/route.ts
 import { NextResponse } from "next/server";
-import { CashDayCoreService, CashEventService } from "@/app/lib/cash";
+import { CashDayCoreService, CashEventService } from "@/lib/cash";
 
 // GET /api/cash-days/[id] - получить кассовый день по ID
 export async function GET(

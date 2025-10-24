@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { ProductUnitPhysicalStatus, CashEventType } from "@prisma/client";
-import { CashEventService } from "@/app/lib/cash";
+import { CashEventService } from "@/lib/cash";
 
 export async function PATCH(
   req: Request,

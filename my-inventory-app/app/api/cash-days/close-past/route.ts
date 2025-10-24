@@ -1,6 +1,6 @@
 // app/api/cash-days/close-past/route.ts
 import { NextResponse } from "next/server";
-import { CashDayAutoCloseService } from "@/app/lib/cash";
+import { CashDayAutoCloseService } from "@/lib/cash";
 
 // POST /api/cash-days/close-past - закрыть все прошлые незакрытые дни
 export async function POST(request: Request) {

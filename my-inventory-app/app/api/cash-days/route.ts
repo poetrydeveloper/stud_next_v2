@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 //import { CashDayService } from "@/app/lib/cashDayService";
-import { CashDayCoreService, CashEventService } from "@/app/lib/cash";
+import { CashDayCoreService, CashEventService } from "@/lib/cash";
 // GET /api/cash-days - получить историю кассовых дней
 export async function GET() {
   try {

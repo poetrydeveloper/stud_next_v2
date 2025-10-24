@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { ProductUnitPhysicalStatus } from "@prisma/client";
-import { CashEventService, CashValidationService } from "@/app/lib/cash";
+import { CashEventService, CashValidationService } from "@/lib/cash";
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const { id } = await params;

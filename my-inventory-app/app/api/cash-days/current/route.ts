@@ -1,6 +1,6 @@
 // app/api/cash-days/current/route.ts
 import { NextResponse } from "next/server";
-import { CashDayCoreService, CashEventService } from "@/app/lib/cash";
+import { CashDayCoreService, CashEventService } from "@/lib/cash";
 
 // GET /api/cash-days/current - получить текущий открытый кассовый день
 export async function GET() {
