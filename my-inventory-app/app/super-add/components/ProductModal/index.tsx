@@ -1,15 +1,16 @@
 // app/super-add/components/ProductModal/index.tsx
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { ModalProps } from '../../types';
 import { useBrandsSuppliers } from './hooks/useBrandsSuppliers';
 import { useCreateEntities } from './hooks/useCreateEntities';
+import { useImageUpload } from './hooks/useImageUpload';
 import { ProductForm } from './components/ProductForm';
 import { ImageUpload } from './components/ImageUpload';
 
 interface ProductModalProps extends ModalProps {
-  selectedPath?: string; // ← ДОБАВИТЬ ЭТОТ ПРОПС
+  selectedPath?: string;
 }
 
 export default function ProductModal({ onClose, onSubmit, selectedPath }: ProductModalProps) {
@@ -22,8 +23,6 @@ export default function ProductModal({ onClose, onSubmit, selectedPath }: Produc
   const [supplierId, setSupplierId] = useState<number | ''>('');
   const [newBrand, setNewBrand] = useState('');
   const [newSupplier, setNewSupplier] = useState('');
-  const [images, setImages] = useState<File[]>([]);
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [creatingBrand, setCreatingBrand] = useState(false);
   const [creatingSupplier, setCreatingSupplier] = useState(false);
@@ -36,25 +35,22 @@ export default function ProductModal({ onClose, onSubmit, selectedPath }: Produc
 
   const { brands, suppliers, reload } = useBrandsSuppliers();
   const { createBrand, createSupplier } = useCreateEntities(reload);
-  const { images, previewUrls, handleImageSelect, removeImage, clearImages } = useImageUpload();
+  const { 
+    images: uploadedImages, 
+    previewUrls: imagePreviews, 
+    handleImageSelect, 
+    removeImage, 
+    clearImages 
+  } = useImageUpload();
 
   const handleImagesChange = (files: File[]) => {
     console.log('📸 ProductModal: Изображения изменены', files.length);
-    
-    // Создаем preview URLs
-    const urls = files.map(file => URL.createObjectURL(file));
-    setPreviewUrls(urls);
-    setImages(files);
+    handleImageSelect(files);
   };
 
   const handleRemoveImage = (index: number) => {
     console.log('🗑️ ProductModal: Удаление изображения', index);
-    
-    const newUrls = previewUrls.filter((_, i) => i !== index);
-    const newFiles = images.filter((_, i) => i !== index);
-    
-    setPreviewUrls(newUrls);
-    setImages(newFiles);
+    removeImage(index);
   };
 
   const handleCreateBrand = async () => {
@@ -136,12 +132,11 @@ export default function ProductModal({ onClose, onSubmit, selectedPath }: Produc
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('🔄 ProductModal: Начало отправки формы', {
-        selectedPath, imagesCount: images.length
+        selectedPath, imagesCount: uploadedImages.length
     });
     
     if (!validateForm()) return;
 
-    // ПРОВЕРКА ЧТО ВЫБРАН SPINE
     if (!selectedPath) {
         alert('❌ Сначала выберите категорию или spine в дереве!');
         return;
@@ -150,17 +145,16 @@ export default function ProductModal({ onClose, onSubmit, selectedPath }: Produc
     setLoading(true);
     try {
       console.log('📤 ProductModal: Отправка данных продукта', {
-        code, name, description, brandId, supplierId, imagesCount: images.length
+        code, name, description, brandId, supplierId, imagesCount: uploadedImages.length
       });
       
-      // ПЕРЕДАЕМ ИЗОБРАЖЕНИЯ В ONSUBMIT
       await onSubmit(
         code.trim(), 
         name.trim(), 
         description.trim(), 
         brandId || undefined, 
         supplierId || undefined,
-        images // ← ДОБАВЛЯЕМ ИЗОБРАЖЕНИЯ
+        uploadedImages
       );
       
       console.log('✅ ProductModal: Продукт успешно создан');
@@ -171,16 +165,15 @@ export default function ProductModal({ onClose, onSubmit, selectedPath }: Produc
     } finally {
         setLoading(false);
     }
-    };
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <h3 className="text-xl font-semibold mb-4">Создать Продукт</h3>
         
-        {/* КОМПОНЕНТ ЗАГРУЗКИ ИЗОБРАЖЕНИЙ */}
         <ImageUpload
-          previewUrls={previewUrls}
+          previewUrls={imagePreviews}
           onImagesChange={handleImagesChange}
           onRemoveImage={handleRemoveImage}
         />
