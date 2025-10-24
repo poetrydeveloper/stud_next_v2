@@ -22,27 +22,41 @@ export default function CreateRequestModal({ unit, onClose, onSuccess }: CreateR
     e.preventDefault();
     setError("");
 
-    if (unit.statusCard === "CANDIDATE" && (!pricePerUnit || Number(pricePerUnit) <= 0)) {
+    if (!pricePerUnit || Number(pricePerUnit) <= 0) {
       setError("Укажите цену за единицу товара");
       return;
     }
 
     setIsLoading(true);
+
     try {
-      // TODO: Реализовать API вызовы
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      onSuccess();
+      const response = await fetch("/api/product-units/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          unitId: unit.id,
+          quantity,
+          pricePerUnit: Number(pricePerUnit)
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.ok) {
+        onSuccess();
+      } else {
+        setError(data.error || "Произошла ошибка");
+      }
     } catch (err) {
       setError("Произошла ошибка при выполнении операции");
+      console.error("CreateRequestModal error:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
   const getModalTitle = () => {
-    if (unit.statusCard === "CLEAR") return "Добавить в кандидаты";
-    if (unit.statusCard === "CANDIDATE") return "Создать заявку";
-    return "Операция с товаром";
+    return "Создать заявку";
   };
 
   return (
@@ -61,7 +75,7 @@ export default function CreateRequestModal({ unit, onClose, onSuccess }: CreateR
             onPriceChange={setPricePerUnit}
           />
           
-          {unit.statusCard === "CANDIDATE" && pricePerUnit && (
+          {pricePerUnit && (
             <RequestSummary 
               quantity={quantity}
               pricePerUnit={Number(pricePerUnit)}
@@ -88,17 +102,11 @@ export default function CreateRequestModal({ unit, onClose, onSuccess }: CreateR
               disabled={isLoading}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
-              {isLoading ? "Выполнение..." : getActionButtonText(unit.statusCard)}
+              {isLoading ? "Создание..." : "Создать заявку"}
             </button>
           </div>
         </form>
       </div>
     </div>
   );
-}
-
-function getActionButtonText(statusCard: string) {
-  if (statusCard === "CLEAR") return "Добавить в кандидаты";
-  if (statusCard === "CANDIDATE") return "Создать заявку";
-  return "Выполнить";
 }

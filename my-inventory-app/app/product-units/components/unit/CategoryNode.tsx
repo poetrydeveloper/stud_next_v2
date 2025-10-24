@@ -8,9 +8,10 @@ interface CategoryNodeProps {
   node: TreeNode;
   expandedNodes: Set<number>;
   onToggle: (nodeId: number) => void;
+  onUnitStatusChange?: (unitId: number, newStatus: string) => void;
 }
 
-export default function CategoryNode({ node, expandedNodes, onToggle }: CategoryNodeProps) {
+export default function CategoryNode({ node, expandedNodes, onToggle, onUnitStatusChange }: CategoryNodeProps) {
   const isExpanded = expandedNodes.has(node.id);
   const hasChildren = node.children.length > 0;
 
@@ -20,13 +21,29 @@ export default function CategoryNode({ node, expandedNodes, onToggle }: Category
       {isExpanded && (
         <div className="mt-2 space-y-2">
           {node.children.filter(child => child.type === 'category').map(child => (
-            <CategoryNode key={`category-${child.id}`} node={child} expandedNodes={expandedNodes} onToggle={onToggle} />
+            <CategoryNode 
+              key={`category-${child.id}`} 
+              node={child} 
+              expandedNodes={expandedNodes} 
+              onToggle={onToggle}
+              onUnitStatusChange={onUnitStatusChange}
+            />
           ))}
           {node.spines?.map(spine => (
-            <SpineNode key={`spine-${spine.id}`} spine={spine} level={node.level + 1} />
+            <SpineNode 
+              key={`spine-${spine.id}`} 
+              spine={spine} 
+              level={node.level + 1}
+              onUnitStatusChange={onUnitStatusChange}
+            />
           ))}
           {node.children.filter(child => child.type === 'spine').map(child => (
-            <SpineNode key={`spine-${child.id}`} spine={child} level={node.level + 1} />
+            <SpineNode 
+              key={`spine-${child.id}`} 
+              spine={child} 
+              level={node.level + 1}
+              onUnitStatusChange={onUnitStatusChange}
+            />
           ))}
         </div>
       )}

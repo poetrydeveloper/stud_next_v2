@@ -4,7 +4,12 @@ import { useState, useEffect } from "react";
 import { buildTreeFromHumanPath } from "./treeUtils";
 import CategoryNode from "./CategoryNode";
 
-export default function CategoryTreeView({ categories }: any) {
+interface CategoryTreeViewProps {
+  categories: any[];
+  onUnitStatusChange?: (unitId: number, newStatus: string) => void;
+}
+
+export default function CategoryTreeView({ categories, onUnitStatusChange }: CategoryTreeViewProps) {
   const [expandedNodes, setExpandedNodes] = useState<Set<number>>(new Set());
   const [tree, setTree] = useState<any[]>([]);
 
@@ -40,7 +45,13 @@ export default function CategoryTreeView({ categories }: any) {
   return (
     <div className="max-h-screen overflow-y-auto space-y-2">
       {tree.map(node => (
-        <CategoryNode key={`${node.type}-${node.id}`} node={node} expandedNodes={expandedNodes} onToggle={toggleNode} />
+        <CategoryNode 
+          key={`${node.type}-${node.id}`} 
+          node={node} 
+          expandedNodes={expandedNodes} 
+          onToggle={toggleNode}
+          onUnitStatusChange={onUnitStatusChange}
+        />
       ))}
     </div>
   );
