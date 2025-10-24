@@ -11,6 +11,8 @@ interface ProductUnit {
   statusProduct?: string;
   productName?: string;
   productCode?: string;
+  requestPricePerUnit?: number;
+  quantityInRequest?: number;
   product?: {
     name: string;
     code: string;
@@ -33,7 +35,9 @@ interface UnitMiniCardProps {
 export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps) {
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [currentStatus, setCurrentStatus] = useState(unit.statusCard);
+  const [currentCardStatus, setCurrentCardStatus] = useState(unit.statusCard);
+  const [currentProductStatus, setCurrentProductStatus] = useState(unit.statusProduct);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const mainImage = unit.product?.images?.find(img => img.isMain) || unit.product?.images?.[0];
   const imagePath = mainImage?.localPath || mainImage?.path;
@@ -41,7 +45,8 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
   const productCode = unit.productCode || unit.product?.code || "—";
   const brandName = unit.product?.brand?.name;
 
-  const getStatusConfig = (status: string) => {
+  // Конфиг для карточных статусов
+  const getCardStatusConfig = (status: string) => {
     const configs = {
       CLEAR: { bg: 'bg-green-100', text: 'text-green-800', label: 'CLEAR', icon: '🟢', cardBg: 'bg-white' },
       CANDIDATE: { bg: 'bg-purple-100', text: 'text-purple-800', label: 'CANDIDATE', icon: '🟣', cardBg: 'bg-purple-50' },
@@ -55,7 +60,23 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
            { bg: 'bg-gray-100', text: 'text-gray-800', label: status, icon: '❓', cardBg: 'bg-white' };
   };
 
-  const statusConfig = getStatusConfig(currentStatus);
+  // Конфиг для физических статусов
+  const getProductStatusConfig = (status: string) => {
+    const configs = {
+      IN_STORE: { bg: 'bg-green-100', text: 'text-green-800', label: 'IN_STORE', icon: '📦' },
+      SOLD: { bg: 'bg-purple-100', text: 'text-purple-800', label: 'SOLD', icon: '💰' },
+      CREDIT: { bg: 'bg-orange-100', text: 'text-orange-800', label: 'CREDIT', icon: '💳' },
+      LOST: { bg: 'bg-red-100', text: 'text-red-800', label: 'LOST', icon: '❌' },
+      IN_DISASSEMBLED: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'DISASSEMBLED', icon: '🔧' },
+      IN_COLLECTED: { bg: 'bg-indigo-100', text: 'text-indigo-800', label: 'COLLECTED', icon: '🔄' },
+    };
+
+    return configs[status as keyof typeof configs] || 
+           { bg: 'bg-gray-100', text: 'text-gray-800', label: status, icon: '❓' };
+  };
+
+  const cardStatusConfig = getCardStatusConfig(currentCardStatus);
+  const productStatusConfig = currentProductStatus ? getProductStatusConfig(currentProductStatus) : null;
 
   const handleAddToCandidate = async () => {
     try {
@@ -66,7 +87,7 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
       });
 
       if (response.ok) {
-        setCurrentStatus("CANDIDATE");
+        setCurrentCardStatus("CANDIDATE");
         onStatusChange?.(unit.id, "CANDIDATE");
       } else {
         console.error("Failed to update status");
@@ -80,9 +101,64 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
     setShowRequestModal(true);
   };
 
+  const handleDelivery = async () => {
+    try {
+      setIsProcessing(true);
+      const response = await fetch(`/api/product-units/${unit.id}/delivery`, {
+        method: "PATCH",
+      });
+
+      const data = await response.json();
+      
+      if (data.ok) {
+        // После поставки статус карты становится ARRIVED, а продукта - IN_STORE
+        setCurrentCardStatus("ARRIVED");
+        setCurrentProductStatus("IN_STORE");
+        onStatusChange?.(unit.id, "IN_STORE");
+      } else {
+        alert(`Ошибка: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Delivery error:", error);
+      alert("Ошибка при поставке");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleRevertToRequest = async () => {
+    try {
+      setIsProcessing(true);
+      const response = await fetch(`/api/product-units/revert-to-request`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ unitId: unit.id }),
+      });
+
+      const data = await response.json();
+      
+      if (data.ok) {
+        // При откате возвращаем в IN_REQUEST и сбрасываем физический статус
+        setCurrentCardStatus("IN_REQUEST");
+        setCurrentProductStatus(null);
+        onStatusChange?.(unit.id, "IN_REQUEST");
+      } else {
+        alert(`Ошибка: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Revert error:", error);
+      alert("Ошибка при откате");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Определяем, показывать ли кнопку отката
+  const shouldShowRevert = currentProductStatus === "IN_STORE" || currentCardStatus === "ARRIVED";
+
   return (
     <>
-      <div className={`rounded-lg border border-gray-200 p-3 hover:shadow-md transition-shadow ${statusConfig.cardBg}`}>
+      <div className={`rounded-lg border border-gray-200 p-3 hover:shadow-md transition-shadow ${cardStatusConfig.cardBg}`}>
         <div className="flex items-start space-x-3 mb-2">
           <div className="flex-shrink-0">
             <div className="w-12 h-12 bg-gray-100 rounded border overflow-hidden">
@@ -103,11 +179,24 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
             </div>
             
             <div className="flex items-center space-x-2 mb-1">
-              <span className="text-xs font-mono text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded">{unit.serialNumber}</span>
-              <span className={`text-xs px-2 py-0.5 rounded font-medium ${statusConfig.bg} ${statusConfig.text}`}>
-                {statusConfig.icon} {statusConfig.label}
+              {/* ОТОБРАЖАЕМ ОБА СТАТУСА */}
+              <span className={`text-xs px-2 py-0.5 rounded font-medium ${cardStatusConfig.bg} ${cardStatusConfig.text}`}>
+                {cardStatusConfig.icon} {cardStatusConfig.label}
               </span>
+              
+              {productStatusConfig && (
+                <span className={`text-xs px-2 py-0.5 rounded font-medium ${productStatusConfig.bg} ${productStatusConfig.text}`}>
+                  {productStatusConfig.icon} {productStatusConfig.label}
+                </span>
+              )}
             </div>
+
+            {/* ЦЕНА ДЛЯ IN_REQUEST */}
+            {currentCardStatus === "IN_REQUEST" && unit.requestPricePerUnit && (
+              <div className="text-xs font-semibold text-green-600 mb-1">
+                💰 {unit.requestPricePerUnit} ₽
+              </div>
+            )}
 
             {brandName && <div className="text-xs text-gray-600">🏷️ {brandName}</div>}
           </div>
@@ -116,19 +205,57 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
         {isExpanded && (
           <div className="mt-2 pt-2 border-t border-gray-100 space-y-2">
             <div className="text-xs text-gray-600">
-              <div className="flex justify-between"><span>Артикул:</span><span className="font-mono">{productCode}</span></div>
+              <div className="flex justify-between">
+                <span>Артикул:</span>
+                <span className="font-mono">{productCode}</span>
+              </div>
+              {/* SERIAL NUMBER ТОЛЬКО В РАСШИРЕННОМ ВИДЕ */}
+              <div className="flex justify-between mt-1">
+                <span>Серийный:</span>
+                <span className="font-mono text-xs">{unit.serialNumber}</span>
+              </div>
             </div>
+            
             <div className="flex gap-1">
-              {currentStatus === "CLEAR" && (
-                <button onClick={handleAddToCandidate} className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1 px-2 rounded transition-colors">
+              {currentCardStatus === "CLEAR" && (
+                <button 
+                  onClick={handleAddToCandidate} 
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1 px-2 rounded transition-colors"
+                >
                   В кандидаты
                 </button>
               )}
-              {currentStatus === "CANDIDATE" && (
-                <button onClick={handleAddToRequest} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs py-1 px-2 rounded transition-colors">
+              
+              {currentCardStatus === "CANDIDATE" && (
+                <button 
+                  onClick={handleAddToRequest} 
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs py-1 px-2 rounded transition-colors"
+                >
                   В заявку
                 </button>
               )}
+
+              {currentCardStatus === "IN_REQUEST" && (
+                <button 
+                  onClick={handleDelivery} 
+                  disabled={isProcessing}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1 px-2 rounded transition-colors disabled:opacity-50"
+                >
+                  {isProcessing ? "Поставка..." : "Поставить"}
+                </button>
+              )}
+
+              {/* КНОПКА ОТКАТА ДЛЯ IN_STORE ИЛИ ARRIVED */}
+              {shouldShowRevert && (
+                <button 
+                  onClick={handleRevertToRequest} 
+                  disabled={isProcessing}
+                  className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white text-xs py-1 px-2 rounded transition-colors disabled:opacity-50"
+                >
+                  {isProcessing ? "Откат..." : "Откат"}
+                </button>
+              )}
+
               <button onClick={() => {}} className="bg-gray-600 hover:bg-gray-700 text-white text-xs py-1 px-2 rounded transition-colors">
                 Подробнее
               </button>
@@ -136,29 +263,53 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
           </div>
         )}
 
+        {/* КОМПАКТНЫЕ КНОПКИ (БЕЗ РАСШИРЕНИЯ) */}
         {!isExpanded && (
           <div className="flex gap-1 mt-2">
-            {currentStatus === "CLEAR" && (
+            {currentCardStatus === "CLEAR" && (
               <button onClick={handleAddToCandidate} className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1 px-2 rounded transition-colors">
                 В кандидаты
               </button>
             )}
-            {currentStatus === "CANDIDATE" && (
+            
+            {currentCardStatus === "CANDIDATE" && (
               <button onClick={handleAddToRequest} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs py-1 px-2 rounded transition-colors">
                 В заявку
+              </button>
+            )}
+
+            {currentCardStatus === "IN_REQUEST" && (
+              <button 
+                onClick={handleDelivery} 
+                disabled={isProcessing}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1 px-2 rounded transition-colors disabled:opacity-50"
+              >
+                {isProcessing ? "..." : "Поставить"}
+              </button>
+            )}
+
+            {/* КНОПКА ОТКАТА ДЛЯ IN_STORE ИЛИ ARRIVED */}
+            {shouldShowRevert && (
+              <button 
+                onClick={handleRevertToRequest} 
+                disabled={isProcessing}
+                className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white text-xs py-1 px-2 rounded transition-colors disabled:opacity-50"
+              >
+                {isProcessing ? "..." : "Откат"}
               </button>
             )}
           </div>
         )}
       </div>
 
-      {showRequestModal && currentStatus === "CANDIDATE" && (
+      {/* МОДАЛЬНОЕ ОКНО ЗАЯВКИ */}
+      {showRequestModal && currentCardStatus === "CANDIDATE" && (
         <CreateRequestModal
           unit={unit}
           onClose={() => setShowRequestModal(false)}
           onSuccess={() => {
             setShowRequestModal(false);
-            setCurrentStatus("IN_REQUEST");
+            setCurrentCardStatus("IN_REQUEST");
             onStatusChange?.(unit.id, "IN_REQUEST");
           }}
         />
