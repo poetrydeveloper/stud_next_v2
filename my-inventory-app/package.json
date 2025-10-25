@@ -25,9 +25,13 @@
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.7",
     "@prisma/client": "^6.14.0",
+    "@react-three/drei": "^10.7.6",
+    "@react-three/fiber": "^9.4.0",
     "@types/fs-extra": "^11.0.4",
     "archiver": "^7.0.1",
     "dotenv": "^17.2.3",
+    "drei": "^2.2.21",
+    "framer-motion": "^12.23.24",
     "fs-extra": "^11.3.2",
     "lucide-react": "^0.544.0",
     "next": "15.5.0",
@@ -41,6 +45,7 @@
     "sharp": "^0.34.4",
     "slugify": "^1.6.6",
     "swr": "^2.3.6",
+    "three": "^0.180.0",
     "unzipper": "^0.12.3",
     "uuid": "^13.0.0",
     "xlsx": "^0.18.5"
