@@ -30,7 +30,7 @@
     "@types/fs-extra": "^11.0.4",
     "archiver": "^7.0.1",
     "dotenv": "^17.2.3",
-    "drei": "^2.2.21",
+    "drei": "^0.0.45",
     "framer-motion": "^12.23.24",
     "fs-extra": "^11.3.2",
     "lucide-react": "^0.544.0",
