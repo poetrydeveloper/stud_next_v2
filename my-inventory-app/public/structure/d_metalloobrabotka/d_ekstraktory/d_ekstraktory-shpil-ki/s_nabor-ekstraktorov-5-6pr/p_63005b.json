@@ -1,0 +1,29 @@
+{
+  "code": "63005B",
+  "name": "Набор экстракторов 5пр. FORCE 63005B",
+  "description": "",
+  "brand": {
+    "id": 3,
+    "name": "Force",
+    "slug": "force"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 47,
+    "name": "Экстракторы Шпильки",
+    "node_index": "structure/d_metalloobrabotka/d_ekstraktory/d_ekstraktory-shpil-ki",
+    "human_path": "structure / metalloobrabotka / ekstraktory / ekstraktory-shpil-ki"
+  },
+  "spine": {
+    "id": 9,
+    "name": "Набор экстракторов 5-6пр",
+    "node_index": "structure/d_metalloobrabotka/d_ekstraktory/d_ekstraktory-shpil-ki/s_nabor-ekstraktorov-5-6pr",
+    "human_path": "structure / metalloobrabotka / ekstraktory / ekstraktory-shpil-ki / nabor-ekstraktorov-5-6pr"
+  },
+  "images": [],
+  "node_index": "structure/d_metalloobrabotka/d_ekstraktory/d_ekstraktory-shpil-ki/s_nabor-ekstraktorov-5-6pr/p_63005b",
+  "created_at": "2025-10-25T08:07:42.600Z"
+}

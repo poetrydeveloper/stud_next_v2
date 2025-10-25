@@ -1,0 +1,29 @@
+{
+  "code": "620 017",
+  "name": "Головка шестигранная 17мм 1/2\"",
+  "description": "",
+  "brand": {
+    "id": 2,
+    "name": "Дело техники",
+    "slug": "delo-tehniki"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 9,
+    "name": "6-граней",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-2-korotkie/d_6-graney",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / 1-2-korotkie / 6-graney"
+  },
+  "spine": {
+    "id": 10,
+    "name": "Головка шестигранная 17мм 1/2\"",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-2-korotkie/d_6-graney/s_golovka-shestigrannaya-17mm-1-2",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / 1-2-korotkie / 6-graney / golovka-shestigrannaya-17mm-1-2"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-2-korotkie/d_6-graney/s_golovka-shestigrannaya-17mm-1-2/p_620-017",
+  "created_at": "2025-10-25T08:15:56.047Z"
+}

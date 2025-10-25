@@ -1,0 +1,29 @@
+{
+  "code": "40290",
+  "name": "Головка разрезная для монтажа кислородного датчика 22 мм ½",
+  "description": "",
+  "brand": {
+    "id": 11,
+    "name": "Автодело",
+    "slug": "avtodelo"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 69,
+    "name": "лямбда",
+    "node_index": "structure/d_spetsial-nyy-instrument/d_dvigatel/d_datchiki/d_lyambda",
+    "human_path": "structure / spetsial-nyy-instrument / dvigatel / datchiki / lyambda"
+  },
+  "spine": {
+    "id": 35,
+    "name": "Ключ для датчика ''лямбда зонд''",
+    "node_index": "structure/d_spetsial-nyy-instrument/d_dvigatel/d_datchiki/d_lyambda/s_klyuch-dlya-datchika-lyambda-zond",
+    "human_path": "structure / spetsial-nyy-instrument / dvigatel / datchiki / lyambda / klyuch-dlya-datchika-lyambda-zond"
+  },
+  "images": [],
+  "node_index": "structure/d_spetsial-nyy-instrument/d_dvigatel/d_datchiki/d_lyambda/s_klyuch-dlya-datchika-lyambda-zond/p_40290",
+  "created_at": "2025-10-25T12:16:49.094Z"
+}

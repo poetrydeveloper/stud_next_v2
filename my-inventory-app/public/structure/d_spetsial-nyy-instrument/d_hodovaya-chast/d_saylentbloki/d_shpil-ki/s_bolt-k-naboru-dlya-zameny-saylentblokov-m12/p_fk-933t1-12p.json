@@ -1,0 +1,29 @@
+{
+  "code": "FK-933T1-12P",
+  "name": "Болт к набору для замены сайлентблоков М12",
+  "description": "",
+  "brand": {
+    "id": 10,
+    "name": "FORCEKRAFT",
+    "slug": "forcekraft"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 65,
+    "name": "шпильки",
+    "node_index": "structure/d_spetsial-nyy-instrument/d_hodovaya-chast/d_saylentbloki/d_shpil-ki",
+    "human_path": "structure / spetsial-nyy-instrument / hodovaya-chast / saylentbloki / shpil-ki"
+  },
+  "spine": {
+    "id": 29,
+    "name": "Болт к набору для замены сайлентблоков М12",
+    "node_index": "structure/d_spetsial-nyy-instrument/d_hodovaya-chast/d_saylentbloki/d_shpil-ki/s_bolt-k-naboru-dlya-zameny-saylentblokov-m12",
+    "human_path": "structure / spetsial-nyy-instrument / hodovaya-chast / saylentbloki / shpil-ki / bolt-k-naboru-dlya-zameny-saylentblokov-m12"
+  },
+  "images": [],
+  "node_index": "structure/d_spetsial-nyy-instrument/d_hodovaya-chast/d_saylentbloki/d_shpil-ki/s_bolt-k-naboru-dlya-zameny-saylentblokov-m12/p_fk-933t1-12p",
+  "created_at": "2025-10-25T10:47:11.118Z"
+}

@@ -1,0 +1,29 @@
+{
+  "code": "FK-905M11",
+  "name": "Набор приспособлений (пласт.) для демонтажа внутренней обшивки салона 11пр.",
+  "description": "",
+  "brand": {
+    "id": 10,
+    "name": "FORCEKRAFT",
+    "slug": "forcekraft"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 54,
+    "name": "ПЛАСТИКОВЫЕ НАБОРЫ",
+    "node_index": "structure/d_spetsial-nyy-instrument/d_salon/d_plastikovye-nabory",
+    "human_path": "structure / spetsial-nyy-instrument / salon / plastikovye-nabory"
+  },
+  "spine": {
+    "id": 23,
+    "name": "демонтажа внутренней обшивки салона 11пр",
+    "node_index": "structure/d_spetsial-nyy-instrument/d_salon/d_plastikovye-nabory/s_demontazha-vnutrenney-obshivki-salona-11pr",
+    "human_path": "structure / spetsial-nyy-instrument / salon / plastikovye-nabory / demontazha-vnutrenney-obshivki-salona-11pr"
+  },
+  "images": [],
+  "node_index": "structure/d_spetsial-nyy-instrument/d_salon/d_plastikovye-nabory/s_demontazha-vnutrenney-obshivki-salona-11pr/p_fk-905m11",
+  "created_at": "2025-10-25T09:26:19.470Z"
+}

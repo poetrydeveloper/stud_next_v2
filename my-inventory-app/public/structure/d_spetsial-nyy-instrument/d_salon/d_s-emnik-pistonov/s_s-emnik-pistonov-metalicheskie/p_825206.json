@@ -1,0 +1,29 @@
+{
+  "code": "825206",
+  "name": "Съёмник пистонов обшивки изогнутый 6мм",
+  "description": "",
+  "brand": {
+    "id": 2,
+    "name": "Дело техники",
+    "slug": "delo-tehniki"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 53,
+    "name": "Съемник пистонов",
+    "node_index": "structure/d_spetsial-nyy-instrument/d_salon/d_s-emnik-pistonov",
+    "human_path": "structure / spetsial-nyy-instrument / salon / s-emnik-pistonov"
+  },
+  "spine": {
+    "id": 22,
+    "name": "Съемник пистонов металические",
+    "node_index": "structure/d_spetsial-nyy-instrument/d_salon/d_s-emnik-pistonov/s_s-emnik-pistonov-metalicheskie",
+    "human_path": "structure / spetsial-nyy-instrument / salon / s-emnik-pistonov / s-emnik-pistonov-metalicheskie"
+  },
+  "images": [],
+  "node_index": "structure/d_spetsial-nyy-instrument/d_salon/d_s-emnik-pistonov/s_s-emnik-pistonov-metalicheskie/p_825206",
+  "created_at": "2025-10-25T09:20:44.346Z"
+}

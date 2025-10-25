@@ -76,8 +76,8 @@ model Product {
   description String?
   categoryId  Int?
   category    Category? @relation(fields: [categoryId], references: [id])
-  brandId     Int?
-  brand       Brand?    @relation(fields: [brandId], references: [id])
+  brandId     Int
+  brand       Brand    @relation(fields: [brandId], references: [id])
   spineId     Int?
   spine       Spine?    @relation(fields: [spineId], references: [id])
   createdAt   DateTime  @default(now())

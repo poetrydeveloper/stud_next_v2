@@ -1,0 +1,29 @@
+{
+  "code": "ST4581",
+  "name": "Заклепочник поворотный усиленный 2,4-4,8мм STARTUL PROFI (ST4581)",
+  "description": "",
+  "brand": {
+    "id": 6,
+    "name": "STARTUL",
+    "slug": "startul"
+  },
+  "supplier": {
+    "id": 1,
+    "name": "TT"
+  },
+  "category": {
+    "id": 32,
+    "name": "Вытяжной",
+    "node_index": "structure/d_ruchnoy-instrument/d_obschestroitel-nyy-instrument/d_zaklepochniki/d_vytyazhnoy",
+    "human_path": "structure / ruchnoy-instrument / obschestroitel-nyy-instrument / zaklepochniki / vytyazhnoy"
+  },
+  "spine": {
+    "id": 7,
+    "name": "Заклепочник поворотный",
+    "node_index": "structure/d_ruchnoy-instrument/d_obschestroitel-nyy-instrument/d_zaklepochniki/d_vytyazhnoy/s_zaklepochnik-povorotnyy",
+    "human_path": "structure / ruchnoy-instrument / obschestroitel-nyy-instrument / zaklepochniki / vytyazhnoy / zaklepochnik-povorotnyy"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_obschestroitel-nyy-instrument/d_zaklepochniki/d_vytyazhnoy/s_zaklepochnik-povorotnyy/p_st4581",
+  "created_at": "2025-10-25T07:42:33.088Z"
+}

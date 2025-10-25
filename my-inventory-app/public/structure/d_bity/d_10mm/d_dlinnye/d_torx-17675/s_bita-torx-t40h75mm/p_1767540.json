@@ -1,0 +1,29 @@
+{
+  "code": "1767540",
+  "name": "Бита Torx T40 10 мм. FORCE 1767540",
+  "description": "",
+  "brand": {
+    "id": 3,
+    "name": "Force",
+    "slug": "force"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 17,
+    "name": "Torx_17675",
+    "node_index": "structure/d_bity/d_10mm/d_dlinnye/d_torx-17675",
+    "human_path": "structure / bity / 10mm / dlinnye / torx-17675"
+  },
+  "spine": {
+    "id": 3,
+    "name": "Бита TORX T40х75мм",
+    "node_index": "structure/d_bity/d_10mm/d_dlinnye/d_torx-17675/s_bita-torx-t40h75mm",
+    "human_path": "structure / bity / 10mm / dlinnye / torx-17675 / bita-torx-t40h75mm"
+  },
+  "images": [],
+  "node_index": "structure/d_bity/d_10mm/d_dlinnye/d_torx-17675/s_bita-torx-t40h75mm/p_1767540",
+  "created_at": "2025-10-25T06:45:27.209Z"
+}

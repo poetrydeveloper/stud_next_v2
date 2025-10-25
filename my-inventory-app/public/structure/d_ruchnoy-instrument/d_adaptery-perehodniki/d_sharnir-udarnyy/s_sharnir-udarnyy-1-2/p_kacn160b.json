@@ -1,0 +1,29 @@
+{
+  "code": "KACN160B",
+  "name": "Шарнир ударный 1/2\"х62мм TOPTUL",
+  "description": "",
+  "brand": {
+    "id": 4,
+    "name": "TOPTUL",
+    "slug": "toptul"
+  },
+  "supplier": {
+    "id": 1,
+    "name": "TT"
+  },
+  "category": {
+    "id": 66,
+    "name": "ШАРНИР-УДАРНЫЙ",
+    "node_index": "structure/d_ruchnoy-instrument/d_adaptery-perehodniki/d_sharnir-udarnyy",
+    "human_path": "structure / ruchnoy-instrument / adaptery-perehodniki / sharnir-udarnyy"
+  },
+  "spine": {
+    "id": 33,
+    "name": "Шарнир ударный 1/2",
+    "node_index": "structure/d_ruchnoy-instrument/d_adaptery-perehodniki/d_sharnir-udarnyy/s_sharnir-udarnyy-1-2",
+    "human_path": "structure / ruchnoy-instrument / adaptery-perehodniki / sharnir-udarnyy / sharnir-udarnyy-1-2"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_adaptery-perehodniki/d_sharnir-udarnyy/s_sharnir-udarnyy-1-2/p_kacn160b",
+  "created_at": "2025-10-25T12:11:19.503Z"
+}

@@ -1,0 +1,29 @@
+{
+  "code": "622019",
+  "name": "Головка двенадцатигранная 19мм 1/2\"",
+  "description": "",
+  "brand": {
+    "id": 2,
+    "name": "Дело техники",
+    "slug": "delo-tehniki"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 7,
+    "name": "12-граней",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-2-korotkie/d_12-graney",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / 1-2-korotkie / 12-graney"
+  },
+  "spine": {
+    "id": 36,
+    "name": "головка 19мм 12гр 1/2",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-2-korotkie/d_12-graney/s_golovka-19mm-12gr-1-2",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / 1-2-korotkie / 12-graney / golovka-19mm-12gr-1-2"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-2-korotkie/d_12-graney/s_golovka-19mm-12gr-1-2/p_622019",
+  "created_at": "2025-10-25T12:20:50.980Z"
+}

@@ -1,0 +1,29 @@
+{
+  "code": "YT0590",
+  "name": "Набор экстракторов для извлечения обломанных болтов 6пр",
+  "description": "",
+  "brand": {
+    "id": 7,
+    "name": "Yato",
+    "slug": "yato"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 47,
+    "name": "Экстракторы Шпильки",
+    "node_index": "structure/d_metalloobrabotka/d_ekstraktory/d_ekstraktory-shpil-ki",
+    "human_path": "structure / metalloobrabotka / ekstraktory / ekstraktory-shpil-ki"
+  },
+  "spine": {
+    "id": 9,
+    "name": "Набор экстракторов 5-6пр",
+    "node_index": "structure/d_metalloobrabotka/d_ekstraktory/d_ekstraktory-shpil-ki/s_nabor-ekstraktorov-5-6pr",
+    "human_path": "structure / metalloobrabotka / ekstraktory / ekstraktory-shpil-ki / nabor-ekstraktorov-5-6pr"
+  },
+  "images": [],
+  "node_index": "structure/d_metalloobrabotka/d_ekstraktory/d_ekstraktory-shpil-ki/s_nabor-ekstraktorov-5-6pr/p_yt0590",
+  "created_at": "2025-10-25T08:10:03.264Z"
+}

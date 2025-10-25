@@ -1,0 +1,29 @@
+{
+  "code": "R7401001",
+  "name": "ARNEZI R7401001 Поддон для слива масла 8 л.",
+  "description": "",
+  "brand": {
+    "id": 5,
+    "name": "ARNEZI",
+    "slug": "arnezi"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 29,
+    "name": "ТАЗИКИ",
+    "node_index": "structure/d_oborudovanie/d_dlya-zameny-teh-zhidkostey-smazka/d_sliv-otkachka-masla/d_taziki",
+    "human_path": "structure / oborudovanie / dlya-zameny-teh-zhidkostey-smazka / sliv-otkachka-masla / taziki"
+  },
+  "spine": {
+    "id": 6,
+    "name": "Поддон для слива масла 8 л",
+    "node_index": "structure/d_oborudovanie/d_dlya-zameny-teh-zhidkostey-smazka/d_sliv-otkachka-masla/d_taziki/s_poddon-dlya-sliva-masla-8-l",
+    "human_path": "structure / oborudovanie / dlya-zameny-teh-zhidkostey-smazka / sliv-otkachka-masla / taziki / poddon-dlya-sliva-masla-8-l"
+  },
+  "images": [],
+  "node_index": "structure/d_oborudovanie/d_dlya-zameny-teh-zhidkostey-smazka/d_sliv-otkachka-masla/d_taziki/s_poddon-dlya-sliva-masla-8-l/p_r7401001",
+  "created_at": "2025-10-25T07:32:34.353Z"
+}

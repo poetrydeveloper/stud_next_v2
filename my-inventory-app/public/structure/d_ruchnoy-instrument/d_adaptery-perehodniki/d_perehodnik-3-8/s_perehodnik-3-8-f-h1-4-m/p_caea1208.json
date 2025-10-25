@@ -1,0 +1,25 @@
+{
+  "code": "CAEA1208",
+  "name": "Переходник 3/8\"(F)х1/4(М) TOPTUL",
+  "description": "",
+  "brand": null,
+  "supplier": {
+    "id": 1,
+    "name": "TT"
+  },
+  "category": {
+    "id": 19,
+    "name": "Переходник 3/8",
+    "node_index": "structure/d_ruchnoy-instrument/d_adaptery-perehodniki/d_perehodnik-3-8",
+    "human_path": "structure / ruchnoy-instrument / adaptery-perehodniki / perehodnik-3-8"
+  },
+  "spine": {
+    "id": 4,
+    "name": "Переходник 3/8\"(F)х1/4(М)",
+    "node_index": "structure/d_ruchnoy-instrument/d_adaptery-perehodniki/d_perehodnik-3-8/s_perehodnik-3-8-f-h1-4-m",
+    "human_path": "structure / ruchnoy-instrument / adaptery-perehodniki / perehodnik-3-8 / perehodnik-3-8-f-h1-4-m"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_adaptery-perehodniki/d_perehodnik-3-8/s_perehodnik-3-8-f-h1-4-m/p_caea1208",
+  "created_at": "2025-10-25T06:54:09.327Z"
+}

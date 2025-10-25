@@ -1,0 +1,29 @@
+{
+  "code": "JCB-4167-5MPB",
+  "name": "Набор головок ударных глубоких 16пр.,1/2''6гр.(10,12-19,21,22,24,27,30,32,36мм), в металлическом кейсе",
+  "description": "",
+  "brand": {
+    "id": 9,
+    "name": "JCB",
+    "slug": "jcb"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 56,
+    "name": "1/2\" ударные удлиненные",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-nabory/d_1-2-udarnye-udlinennye",
+    "human_path": "structure / ruchnoy-instrument / golovki-nabory / 1-2-udarnye-udlinennye"
+  },
+  "spine": {
+    "id": 25,
+    "name": "Набор головок ударных глубоких 16пр",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-nabory/d_1-2-udarnye-udlinennye/s_nabor-golovok-udarnyh-glubokih-16pr",
+    "human_path": "structure / ruchnoy-instrument / golovki-nabory / 1-2-udarnye-udlinennye / nabor-golovok-udarnyh-glubokih-16pr"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_golovki-nabory/d_1-2-udarnye-udlinennye/s_nabor-golovok-udarnyh-glubokih-16pr/p_jcb-4167-5mpb",
+  "created_at": "2025-10-25T09:51:08.429Z"
+}

@@ -1,0 +1,29 @@
+{
+  "code": "JCB-4458510",
+  "name": "Головка ударная глубокая 10мм (6гр.), 1/2''",
+  "description": "",
+  "brand": {
+    "id": 9,
+    "name": "JCB",
+    "slug": "jcb"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 50,
+    "name": "6граней",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-2-dlinnye/d_6graney",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / 1-2-dlinnye / 6graney"
+  },
+  "spine": {
+    "id": 21,
+    "name": "10мм (6гр.), 1/2''",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-2-dlinnye/d_6graney/s_10mm-6gr-1-2",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / 1-2-dlinnye / 6graney / 10mm-6gr-1-2"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-2-dlinnye/d_6graney/s_10mm-6gr-1-2/p_jcb-4458510",
+  "created_at": "2025-10-25T08:59:15.744Z"
+}
