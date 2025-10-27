@@ -1,4 +1,4 @@
-//app/super-add/components/TreeView.tsx
+// app/super-add/components/TreeView.tsx
 import { TreeViewProps, TreeNode } from '../types';
 
 export default function TreeView({ tree, selectedPath, onSelect }: TreeViewProps) {
@@ -28,13 +28,19 @@ function RenderTree({ node, level, selectedPath, onSelect }: {
 }) {
   return (
     <ul>
-      {Object.entries(node).map(([name, data]) => {
-        // ФИКС: Проверяем что path существует
+      {Object.entries(node).map(([technicalName, data]) => {
         const nodePath = data.path || '';
-        console.log('📁 TreeView node:', { name, path: nodePath, type: data.type });
+        const displayName = data.name || technicalName; // ← ВАЖНО: используем русское название
+        
+        console.log('📁 TreeView node:', { 
+          technicalName, 
+          displayName, 
+          path: nodePath, 
+          type: data.type 
+        });
         
         return (
-          <li key={name} className="my-1">
+          <li key={technicalName} className="my-1">
             <div className="flex items-center">
               <div style={{ width: `${level * 16}px` }}></div>
               <button
@@ -48,7 +54,7 @@ function RenderTree({ node, level, selectedPath, onSelect }: {
                 }`}
                 disabled={!nodePath}
               >
-                {name}
+                {displayName} {/* ← ТЕПЕРЬ ОТОБРАЖАЕТ РУССКОЕ НАЗВАНИЕ */}
               </button>
             </div>
             {data.children && Object.keys(data.children).length > 0 && (

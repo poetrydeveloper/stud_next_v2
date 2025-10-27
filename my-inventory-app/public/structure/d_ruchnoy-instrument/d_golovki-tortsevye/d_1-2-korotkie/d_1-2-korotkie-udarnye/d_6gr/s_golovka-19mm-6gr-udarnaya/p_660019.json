@@ -1,0 +1,29 @@
+{
+  "code": "660019",
+  "name": "Головка ударная шестигранная 19 мм 1/2\"",
+  "description": "",
+  "brand": {
+    "id": 2,
+    "name": "Дело техники",
+    "slug": "delo-tehniki"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 85,
+    "name": "6гр",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-2-korotkie/d_1-2-korotkie-udarnye/d_6gr",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / 1-2-korotkie / 1-2-korotkie-udarnye / 6gr"
+  },
+  "spine": {
+    "id": 42,
+    "name": "Головка 19мм 6гр ударная",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-2-korotkie/d_1-2-korotkie-udarnye/d_6gr/s_golovka-19mm-6gr-udarnaya",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / 1-2-korotkie / 1-2-korotkie-udarnye / 6gr / golovka-19mm-6gr-udarnaya"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-2-korotkie/d_1-2-korotkie-udarnye/d_6gr/s_golovka-19mm-6gr-udarnaya/p_660019",
+  "created_at": "2025-10-27T11:26:24.385Z"
+}

@@ -1,7 +1,10 @@
 // lib/services/StructureService.ts
 import fs from 'fs/promises';
 import path from 'path';
+import { PrismaClient } from '@prisma/client';
 import { validateSlug, StructureError, generateValidSlug } from '@/lib/helpers/structure-helpers';
+
+const prisma = new PrismaClient();
 
 export class StructureService {
   private basePath = path.join(process.cwd(), 'public', 'structure');
@@ -25,17 +28,13 @@ export class StructureService {
     categoryData?: any, 
     spineData?: any, 
     parentPath: string = '',
-    images: any[] = [] // ← ДОБАВЛЯЕМ ИЗОБРАЖЕНИЯ
+    images: any[] = []
   ): Promise<string> {
     const slug = `p_${generateValidSlug(code)}`;
     
-    // ФИКС: нормализуем и очищаем parentPath от дублирования structure/
     const cleanParentPath = this.normalizeAndCleanPath(parentPath);
-    
-    // Генерируем node_index
     const nodeIndex = `structure/${path.join(cleanParentPath, slug)}`.replace(/\\/g, '/');
     
-    // Создаем JSON данные
     const jsonData = {
       code,
       name,
@@ -61,27 +60,21 @@ export class StructureService {
         node_index: spineData.node_index,
         human_path: spineData.human_path
       } : null,
-      // ДОБАВЛЯЕМ ИНФОРМАЦИЮ ОБ ИЗОБРАЖЕНИЯХ
       images: images.map((img, index) => ({
         filename: img.filename,
         path: img.path,
-        isMain: index === 0, // первое изображение - главное
+        isMain: index === 0,
         order: index
       })),
       node_index: nodeIndex,
       created_at: new Date().toISOString()
     };
 
-    // Создаем путь к JSON файлу
     const jsonFilePath = path.join(this.basePath, cleanParentPath, `${slug}.json`);
     
     try {
-      // Убеждаемся что родительская директория существует
       await fs.mkdir(path.dirname(jsonFilePath), { recursive: true });
-      
-      // Создаем JSON файл
       await fs.writeFile(jsonFilePath, JSON.stringify(jsonData, null, 2), 'utf-8');
-      
       return nodeIndex;
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
@@ -91,13 +84,10 @@ export class StructureService {
     }
   }
 
-  // ВСЕ ОСТАЛЬНЫЕ МЕТОДЫ СОХРАНЯЕМ БЕЗ ИЗМЕНЕНИЙ
   private async createDirectory(slug: string, parentPath: string): Promise<string> {
     validateSlug(slug);
     
-    // ФИКС: нормализуем и очищаем parentPath от дублирования structure/
     const cleanParentPath = this.normalizeAndCleanPath(parentPath);
-    
     const fullPath = path.join(this.basePath, cleanParentPath, slug);
     const nodeIndex = `structure/${path.join(cleanParentPath, slug)}`.replace(/\\/g, '/');
 
@@ -115,22 +105,21 @@ export class StructureService {
   private normalizeAndCleanPath(inputPath: string): string {
     if (!inputPath) return '';
     
-    // Нормализуем слеши
     let normalized = inputPath.replace(/\\/g, '/');
     
-    // Убираем префикс structure/ если он есть
     if (normalized.startsWith('structure/')) {
       normalized = normalized.substring('structure/'.length);
     }
     
-    // Убираем начальные и конечные слеши
     normalized = normalized.replace(/^\/+|\/+$/g, '');
     
     return normalized;
   }
 
   async getTree(): Promise<any> {
-    return this.scanDirectory(this.basePath);
+    const fileSystemTree = await this.scanDirectory(this.basePath);
+    const enrichedTree = await this.enrichWithRussianNames(fileSystemTree);
+    return enrichedTree;
   }
 
   private async scanDirectory(dirPath: string): Promise<any> {
@@ -145,16 +134,15 @@ export class StructureService {
         if (item.isDirectory()) {
           tree[item.name] = {
             type: this.getNodeType(item.name),
-            path: relativePath,
+            path: relativePath.replace(/\\/g, '/'),
             children: await this.scanDirectory(fullPath)
           };
         } else if (item.isFile() && item.name.endsWith('.json') && item.name.startsWith('p_')) {
-          // Добавляем JSON файлы продуктов в дерево
-          const productName = item.name.replace('.json', '').replace('p_', '');
+          const productName = item.name.replace('.json', '');
           tree[item.name] = {
             type: 'product',
-            path: relativePath,
-            children: {} // У продуктов нет детей
+            path: relativePath.replace(/\\/g, '/'),
+            children: {}
           };
         }
       }
@@ -165,11 +153,67 @@ export class StructureService {
     }
   }
 
+  private async enrichWithRussianNames(tree: any): Promise<any> {
+    const [categories, spines, products] = await Promise.all([
+      prisma.category.findMany({
+        select: { path: true, name: true }
+      }),
+      prisma.spine.findMany({
+        select: { slug: true, name: true }
+      }),
+      prisma.product.findMany({
+        select: { code: true, name: true }
+      })
+    ]);
+
+    const categoryMap = new Map(categories.map(cat => [cat.path, cat.name]));
+    const spineMap = new Map(spines.map(spine => [spine.slug, spine.name]));
+    const productMap = new Map(products.map(prod => [prod.code, prod.name]));
+
+    return this.enrichNode(tree, categoryMap, spineMap, productMap);
+  }
+
+  private enrichNode(
+    node: any, 
+    categoryMap: Map<string, string>,
+    spineMap: Map<string, string>, 
+    productMap: Map<string, string>
+  ): any {
+    const result: any = {};
+
+    for (const [technicalName, data] of Object.entries(node)) {
+      const nodeData = data as any;
+      
+      let russianName = technicalName;
+      
+      if (nodeData.type === 'category') {
+        // Для категорий ищем по полному пути
+        russianName = categoryMap.get(nodeData.path) || technicalName;
+      } else if (nodeData.type === 'spine') {
+        // Для spines ищем по slug (последняя часть пути)
+        const spineSlug = nodeData.path.split('/').pop();
+        russianName = spineMap.get(spineSlug) || technicalName;
+      } else if (nodeData.type === 'product') {
+        // Для продуктов ищем по коду (убираем p_ и .json)
+        const productCode = technicalName.replace('p_', '').replace('.json', '');
+        russianName = productMap.get(productCode) || technicalName;
+      }
+
+      result[technicalName] = {
+        ...nodeData,
+        name: russianName, // ← ДОБАВЛЯЕМ РУССКОЕ НАЗВАНИЕ
+        children: nodeData.children ? this.enrichNode(nodeData.children, categoryMap, spineMap, productMap) : {}
+      };
+    }
+
+    return result;
+  }
+
   private getNodeType(name: string): string {
     if (name.startsWith('d_')) return 'category';
     if (name.startsWith('s_')) return 'spine';
     if (name.startsWith('p_') && name.endsWith('.json')) return 'product';
-    if (name.startsWith('p_')) return 'product'; // для директорий (если остались)
+    if (name.startsWith('p_')) return 'product';
     return 'unknown';
   }
 
@@ -178,7 +222,6 @@ export class StructureService {
     const fullPath = path.join(this.basePath, cleanPath);
     
     try {
-      // Проверяем, это файл или директория
       const stats = await fs.stat(fullPath);
       if (stats.isFile()) {
         await fs.rm(fullPath, { force: true });

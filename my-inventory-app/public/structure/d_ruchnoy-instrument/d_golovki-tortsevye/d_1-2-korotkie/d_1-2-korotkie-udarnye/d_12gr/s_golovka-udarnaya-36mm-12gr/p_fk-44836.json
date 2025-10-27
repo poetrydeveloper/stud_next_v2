@@ -1,0 +1,29 @@
+{
+  "code": "FK-44836",
+  "name": "Головка ударная 36мм (12гр.), 1/2''",
+  "description": "",
+  "brand": {
+    "id": 10,
+    "name": "FORCEKRAFT",
+    "slug": "forcekraft"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 86,
+    "name": "12гр",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-2-korotkie/d_1-2-korotkie-udarnye/d_12gr",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / 1-2-korotkie / 1-2-korotkie-udarnye / 12gr"
+  },
+  "spine": {
+    "id": 41,
+    "name": "Головка ударная 36мм (12гр.)",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-2-korotkie/d_1-2-korotkie-udarnye/d_12gr/s_golovka-udarnaya-36mm-12gr",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / 1-2-korotkie / 1-2-korotkie-udarnye / 12gr / golovka-udarnaya-36mm-12gr"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-2-korotkie/d_1-2-korotkie-udarnye/d_12gr/s_golovka-udarnaya-36mm-12gr/p_fk-44836",
+  "created_at": "2025-10-27T11:22:55.496Z"
+}

@@ -1,0 +1,43 @@
+# 📊 ОБЗОР ПРОЕКТА - СИСТЕМА УПРАВЛЕНИЯ ТОВАРАМИ
+Сгенерировано: 27.10.2025, 13:06:08
+
+## 📚 README ФАЙЛЫ API (14)
+
+- **readme_api_product-units_by-product-code_route.md** - api\product-units\by-product-code\readme_api_product-units_by-product-code_route.md
+- **readme_api_product-units_create_route.md** - api\product-units\create\readme_api_product-units_create_route.md
+- **readme_api_product-units_page-data_route.md** - api\product-units\page-data\readme_api_product-units_page-data_route.md
+- **readme_api_product-units_route.md** - api\product-units\readme_api_product-units_route.md
+- **readme_api_product-units_request_route.md** - api\product-units\request\readme_api_product-units_request_route.md
+- **readme_api_product-units_revert-to-request_route.md** - api\product-units\revert-to-request\readme_api_product-units_revert-to-request_route.md
+- **readme_api_product-units_search_route.md** - api\product-units\search\readme_api_product-units_search_route.md
+- **readme_api_product-units_[id]_delivery_route.md** - api\product-units\[id]\delivery\readme_api_product-units_[id]_delivery_route.md
+- **readme_api_product-units_[id]_logs_route.md** - api\product-units\[id]\logs\readme_api_product-units_[id]_logs_route.md
+- **readme_api_product-units_[id]_route.md** - api\product-units\[id]\readme_api_product-units_[id]_route.md
+- **readme_api_product-units_[id]_return_route.md** - api\product-units\[id]\return\readme_api_product-units_[id]_return_route.md
+- **readme_api_product-units_[id]_sale_route.md** - api\product-units\[id]\sale\readme_api_product-units_[id]_sale_route.md
+- **readme_api_product-units_[id]_sprout_route.md** - api\product-units\[id]\sprout\readme_api_product-units_[id]_sprout_route.md
+- **readme_api_product-units_[id]_status_route.md** - api\product-units\[id]\status\readme_api_product-units_[id]_status_route.md
+
+## 🚀 API РОУТЫ (0)
+
+
+## ⚛️ КОМПОНЕНТЫ (0)
+
+
+## 📄 СТРАНИЦЫ (0)
+
+
+## 🏗 АРХИТЕКТУРА СИСТЕМЫ
+
+### Основные сущности:
+- **ProductUnit** - товарная единица
+- **Product** - товар
+- **Category** - категория
+- **Spine** - группировка
+- **Supplier** - поставщик
+- **Customer** - покупатель
+
+### Статусная модель:
+**Card Status:** CLEAR → CANDIDATE → IN_REQUEST → IN_DELIVERY → ARRIVED → IN_STORE
+**Physical Status:** IN_STORE ↔ SOLD/CREDIT
+

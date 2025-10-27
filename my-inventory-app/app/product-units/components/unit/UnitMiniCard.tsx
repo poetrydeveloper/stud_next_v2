@@ -13,6 +13,9 @@ interface ProductUnit {
   productCode?: string;
   requestPricePerUnit?: number;
   quantityInRequest?: number;
+  updatedAt?: string;
+  soldAt?: string;
+  createdAt?: string;
   product?: {
     name: string;
     code: string;
@@ -31,6 +34,16 @@ interface UnitMiniCardProps {
   unit: ProductUnit;
   onStatusChange?: (unitId: number, newStatus: string) => void;
 }
+
+const isRecentlyActive = (unit: ProductUnit) => {
+  if (!unit.updatedAt) return false;
+  return Date.now() - new Date(unit.updatedAt).getTime() < 3 * 60 * 1000; // 3 минуты
+};
+
+const isRecentlySold = (unit: ProductUnit) => {
+  if (!unit.soldAt) return false;
+  return Date.now() - new Date(unit.soldAt).getTime() < 60 * 60 * 1000; // 60 минут
+};
 
 export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps) {
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -158,7 +171,12 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
 
   return (
     <>
-      <div className={`rounded-lg border border-gray-200 p-3 hover:shadow-md transition-shadow ${cardStatusConfig.cardBg}`}>
+      <div className={`
+      rounded-lg border border-gray-200 p-3 hover:shadow-md transition-shadow 
+      ${cardStatusConfig.cardBg}
+      ${isRecentlyActive(unit) ? 'border-2 border-dashed border-blue-500 animate-pulse' : ''}
+      ${isRecentlySold(unit) ? 'border-t-2 border-dashed border-green-500' : ''}
+    `}>
         <div className="flex items-start space-x-3 mb-2">
           <div className="flex-shrink-0">
             <div className="w-12 h-12 bg-gray-100 rounded border overflow-hidden">

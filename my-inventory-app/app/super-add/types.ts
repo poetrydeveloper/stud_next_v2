@@ -3,6 +3,7 @@ export interface TreeNode {
   [key: string]: {
     type: string;
     path: string;
+    name: string;
     children: TreeNode;
   };
 }

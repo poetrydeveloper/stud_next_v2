@@ -1,0 +1,29 @@
+{
+  "code": "80634",
+  "name": "Адаптер-переходник 3/8''(F)x1/2''(M)",
+  "description": "",
+  "brand": {
+    "id": 3,
+    "name": "Force",
+    "slug": "force"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 82,
+    "name": "БЕГУНКИ (Адаптер-переходник 3/8''(F)x1/2''(M))",
+    "node_index": "structure/d_ruchnoy-instrument/d_adaptery-perehodniki/d_begunki-adapter-perehodnik-3-8-f-x1-2-m",
+    "human_path": "structure / ruchnoy-instrument / adaptery-perehodniki / begunki-adapter-perehodnik-3-8-f-x1-2-m"
+  },
+  "spine": {
+    "id": 40,
+    "name": "Адаптер-переходник 3/8''(F)x1/2''(M)",
+    "node_index": "structure/d_ruchnoy-instrument/d_adaptery-perehodniki/d_begunki-adapter-perehodnik-3-8-f-x1-2-m/s_adapter-perehodnik-3-8-f-x1-2-m",
+    "human_path": "structure / ruchnoy-instrument / adaptery-perehodniki / begunki-adapter-perehodnik-3-8-f-x1-2-m / adapter-perehodnik-3-8-f-x1-2-m"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_adaptery-perehodniki/d_begunki-adapter-perehodnik-3-8-f-x1-2-m/s_adapter-perehodnik-3-8-f-x1-2-m/p_80634",
+  "created_at": "2025-10-27T11:17:02.072Z"
+}

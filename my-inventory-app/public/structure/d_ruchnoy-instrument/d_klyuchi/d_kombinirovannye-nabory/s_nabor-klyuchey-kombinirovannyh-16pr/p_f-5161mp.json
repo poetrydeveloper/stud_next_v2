@@ -1,0 +1,29 @@
+{
+  "code": "F-5161MP",
+  "name": "Набор ключей комбинированных, 16пр.(6-19, 22, 24мм), в пластиковом держателе",
+  "description": "",
+  "brand": {
+    "id": 12,
+    "name": "Forsage",
+    "slug": "forsage"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 75,
+    "name": "Комбинированные наборы",
+    "node_index": "structure/d_ruchnoy-instrument/d_klyuchi/d_kombinirovannye-nabory",
+    "human_path": "structure / ruchnoy-instrument / klyuchi / kombinirovannye-nabory"
+  },
+  "spine": {
+    "id": 38,
+    "name": "Набор ключей комбинированных, 16пр.",
+    "node_index": "structure/d_ruchnoy-instrument/d_klyuchi/d_kombinirovannye-nabory/s_nabor-klyuchey-kombinirovannyh-16pr",
+    "human_path": "structure / ruchnoy-instrument / klyuchi / kombinirovannye-nabory / nabor-klyuchey-kombinirovannyh-16pr"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_klyuchi/d_kombinirovannye-nabory/s_nabor-klyuchey-kombinirovannyh-16pr/p_f-5161mp",
+  "created_at": "2025-10-27T10:48:04.318Z"
+}
