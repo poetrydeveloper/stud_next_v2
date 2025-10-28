@@ -1,0 +1,29 @@
+{
+  "code": "GAAV0703",
+  "name": "Набор бит TORX с отверст. Т10-Т40 7шт. TOPTUL",
+  "description": "",
+  "brand": {
+    "id": 4,
+    "name": "TOPTUL",
+    "slug": "toptul"
+  },
+  "supplier": {
+    "id": 1,
+    "name": "TT"
+  },
+  "category": {
+    "id": 96,
+    "name": "наборы бит 1/4-1/4",
+    "node_index": "structure/d_bity/d_nabory-bit-1-4-1-4",
+    "human_path": "structure / bity / nabory-bit-1-4-1-4"
+  },
+  "spine": {
+    "id": 58,
+    "name": "пеньки",
+    "node_index": "structure/d_bity/d_nabory-bit-1-4-1-4/s_pen-ki",
+    "human_path": "structure / bity / nabory-bit-1-4-1-4 / pen-ki"
+  },
+  "images": [],
+  "node_index": "structure/d_bity/d_nabory-bit-1-4-1-4/s_pen-ki/p_gaav0703",
+  "created_at": "2025-10-28T10:51:10.789Z"
+}

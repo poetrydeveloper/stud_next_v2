@@ -1,0 +1,29 @@
+{
+  "code": "RF-807421",
+  "name": "Головка свечная 21мм 1/2''(6гр.)",
+  "description": "",
+  "brand": {
+    "id": 8,
+    "name": "RockForce",
+    "slug": "rockforce"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 88,
+    "name": "свечные головки",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_svechnye-golovki",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / svechnye-golovki"
+  },
+  "spine": {
+    "id": 51,
+    "name": "свечные 16мм",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_svechnye-golovki/s_svechnye-16mm",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / svechnye-golovki / svechnye-16mm"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_svechnye-golovki/s_svechnye-16mm/p_rf-807421",
+  "created_at": "2025-10-28T10:09:09.115Z"
+}

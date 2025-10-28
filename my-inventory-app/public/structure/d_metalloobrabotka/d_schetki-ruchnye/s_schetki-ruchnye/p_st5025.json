@@ -1,0 +1,29 @@
+{
+  "code": "ST5025",
+  "name": "Щетка латунированная STARTUL STANDART (ST5025) (проволочная, пластмассовая рукоятка)",
+  "description": "",
+  "brand": {
+    "id": 6,
+    "name": "STARTUL",
+    "slug": "startul"
+  },
+  "supplier": {
+    "id": 1,
+    "name": "TT"
+  },
+  "category": {
+    "id": 95,
+    "name": "Щетки ручные",
+    "node_index": "structure/d_metalloobrabotka/d_schetki-ruchnye",
+    "human_path": "structure / metalloobrabotka / schetki-ruchnye"
+  },
+  "spine": {
+    "id": 50,
+    "name": "щетки ручные",
+    "node_index": "structure/d_metalloobrabotka/d_schetki-ruchnye/s_schetki-ruchnye",
+    "human_path": "structure / metalloobrabotka / schetki-ruchnye / schetki-ruchnye"
+  },
+  "images": [],
+  "node_index": "structure/d_metalloobrabotka/d_schetki-ruchnye/s_schetki-ruchnye/p_st5025",
+  "created_at": "2025-10-28T09:40:28.866Z"
+}

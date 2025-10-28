@@ -1,0 +1,29 @@
+{
+  "code": "RF-HB140",
+  "name": "Щетка ручная по металлу с пластиковой ручкой(L общ-260мм, L раб.-140мм)",
+  "description": "",
+  "brand": {
+    "id": 8,
+    "name": "RockForce",
+    "slug": "rockforce"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 95,
+    "name": "Щетки ручные",
+    "node_index": "structure/d_metalloobrabotka/d_schetki-ruchnye",
+    "human_path": "structure / metalloobrabotka / schetki-ruchnye"
+  },
+  "spine": {
+    "id": 50,
+    "name": "щетки ручные",
+    "node_index": "structure/d_metalloobrabotka/d_schetki-ruchnye/s_schetki-ruchnye",
+    "human_path": "structure / metalloobrabotka / schetki-ruchnye / schetki-ruchnye"
+  },
+  "images": [],
+  "node_index": "structure/d_metalloobrabotka/d_schetki-ruchnye/s_schetki-ruchnye/p_rf-hb140",
+  "created_at": "2025-10-28T09:46:00.364Z"
+}

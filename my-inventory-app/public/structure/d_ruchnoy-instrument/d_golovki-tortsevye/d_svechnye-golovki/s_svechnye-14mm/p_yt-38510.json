@@ -1,0 +1,29 @@
+{
+  "code": "YT-38510",
+  "name": "Головка свечная 3/8\" 14мм L63мм CrV \"Yato\"",
+  "description": "",
+  "brand": {
+    "id": 7,
+    "name": "Yato",
+    "slug": "yato"
+  },
+  "supplier": {
+    "id": 4,
+    "name": "STM"
+  },
+  "category": {
+    "id": 88,
+    "name": "свечные головки",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_svechnye-golovki",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / svechnye-golovki"
+  },
+  "spine": {
+    "id": 44,
+    "name": "свечные 14мм",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_svechnye-golovki/s_svechnye-14mm",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / svechnye-golovki / svechnye-14mm"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_svechnye-golovki/s_svechnye-14mm/p_yt-38510",
+  "created_at": "2025-10-28T09:21:52.025Z"
+}

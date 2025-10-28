@@ -1,0 +1,29 @@
+{
+  "code": "F-340122113",
+  "name": "Щетка по металлу ручная в пластиковом корпусе с прорезиненной рукояткой (металлический скребок-40мм, высокоуглеродистая сталь, 3x19рядов)",
+  "description": "",
+  "brand": {
+    "id": 12,
+    "name": "Forsage",
+    "slug": "forsage"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 95,
+    "name": "Щетки ручные",
+    "node_index": "structure/d_metalloobrabotka/d_schetki-ruchnye",
+    "human_path": "structure / metalloobrabotka / schetki-ruchnye"
+  },
+  "spine": {
+    "id": 50,
+    "name": "щетки ручные",
+    "node_index": "structure/d_metalloobrabotka/d_schetki-ruchnye/s_schetki-ruchnye",
+    "human_path": "structure / metalloobrabotka / schetki-ruchnye / schetki-ruchnye"
+  },
+  "images": [],
+  "node_index": "structure/d_metalloobrabotka/d_schetki-ruchnye/s_schetki-ruchnye/p_f-340122113",
+  "created_at": "2025-10-28T09:50:56.910Z"
+}
