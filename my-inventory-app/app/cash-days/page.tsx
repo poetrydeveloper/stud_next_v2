@@ -34,12 +34,6 @@ export default function CashDaysPage() {
                 📦 Инвентарь
               </Link>
               <Link 
-                href="/inventory/visual"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
-              >
-                🧪 Визуализация
-              </Link>
-              <Link 
                 href="/analytics"
                 className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
               >
