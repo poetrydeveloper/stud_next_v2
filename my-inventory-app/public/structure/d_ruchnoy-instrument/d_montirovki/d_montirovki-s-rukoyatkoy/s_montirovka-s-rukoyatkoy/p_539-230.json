@@ -1,0 +1,29 @@
+{
+  "code": "539 230",
+  "name": "Монтировка с рукояткой 20×450мм",
+  "description": "",
+  "brand": {
+    "id": 2,
+    "name": "Дело техники",
+    "slug": "delo-tehniki"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 99,
+    "name": "монтировки с рукояткой",
+    "node_index": "structure/d_ruchnoy-instrument/d_montirovki/d_montirovki-s-rukoyatkoy",
+    "human_path": "structure / ruchnoy-instrument / montirovki / montirovki-s-rukoyatkoy"
+  },
+  "spine": {
+    "id": 63,
+    "name": "монтировка с рукояткой",
+    "node_index": "structure/d_ruchnoy-instrument/d_montirovki/d_montirovki-s-rukoyatkoy/s_montirovka-s-rukoyatkoy",
+    "human_path": "structure / ruchnoy-instrument / montirovki / montirovki-s-rukoyatkoy / montirovka-s-rukoyatkoy"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_montirovki/d_montirovki-s-rukoyatkoy/s_montirovka-s-rukoyatkoy/p_539-230",
+  "created_at": "2025-10-28T12:32:09.196Z"
+}

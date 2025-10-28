@@ -1,0 +1,29 @@
+{
+  "code": "F-75532",
+  "name": "Ключ комбинированный 32мм",
+  "description": "",
+  "brand": {
+    "id": 12,
+    "name": "Forsage",
+    "slug": "forsage"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 97,
+    "name": "комбинир. поштучно",
+    "node_index": "structure/d_ruchnoy-instrument/d_klyuchi/d_kombinir-poshtuchno",
+    "human_path": "structure / ruchnoy-instrument / klyuchi / kombinir-poshtuchno"
+  },
+  "spine": {
+    "id": 62,
+    "name": "ключ 32мм",
+    "node_index": "structure/d_ruchnoy-instrument/d_klyuchi/d_kombinir-poshtuchno/s_klyuch-32mm",
+    "human_path": "structure / ruchnoy-instrument / klyuchi / kombinir-poshtuchno / klyuch-32mm"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_klyuchi/d_kombinir-poshtuchno/s_klyuch-32mm/p_f-75532",
+  "created_at": "2025-10-28T12:10:26.731Z"
+}

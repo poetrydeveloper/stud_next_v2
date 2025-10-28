@@ -1,0 +1,29 @@
+{
+  "code": "560 008",
+  "name": "Ключ четырехгранный 8мм",
+  "description": "",
+  "brand": {
+    "id": 2,
+    "name": "Дело техники",
+    "slug": "delo-tehniki"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 101,
+    "name": "КЛЮЧ (кочерга)",
+    "node_index": "structure/d_spetsial-nyy-instrument/d_zamena-masla/d_klyuch-kocherga",
+    "human_path": "structure / spetsial-nyy-instrument / zamena-masla / klyuch-kocherga"
+  },
+  "spine": {
+    "id": 65,
+    "name": "8мм-кочерга",
+    "node_index": "structure/d_spetsial-nyy-instrument/d_zamena-masla/d_klyuch-kocherga/s_8mm-kocherga",
+    "human_path": "structure / spetsial-nyy-instrument / zamena-masla / klyuch-kocherga / 8mm-kocherga"
+  },
+  "images": [],
+  "node_index": "structure/d_spetsial-nyy-instrument/d_zamena-masla/d_klyuch-kocherga/s_8mm-kocherga/p_560-008",
+  "created_at": "2025-10-28T12:44:09.986Z"
+}
