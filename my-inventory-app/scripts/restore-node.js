@@ -1,6 +1,6 @@
 // scripts/restore-node.js
 const { Client } = require('pg');
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require('@/app/lib/prisma');
 const fs = require('fs');
 const path = require('path');
 const unzipper = require('unzipper');
@@ -26,7 +26,7 @@ async function restoreDatabase(backupFile) {
     console.log('✅ Database connected');
 
     // Инициализируем Prisma
-    prisma = new PrismaClient();
+    const { prisma } = require('@/app/lib/prisma');
     await prisma.$connect();
     console.log('✅ Prisma connected');
 

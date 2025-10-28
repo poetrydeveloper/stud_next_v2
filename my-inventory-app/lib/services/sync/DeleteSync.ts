@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { StructureService } from '../StructureService';
 import { BaseSync } from './BaseSync';
 
-const prisma = new PrismaClient();
+import { prisma } from '@/app/lib/prisma';
 
 export class DeleteSync extends BaseSync {
   async safeDelete(nodePath: string): Promise<void> {

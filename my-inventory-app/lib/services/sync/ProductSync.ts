@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { BaseSync } from './BaseSync';
 import path from 'path';
 
-const prisma = new PrismaClient();
+import { prisma } from '@/app/lib/prisma';
 
 export class ProductSync extends BaseSync {
   // ОБНОВЛЯЕМ МЕТОД SYNC ДЛЯ ИЗОБРАЖЕНИЙ

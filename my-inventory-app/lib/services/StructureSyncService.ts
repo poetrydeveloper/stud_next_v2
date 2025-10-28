@@ -6,7 +6,7 @@ import { SpineSync } from './sync/SpineSync';
 import { ProductSync } from './sync/ProductSync';
 import { DeleteSync } from './sync/DeleteSync';
 
-const prisma = new PrismaClient();
+import { prisma } from '@/app/lib/prisma';
 
 export class StructureSyncService {
   private structureService = new StructureService();

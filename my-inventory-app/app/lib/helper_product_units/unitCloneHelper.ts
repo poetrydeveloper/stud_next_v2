@@ -2,7 +2,7 @@
 import { PrismaClient, ProductUnitCardStatus } from '@prisma/client';
 import { generateSerialNumber, copyProductDataToUnit } from '@/app/api/product-units/helpers';
 
-const prisma = new PrismaClient();
+import { prisma } from '@/app/lib/prisma';
 
 export class UnitCloneHelper {
   /**

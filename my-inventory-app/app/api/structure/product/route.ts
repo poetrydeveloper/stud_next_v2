@@ -4,7 +4,7 @@ import { StructureSyncService } from '@/lib/services/StructureSyncService';
 import { FileStorageAdapter } from '@/lib/file-storage-adapter';
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+import { prisma } from '@/app/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {

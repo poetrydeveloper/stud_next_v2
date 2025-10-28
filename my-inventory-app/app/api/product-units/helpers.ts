@@ -1,7 +1,7 @@
 // app/api/product-units/helpers.ts/
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+import { prisma } from '@/app/lib/prisma';
 
 /**
  * Генерация серийного номера для ProductUnit

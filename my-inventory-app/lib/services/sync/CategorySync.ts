@@ -4,7 +4,7 @@ import { StructureService } from '@/lib/services/StructureService';
 import { BaseSync } from './BaseSync';
 import { generateValidSlug } from '@/lib/helpers/structure-helpers';
 
-const prisma = new PrismaClient();
+import { prisma } from '@/app/lib/prisma';
 
 export class CategorySync extends BaseSync {
   async sync(name: string, parentPath: string = '') {

@@ -4,7 +4,7 @@ import path from 'path';
 import { PrismaClient } from '@prisma/client';
 import { validateSlug, StructureError, generateValidSlug } from '@/lib/helpers/structure-helpers';
 
-const prisma = new PrismaClient();
+import { prisma } from '@/app/lib/prisma';
 
 export class StructureService {
   private basePath = path.join(process.cwd(), 'public', 'structure');
