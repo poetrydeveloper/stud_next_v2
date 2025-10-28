@@ -45,6 +45,12 @@ export default function CashDaysPage() {
               >
                 📊 Аналитика
               </Link>
+              <Link 
+                href="/store/visual" 
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+              >
+                📊 Визуальная аналитика
+              </Link>
             </div>
           </div>
         </div>

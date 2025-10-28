@@ -51,6 +51,8 @@ model Category {
   parent   Category?   @relation("CategoryChildren", fields: [parent_id], references: [id])
   children Category[]  @relation("CategoryChildren")
 
+  stockTrafficLights StockTrafficLight[]
+
   @@map("categories")
   @@index([path])
   @@index([node_index])           // индекс для быстрого поиска по node_index
@@ -378,3 +380,19 @@ model ReorderPoint {
   @@unique([productUnitId])
 }
 
+model StockTrafficLight {
+  id          Int      @id @default(autoincrement())
+  productCode String   @unique
+  brandName   String
+  minStock    Int      @default(1)    // 🔴 Красный если меньше
+  normalStock Int      @default(2)    // 🟡 Желтый если меньше  
+  goodStock   Int      @default(3)    // 🟢 Зеленый если больше
+  weeklySales Int      @default(0)    // Продано за текущую неделю
+  categoryId  Int?
+  category    Category? @relation(fields: [categoryId], references: [id]) // ← связь с Category
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("stock_traffic_lights")
+}
