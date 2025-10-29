@@ -1,0 +1,29 @@
+{
+  "code": "628 745",
+  "name": "Трещотка 45 зубцов 1/2\"",
+  "description": "",
+  "brand": {
+    "id": 2,
+    "name": "Дело техники",
+    "slug": "delo-tehniki"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 110,
+    "name": "трещотки ручные 1/2",
+    "node_index": "structure/d_ruchnye-treschotki/d_treschotki-ruchnye-1-2",
+    "human_path": "structure / ruchnye-treschotki / treschotki-ruchnye-1-2"
+  },
+  "spine": {
+    "id": 88,
+    "name": "трещотка 1/2 с резиновой ручкой",
+    "node_index": "structure/d_ruchnye-treschotki/d_treschotki-ruchnye-1-2/s_treschotka-1-2-s-rezinovoy-ruchkoy",
+    "human_path": "structure / ruchnye-treschotki / treschotki-ruchnye-1-2 / treschotka-1-2-s-rezinovoy-ruchkoy"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnye-treschotki/d_treschotki-ruchnye-1-2/s_treschotka-1-2-s-rezinovoy-ruchkoy/p_628-745",
+  "created_at": "2025-10-29T10:50:01.316Z"
+}
