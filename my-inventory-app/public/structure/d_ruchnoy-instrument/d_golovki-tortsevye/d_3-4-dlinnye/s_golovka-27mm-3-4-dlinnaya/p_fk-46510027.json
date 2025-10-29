@@ -1,0 +1,29 @@
+{
+  "code": "FK-46510027",
+  "name": "Головка ударная глубокая 27мм (6гр.), 3/4''",
+  "description": "",
+  "brand": {
+    "id": 10,
+    "name": "FORCEKRAFT",
+    "slug": "forcekraft"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 41,
+    "name": "3/4 длинные",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_3-4-dlinnye",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / 3-4-dlinnye"
+  },
+  "spine": {
+    "id": 85,
+    "name": "Головка 27мм 3/4 длинная",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_3-4-dlinnye/s_golovka-27mm-3-4-dlinnaya",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / 3-4-dlinnye / golovka-27mm-3-4-dlinnaya"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_3-4-dlinnye/s_golovka-27mm-3-4-dlinnaya/p_fk-46510027",
+  "created_at": "2025-10-29T09:56:00.320Z"
+}

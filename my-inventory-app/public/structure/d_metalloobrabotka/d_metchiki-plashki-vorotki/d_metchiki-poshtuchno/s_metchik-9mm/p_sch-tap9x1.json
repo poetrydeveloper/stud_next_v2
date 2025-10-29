@@ -1,0 +1,29 @@
+{
+  "code": "Sch-TAP9x1",
+  "name": "Метчик M9x1 (3шт)",
+  "description": "",
+  "brand": {
+    "id": 16,
+    "name": "Scheppach",
+    "slug": "scheppach"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 113,
+    "name": "Метчики поштучно",
+    "node_index": "structure/d_metalloobrabotka/d_metchiki-plashki-vorotki/d_metchiki-poshtuchno",
+    "human_path": "structure / metalloobrabotka / metchiki-plashki-vorotki / metchiki-poshtuchno"
+  },
+  "spine": {
+    "id": 83,
+    "name": "метчик 9мм",
+    "node_index": "structure/d_metalloobrabotka/d_metchiki-plashki-vorotki/d_metchiki-poshtuchno/s_metchik-9mm",
+    "human_path": "structure / metalloobrabotka / metchiki-plashki-vorotki / metchiki-poshtuchno / metchik-9mm"
+  },
+  "images": [],
+  "node_index": "structure/d_metalloobrabotka/d_metchiki-plashki-vorotki/d_metchiki-poshtuchno/s_metchik-9mm/p_sch-tap9x1",
+  "created_at": "2025-10-29T09:29:05.196Z"
+}
