@@ -1,0 +1,29 @@
+{
+  "code": "BM-802222",
+  "name": "Ключ трещоточный 1/4''(72зуб)",
+  "description": "",
+  "brand": {
+    "id": 15,
+    "name": "Baum",
+    "slug": "baum"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 71,
+    "name": "1/4\" Трещотки",
+    "node_index": "structure/d_ruchnoy-instrument/d_treschotki/d_1-4-treschotki",
+    "human_path": "structure / ruchnoy-instrument / treschotki / 1-4-treschotki"
+  },
+  "spine": {
+    "id": 37,
+    "name": "1/4\" Трещотка [80222]",
+    "node_index": "structure/d_ruchnoy-instrument/d_treschotki/d_1-4-treschotki/s_1-4-treschotka-80222",
+    "human_path": "structure / ruchnoy-instrument / treschotki / 1-4-treschotki / 1-4-treschotka-80222"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_treschotki/d_1-4-treschotki/s_1-4-treschotka-80222/p_bm-802222",
+  "created_at": "2025-10-29T08:23:59.393Z"
+}

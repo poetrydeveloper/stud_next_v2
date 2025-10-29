@@ -1,0 +1,29 @@
+{
+  "code": "ER01010M",
+  "name": "Метчик ER-01010M M10x1 (2шт),в пластиковом футляре ЭВРИКА /1",
+  "description": "",
+  "brand": {
+    "id": 13,
+    "name": "Эврика",
+    "slug": "evrika"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 113,
+    "name": "Метчики поштучно",
+    "node_index": "structure/d_metalloobrabotka/d_metchiki-plashki-vorotki/d_metchiki-poshtuchno",
+    "human_path": "structure / metalloobrabotka / metchiki-plashki-vorotki / metchiki-poshtuchno"
+  },
+  "spine": {
+    "id": 82,
+    "name": "Метчик 10мм",
+    "node_index": "structure/d_metalloobrabotka/d_metchiki-plashki-vorotki/d_metchiki-poshtuchno/s_metchik-10mm",
+    "human_path": "structure / metalloobrabotka / metchiki-plashki-vorotki / metchiki-poshtuchno / metchik-10mm"
+  },
+  "images": [],
+  "node_index": "structure/d_metalloobrabotka/d_metchiki-plashki-vorotki/d_metchiki-poshtuchno/s_metchik-10mm/p_er01010m",
+  "created_at": "2025-10-29T09:25:10.387Z"
+}

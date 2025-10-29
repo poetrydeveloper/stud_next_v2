@@ -1,0 +1,29 @@
+{
+  "code": "CHAG0813",
+  "name": "Трещотка 1/4\" 36зуб. 131мм TOPTUL",
+  "description": "",
+  "brand": {
+    "id": 4,
+    "name": "TOPTUL",
+    "slug": "toptul"
+  },
+  "supplier": {
+    "id": 1,
+    "name": "TT"
+  },
+  "category": {
+    "id": 108,
+    "name": "трещотки ручные 1/4",
+    "node_index": "structure/d_ruchnye-treschotki/d_treschotki-ruchnye-1-4",
+    "human_path": "structure / ruchnye-treschotki / treschotki-ruchnye-1-4"
+  },
+  "spine": {
+    "id": 73,
+    "name": "трещотка металлическая 1/4",
+    "node_index": "structure/d_ruchnye-treschotki/d_treschotki-ruchnye-1-4/s_treschotka-metallicheskaya-1-4",
+    "human_path": "structure / ruchnye-treschotki / treschotki-ruchnye-1-4 / treschotka-metallicheskaya-1-4"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnye-treschotki/d_treschotki-ruchnye-1-4/s_treschotka-metallicheskaya-1-4/p_chag0813",
+  "created_at": "2025-10-29T08:16:02.666Z"
+}

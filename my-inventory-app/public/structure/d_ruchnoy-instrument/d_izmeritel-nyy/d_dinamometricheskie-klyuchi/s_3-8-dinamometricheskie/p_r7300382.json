@@ -1,0 +1,29 @@
+{
+  "code": "R7300382",
+  "name": "Ключ динамометрический 3/8 10-110 Нм, 72 зуба, в кейсе L=470мм ARNEZI R7300382",
+  "description": "",
+  "brand": {
+    "id": 5,
+    "name": "ARNEZI",
+    "slug": "arnezi"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 104,
+    "name": "ДИНАМОМЕТРИЧЕСКИЕ КЛЮЧИ",
+    "node_index": "structure/d_ruchnoy-instrument/d_izmeritel-nyy/d_dinamometricheskie-klyuchi",
+    "human_path": "structure / ruchnoy-instrument / izmeritel-nyy / dinamometricheskie-klyuchi"
+  },
+  "spine": {
+    "id": 71,
+    "name": "3/8 динамометрические",
+    "node_index": "structure/d_ruchnoy-instrument/d_izmeritel-nyy/d_dinamometricheskie-klyuchi/s_3-8-dinamometricheskie",
+    "human_path": "structure / ruchnoy-instrument / izmeritel-nyy / dinamometricheskie-klyuchi / 3-8-dinamometricheskie"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_izmeritel-nyy/d_dinamometricheskie-klyuchi/s_3-8-dinamometricheskie/p_r7300382",
+  "created_at": "2025-10-29T07:34:41.813Z"
+}

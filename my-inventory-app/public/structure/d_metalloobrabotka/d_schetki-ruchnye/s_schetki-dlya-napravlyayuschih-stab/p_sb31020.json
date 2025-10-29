@@ -1,0 +1,26 @@
+{
+  "code": "SB31020",
+  "name": "Щетка для чистки каналов",
+  "description": "",
+  "brand": {
+    "id": 17,
+    "name": "Stab",
+    "slug": "stab"
+  },
+  "supplier": null,
+  "category": {
+    "id": 95,
+    "name": "Щетки ручные",
+    "node_index": "structure/d_metalloobrabotka/d_schetki-ruchnye",
+    "human_path": "structure / metalloobrabotka / schetki-ruchnye"
+  },
+  "spine": {
+    "id": 79,
+    "name": "щетки для направляющих stab",
+    "node_index": "structure/d_metalloobrabotka/d_schetki-ruchnye/s_schetki-dlya-napravlyayuschih-stab",
+    "human_path": "structure / metalloobrabotka / schetki-ruchnye / schetki-dlya-napravlyayuschih-stab"
+  },
+  "images": [],
+  "node_index": "structure/d_metalloobrabotka/d_schetki-ruchnye/s_schetki-dlya-napravlyayuschih-stab/p_sb31020",
+  "created_at": "2025-10-29T08:57:59.797Z"
+}

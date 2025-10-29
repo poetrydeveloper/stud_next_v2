@@ -1,0 +1,29 @@
+{
+  "code": "Sch-TAP14x1.5",
+  "name": "Метчик M14x1,5 (3шт)",
+  "description": "",
+  "brand": {
+    "id": 16,
+    "name": "Scheppach",
+    "slug": "scheppach"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 113,
+    "name": "Метчики поштучно",
+    "node_index": "structure/d_metalloobrabotka/d_metchiki-plashki-vorotki/d_metchiki-poshtuchno",
+    "human_path": "structure / metalloobrabotka / metchiki-plashki-vorotki / metchiki-poshtuchno"
+  },
+  "spine": {
+    "id": 75,
+    "name": "Метчик 14мм",
+    "node_index": "structure/d_metalloobrabotka/d_metchiki-plashki-vorotki/d_metchiki-poshtuchno/s_metchik-14mm",
+    "human_path": "structure / metalloobrabotka / metchiki-plashki-vorotki / metchiki-poshtuchno / metchik-14mm"
+  },
+  "images": [],
+  "node_index": "structure/d_metalloobrabotka/d_metchiki-plashki-vorotki/d_metchiki-poshtuchno/s_metchik-14mm/p_sch-tap14x1-5",
+  "created_at": "2025-10-29T08:34:47.416Z"
+}

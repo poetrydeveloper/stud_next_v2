@@ -1,0 +1,29 @@
+{
+  "code": "R7300121",
+  "name": "Ключ динамометрический 1/2 20-210 Нм, 72 зуба, в кейсе L=490мм ARNEZI R7300121",
+  "description": "",
+  "brand": {
+    "id": 5,
+    "name": "ARNEZI",
+    "slug": "arnezi"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 104,
+    "name": "ДИНАМОМЕТРИЧЕСКИЕ КЛЮЧИ",
+    "node_index": "structure/d_ruchnoy-instrument/d_izmeritel-nyy/d_dinamometricheskie-klyuchi",
+    "human_path": "structure / ruchnoy-instrument / izmeritel-nyy / dinamometricheskie-klyuchi"
+  },
+  "spine": {
+    "id": 72,
+    "name": "1/2 динамометрические",
+    "node_index": "structure/d_ruchnoy-instrument/d_izmeritel-nyy/d_dinamometricheskie-klyuchi/s_1-2-dinamometricheskie",
+    "human_path": "structure / ruchnoy-instrument / izmeritel-nyy / dinamometricheskie-klyuchi / 1-2-dinamometricheskie"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_izmeritel-nyy/d_dinamometricheskie-klyuchi/s_1-2-dinamometricheskie/p_r7300121",
+  "created_at": "2025-10-29T07:33:38.875Z"
+}

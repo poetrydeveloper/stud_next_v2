@@ -1,0 +1,29 @@
+{
+  "code": "80222",
+  "name": "Трещотка 1/4'' 24 зуб. 155 мм Force 80222",
+  "description": "",
+  "brand": {
+    "id": 3,
+    "name": "Force",
+    "slug": "force"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 108,
+    "name": "трещотки ручные 1/4",
+    "node_index": "structure/d_ruchnye-treschotki/d_treschotki-ruchnye-1-4",
+    "human_path": "structure / ruchnye-treschotki / treschotki-ruchnye-1-4"
+  },
+  "spine": {
+    "id": 74,
+    "name": "трещотка обрезиненная 1/4",
+    "node_index": "structure/d_ruchnye-treschotki/d_treschotki-ruchnye-1-4/s_treschotka-obrezinennaya-1-4",
+    "human_path": "structure / ruchnye-treschotki / treschotki-ruchnye-1-4 / treschotka-obrezinennaya-1-4"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnye-treschotki/d_treschotki-ruchnye-1-4/s_treschotka-obrezinennaya-1-4/p_80222",
+  "created_at": "2025-10-29T08:29:39.649Z"
+}

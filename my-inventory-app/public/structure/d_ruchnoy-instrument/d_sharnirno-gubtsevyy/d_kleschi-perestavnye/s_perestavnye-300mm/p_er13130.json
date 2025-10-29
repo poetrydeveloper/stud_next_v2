@@ -1,0 +1,29 @@
+{
+  "code": "ER13130",
+  "name": "Клещи переставные ER-13130 универсальные, покрытие черное порошковое 300мм ЭВРИКА 1/36",
+  "description": "",
+  "brand": {
+    "id": 13,
+    "name": "Эврика",
+    "slug": "evrika"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 117,
+    "name": "КЛЕЩИ ПЕРЕСТАВНЫЕ",
+    "node_index": "structure/d_ruchnoy-instrument/d_sharnirno-gubtsevyy/d_kleschi-perestavnye",
+    "human_path": "structure / ruchnoy-instrument / sharnirno-gubtsevyy / kleschi-perestavnye"
+  },
+  "spine": {
+    "id": 76,
+    "name": "Переставные 300мм",
+    "node_index": "structure/d_ruchnoy-instrument/d_sharnirno-gubtsevyy/d_kleschi-perestavnye/s_perestavnye-300mm",
+    "human_path": "structure / ruchnoy-instrument / sharnirno-gubtsevyy / kleschi-perestavnye / perestavnye-300mm"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_sharnirno-gubtsevyy/d_kleschi-perestavnye/s_perestavnye-300mm/p_er13130",
+  "created_at": "2025-10-29T08:39:32.202Z"
+}

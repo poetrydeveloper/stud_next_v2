@@ -1,0 +1,29 @@
+{
+  "code": "RF-9T0801",
+  "name": "Съемник рулевых тяг универсальный 27-42мм, 1/2''",
+  "description": "",
+  "brand": {
+    "id": 8,
+    "name": "RockForce",
+    "slug": "rockforce"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 118,
+    "name": "ТЯГИ",
+    "node_index": "structure/d_spetsial-nyy-instrument/d_hodovaya-chast/d_tyagi",
+    "human_path": "structure / spetsial-nyy-instrument / hodovaya-chast / tyagi"
+  },
+  "spine": {
+    "id": 80,
+    "name": "Съемник рулевых тяг универсальный 27-42мм",
+    "node_index": "structure/d_spetsial-nyy-instrument/d_hodovaya-chast/d_tyagi/s_s-emnik-rulevyh-tyag-universal-nyy-27-42mm",
+    "human_path": "structure / spetsial-nyy-instrument / hodovaya-chast / tyagi / s-emnik-rulevyh-tyag-universal-nyy-27-42mm"
+  },
+  "images": [],
+  "node_index": "structure/d_spetsial-nyy-instrument/d_hodovaya-chast/d_tyagi/s_s-emnik-rulevyh-tyag-universal-nyy-27-42mm/p_rf-9t0801",
+  "created_at": "2025-10-29T09:03:03.836Z"
+}
