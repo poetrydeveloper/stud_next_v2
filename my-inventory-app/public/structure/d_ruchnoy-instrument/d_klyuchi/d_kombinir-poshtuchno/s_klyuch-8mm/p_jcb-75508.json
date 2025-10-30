@@ -1,0 +1,29 @@
+{
+  "code": "JCB-75508",
+  "name": "Ключ комбинированный 10мм",
+  "description": "",
+  "brand": {
+    "id": 9,
+    "name": "JCB",
+    "slug": "jcb"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 97,
+    "name": "комбинир. поштучно",
+    "node_index": "structure/d_ruchnoy-instrument/d_klyuchi/d_kombinir-poshtuchno",
+    "human_path": "structure / ruchnoy-instrument / klyuchi / kombinir-poshtuchno"
+  },
+  "spine": {
+    "id": 90,
+    "name": "ключ 8мм",
+    "node_index": "structure/d_ruchnoy-instrument/d_klyuchi/d_kombinir-poshtuchno/s_klyuch-8mm",
+    "human_path": "structure / ruchnoy-instrument / klyuchi / kombinir-poshtuchno / klyuch-8mm"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_klyuchi/d_kombinir-poshtuchno/s_klyuch-8mm/p_jcb-75508",
+  "created_at": "2025-10-30T07:58:27.606Z"
+}

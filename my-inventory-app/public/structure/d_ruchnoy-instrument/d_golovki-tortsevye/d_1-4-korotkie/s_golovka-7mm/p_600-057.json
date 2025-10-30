@@ -1,0 +1,29 @@
+{
+  "code": "600 057",
+  "name": "Головка шестигранная 7 мм 1/4\"",
+  "description": "",
+  "brand": {
+    "id": 2,
+    "name": "Дело техники",
+    "slug": "delo-tehniki"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 36,
+    "name": "1/4 короткие",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-4-korotkie",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / 1-4-korotkie"
+  },
+  "spine": {
+    "id": 117,
+    "name": "головка 7мм",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-4-korotkie/s_golovka-7mm",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / 1-4-korotkie / golovka-7mm"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-4-korotkie/s_golovka-7mm/p_600-057",
+  "created_at": "2025-10-30T08:33:46.947Z"
+}

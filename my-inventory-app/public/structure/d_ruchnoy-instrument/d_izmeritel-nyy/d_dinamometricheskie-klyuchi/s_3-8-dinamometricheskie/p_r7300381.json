@@ -1,0 +1,29 @@
+{
+  "code": "R7300381",
+  "name": "ключ динамометрический! 3/8 5-25нм, 72 зуба, в кейсе\\ R7300381 ARNEZI",
+  "description": "",
+  "brand": {
+    "id": 5,
+    "name": "ARNEZI",
+    "slug": "arnezi"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 104,
+    "name": "ДИНАМОМЕТРИЧЕСКИЕ КЛЮЧИ",
+    "node_index": "structure/d_ruchnoy-instrument/d_izmeritel-nyy/d_dinamometricheskie-klyuchi",
+    "human_path": "structure / ruchnoy-instrument / izmeritel-nyy / dinamometricheskie-klyuchi"
+  },
+  "spine": {
+    "id": 71,
+    "name": "3/8 динамометрические",
+    "node_index": "structure/d_ruchnoy-instrument/d_izmeritel-nyy/d_dinamometricheskie-klyuchi/s_3-8-dinamometricheskie",
+    "human_path": "structure / ruchnoy-instrument / izmeritel-nyy / dinamometricheskie-klyuchi / 3-8-dinamometricheskie"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_izmeritel-nyy/d_dinamometricheskie-klyuchi/s_3-8-dinamometricheskie/p_r7300381",
+  "created_at": "2025-10-30T07:46:51.720Z"
+}

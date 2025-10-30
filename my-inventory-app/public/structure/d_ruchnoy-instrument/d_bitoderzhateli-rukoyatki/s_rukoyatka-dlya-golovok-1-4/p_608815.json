@@ -1,0 +1,29 @@
+{
+  "code": "608815",
+  "name": "Рукоятка 150 мм 1/4",
+  "description": "",
+  "brand": {
+    "id": 2,
+    "name": "Дело техники",
+    "slug": "delo-tehniki"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 122,
+    "name": "Битодержатели-рукоятки",
+    "node_index": "structure/d_ruchnoy-instrument/d_bitoderzhateli-rukoyatki",
+    "human_path": "structure / ruchnoy-instrument / bitoderzhateli-rukoyatki"
+  },
+  "spine": {
+    "id": 116,
+    "name": "Рукоятка для головок 1/4'",
+    "node_index": "structure/d_ruchnoy-instrument/d_bitoderzhateli-rukoyatki/s_rukoyatka-dlya-golovok-1-4",
+    "human_path": "structure / ruchnoy-instrument / bitoderzhateli-rukoyatki / rukoyatka-dlya-golovok-1-4"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_bitoderzhateli-rukoyatki/s_rukoyatka-dlya-golovok-1-4/p_608815",
+  "created_at": "2025-10-30T08:13:24.035Z"
+}
