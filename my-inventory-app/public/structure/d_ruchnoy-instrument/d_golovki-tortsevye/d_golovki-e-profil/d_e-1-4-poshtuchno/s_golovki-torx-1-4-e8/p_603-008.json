@@ -1,0 +1,29 @@
+{
+  "code": "603 008",
+  "name": "Головка TORX E8 1/4\"",
+  "description": "",
+  "brand": {
+    "id": 2,
+    "name": "Дело техники",
+    "slug": "delo-tehniki"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 130,
+    "name": "е-1/4-поштучно",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_golovki-e-profil/d_e-1-4-poshtuchno",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / golovki-e-profil / e-1-4-poshtuchno"
+  },
+  "spine": {
+    "id": 120,
+    "name": "Головки TORX 1/4\"  - е8",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_golovki-e-profil/d_e-1-4-poshtuchno/s_golovki-torx-1-4-e8",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / golovki-e-profil / e-1-4-poshtuchno / golovki-torx-1-4-e8"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_golovki-e-profil/d_e-1-4-poshtuchno/s_golovki-torx-1-4-e8/p_603-008",
+  "created_at": "2025-10-30T09:59:29.135Z"
+}

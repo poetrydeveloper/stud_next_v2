@@ -1,0 +1,29 @@
+{
+  "code": "80942",
+  "name": "Адаптер для головок 1/2''(F)х1/4''(M) L36 мм Force",
+  "description": "",
+  "brand": {
+    "id": 3,
+    "name": "Force",
+    "slug": "force"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 127,
+    "name": "perehodnik-1/2 -",
+    "node_index": "structure/d_ruchnoy-instrument/d_adaptery-perehodniki/d_perehodnik-1-2",
+    "human_path": "structure / ruchnoy-instrument / adaptery-perehodniki / perehodnik-1-2"
+  },
+  "spine": {
+    "id": 119,
+    "name": "адаптер переходник 1/2 на 1/7",
+    "node_index": "structure/d_ruchnoy-instrument/d_adaptery-perehodniki/d_perehodnik-1-2/s_adapter-perehodnik-1-2-na-1-7",
+    "human_path": "structure / ruchnoy-instrument / adaptery-perehodniki / perehodnik-1-2 / adapter-perehodnik-1-2-na-1-7"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_adaptery-perehodniki/d_perehodnik-1-2/s_adapter-perehodnik-1-2-na-1-7/p_80942",
+  "created_at": "2025-10-30T09:52:32.704Z"
+}

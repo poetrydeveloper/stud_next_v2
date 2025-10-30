@@ -1,4 +1,4 @@
-// app/api/disassembly/unit/[unitId]/scenarios/route.ts (ПЕРЕПИСАННЫЙ)
+// app/api/disassembly/unit/[unitId]/scenarios/route.ts (ИСПРАВЛЕННЫЙ)
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { DisassemblyService } from "@/app/lib/disassemblyService";
@@ -9,24 +9,25 @@ import { DisassemblyService } from "@/app/lib/disassemblyService";
  */
 export async function GET(
   req: Request,
-  { params }: { params: { unitId: string } }
+  { params }: { params: Promise<{ unitId: string }> } // ← ДОБАВЛЕНО Promise
 ) {
   try {
-    const unitId = Number(params.unitId);
+    const { unitId } = await params; // ← ДОБАВЛЕН await
+    const unitIdNumber = Number(unitId);
 
-    console.log("🔍 GET /api/disassembly/unit/[unitId]/scenarios:", { unitId });
+    console.log("🔍 GET /api/disassembly/unit/[unitId]/scenarios:", { unitId: unitIdNumber });
 
-    if (isNaN(unitId)) {
+    if (isNaN(unitIdNumber)) {
       return NextResponse.json(
         { ok: false, error: "Некорректный ID unit" },
         { status: 400 }
       );
     }
 
-    const scenarios = await DisassemblyService.getUnitScenarios(unitId);
+    const scenarios = await DisassemblyService.getUnitScenarios(unitIdNumber);
 
     console.log("✅ GET /api/disassembly/unit/[unitId]/scenarios успешно:", {
-      unitId,
+      unitId: unitIdNumber,
       scenariosCount: scenarios.length
     });
 

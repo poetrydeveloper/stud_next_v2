@@ -1,0 +1,29 @@
+{
+  "code": "839 822",
+  "name": "Гайколом 16-22мм",
+  "description": "",
+  "brand": {
+    "id": 2,
+    "name": "Дело техники",
+    "slug": "delo-tehniki"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 133,
+    "name": "гайколомы-гайкоколы",
+    "node_index": "structure/d_spetsial-nyy-instrument/d_gaykolomy-gaykokoly",
+    "human_path": "structure / spetsial-nyy-instrument / gaykolomy-gaykokoly"
+  },
+  "spine": {
+    "id": 121,
+    "name": "гайколомы дело технка",
+    "node_index": "structure/d_spetsial-nyy-instrument/d_gaykolomy-gaykokoly/s_gaykolomy-delo-tehnka",
+    "human_path": "structure / spetsial-nyy-instrument / gaykolomy-gaykokoly / gaykolomy-delo-tehnka"
+  },
+  "images": [],
+  "node_index": "structure/d_spetsial-nyy-instrument/d_gaykolomy-gaykokoly/s_gaykolomy-delo-tehnka/p_839-822",
+  "created_at": "2025-10-30T10:08:28.883Z"
+}

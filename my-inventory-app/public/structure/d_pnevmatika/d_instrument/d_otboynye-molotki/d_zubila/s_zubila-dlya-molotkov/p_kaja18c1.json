@@ -1,0 +1,29 @@
+{
+  "code": "KAJA18C1",
+  "name": "Зубило для пневмомолотка по листовому металлу 178мм TOPTUL",
+  "description": "",
+  "brand": {
+    "id": 4,
+    "name": "TOPTUL",
+    "slug": "toptul"
+  },
+  "supplier": {
+    "id": 1,
+    "name": "TT"
+  },
+  "category": {
+    "id": 124,
+    "name": "зубила",
+    "node_index": "structure/d_pnevmatika/d_instrument/d_otboynye-molotki/d_zubila",
+    "human_path": "structure / pnevmatika / instrument / otboynye-molotki / zubila"
+  },
+  "spine": {
+    "id": 118,
+    "name": "зубила для молотков",
+    "node_index": "structure/d_pnevmatika/d_instrument/d_otboynye-molotki/d_zubila/s_zubila-dlya-molotkov",
+    "human_path": "structure / pnevmatika / instrument / otboynye-molotki / zubila / zubila-dlya-molotkov"
+  },
+  "images": [],
+  "node_index": "structure/d_pnevmatika/d_instrument/d_otboynye-molotki/d_zubila/s_zubila-dlya-molotkov/p_kaja18c1",
+  "created_at": "2025-10-30T09:42:22.591Z"
+}
