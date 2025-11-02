@@ -1,0 +1,29 @@
+{
+  "code": "JCB-76413",
+  "name": "Ключ Г-образный 6-гранный 13мм",
+  "description": "",
+  "brand": {
+    "id": 9,
+    "name": "JCB",
+    "slug": "jcb"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 136,
+    "name": "Г образные ключи HEX/TORX",
+    "node_index": "structure/d_ruchnoy-instrument/d_g-obraznye-klyuchi-hex-torx",
+    "human_path": "structure / ruchnoy-instrument / g-obraznye-klyuchi-hex-torx"
+  },
+  "spine": {
+    "id": 123,
+    "name": "Ключ Г-образный 6-гранный 13мм",
+    "node_index": "structure/d_ruchnoy-instrument/d_g-obraznye-klyuchi-hex-torx/s_klyuch-g-obraznyy-6-grannyy-13mm",
+    "human_path": "structure / ruchnoy-instrument / g-obraznye-klyuchi-hex-torx / klyuch-g-obraznyy-6-grannyy-13mm"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_g-obraznye-klyuchi-hex-torx/s_klyuch-g-obraznyy-6-grannyy-13mm/p_jcb-76413",
+  "created_at": "2025-11-02T10:40:46.957Z"
+}

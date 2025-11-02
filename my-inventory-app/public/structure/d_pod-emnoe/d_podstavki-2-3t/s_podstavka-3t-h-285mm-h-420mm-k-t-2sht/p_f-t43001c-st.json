@@ -1,0 +1,29 @@
+{
+  "code": "F-T43001C ST",
+  "name": "Подставка ремонтная 3т (h min 285мм, h max 420мм) (к-т 2шт.)",
+  "description": "",
+  "brand": {
+    "id": 12,
+    "name": "Forsage",
+    "slug": "forsage"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 140,
+    "name": "ПОДСТАВКИ 2-3т",
+    "node_index": "structure/d_pod-emnoe/d_podstavki-2-3t",
+    "human_path": "structure / pod-emnoe / podstavki-2-3t"
+  },
+  "spine": {
+    "id": 132,
+    "name": "Подставка 3т (h 285мм, h 420мм) (к-т 2шт.)",
+    "node_index": "structure/d_pod-emnoe/d_podstavki-2-3t/s_podstavka-3t-h-285mm-h-420mm-k-t-2sht",
+    "human_path": "structure / pod-emnoe / podstavki-2-3t / podstavka-3t-h-285mm-h-420mm-k-t-2sht"
+  },
+  "images": [],
+  "node_index": "structure/d_pod-emnoe/d_podstavki-2-3t/s_podstavka-3t-h-285mm-h-420mm-k-t-2sht/p_f-t43001c-st",
+  "created_at": "2025-11-02T11:23:25.095Z"
+}

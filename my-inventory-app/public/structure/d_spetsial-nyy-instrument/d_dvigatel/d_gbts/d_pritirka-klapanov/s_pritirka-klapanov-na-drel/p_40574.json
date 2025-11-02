@@ -1,0 +1,29 @@
+{
+  "code": "40574",
+  "name": "Приспособление для притирки клапанов механическое (для электрической дрели), 6 предметов (\"АвтоDело\") (40574)",
+  "description": "",
+  "brand": {
+    "id": 11,
+    "name": "Автодело",
+    "slug": "avtodelo"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 135,
+    "name": "ПРИТИРКА КЛАПАНОВ",
+    "node_index": "structure/d_spetsial-nyy-instrument/d_dvigatel/d_gbts/d_pritirka-klapanov",
+    "human_path": "structure / spetsial-nyy-instrument / dvigatel / gbts / pritirka-klapanov"
+  },
+  "spine": {
+    "id": 122,
+    "name": "притирка клапанов на дрель",
+    "node_index": "structure/d_spetsial-nyy-instrument/d_dvigatel/d_gbts/d_pritirka-klapanov/s_pritirka-klapanov-na-drel",
+    "human_path": "structure / spetsial-nyy-instrument / dvigatel / gbts / pritirka-klapanov / pritirka-klapanov-na-drel"
+  },
+  "images": [],
+  "node_index": "structure/d_spetsial-nyy-instrument/d_dvigatel/d_gbts/d_pritirka-klapanov/s_pritirka-klapanov-na-drel/p_40574",
+  "created_at": "2025-11-02T10:32:17.143Z"
+}

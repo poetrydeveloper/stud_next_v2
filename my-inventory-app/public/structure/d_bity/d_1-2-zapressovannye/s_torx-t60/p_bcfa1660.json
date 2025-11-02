@@ -1,0 +1,29 @@
+{
+  "code": "BCFA1660",
+  "name": "Головка 1/2\" с насадкой TORX T60 TOPTUL",
+  "description": "",
+  "brand": {
+    "id": 4,
+    "name": "TOPTUL",
+    "slug": "toptul"
+  },
+  "supplier": {
+    "id": 1,
+    "name": "TT"
+  },
+  "category": {
+    "id": 13,
+    "name": "1/2_запрессованные",
+    "node_index": "structure/d_bity/d_1-2-zapressovannye",
+    "human_path": "structure / bity / 1-2-zapressovannye"
+  },
+  "spine": {
+    "id": 134,
+    "name": "torx t60",
+    "node_index": "structure/d_bity/d_1-2-zapressovannye/s_torx-t60",
+    "human_path": "structure / bity / 1-2-zapressovannye / torx-t60"
+  },
+  "images": [],
+  "node_index": "structure/d_bity/d_1-2-zapressovannye/s_torx-t60/p_bcfa1660",
+  "created_at": "2025-11-02T11:36:03.038Z"
+}

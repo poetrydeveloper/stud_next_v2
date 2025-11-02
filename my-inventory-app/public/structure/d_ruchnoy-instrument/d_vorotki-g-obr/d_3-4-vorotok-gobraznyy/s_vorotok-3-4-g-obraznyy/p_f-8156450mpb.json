@@ -1,0 +1,29 @@
+{
+  "code": "F-8156450MPB",
+  "name": "Вороток Г-образный двухсторонний ударный CR-Mo 450мм 3/4''",
+  "description": "",
+  "brand": {
+    "id": 12,
+    "name": "Forsage",
+    "slug": "forsage"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 93,
+    "name": "3/4-вороток-Гобразный",
+    "node_index": "structure/d_ruchnoy-instrument/d_vorotki-g-obr/d_3-4-vorotok-gobraznyy",
+    "human_path": "structure / ruchnoy-instrument / vorotki-g-obr / 3-4-vorotok-gobraznyy"
+  },
+  "spine": {
+    "id": 46,
+    "name": "Вороток 3/4 Г образный",
+    "node_index": "structure/d_ruchnoy-instrument/d_vorotki-g-obr/d_3-4-vorotok-gobraznyy/s_vorotok-3-4-g-obraznyy",
+    "human_path": "structure / ruchnoy-instrument / vorotki-g-obr / 3-4-vorotok-gobraznyy / vorotok-3-4-g-obraznyy"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_vorotki-g-obr/d_3-4-vorotok-gobraznyy/s_vorotok-3-4-g-obraznyy/p_f-8156450mpb",
+  "created_at": "2025-11-02T11:16:16.678Z"
+}

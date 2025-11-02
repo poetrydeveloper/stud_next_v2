@@ -1,0 +1,29 @@
+{
+  "code": "CAEA1612",
+  "name": "Переходник 1/2\"(F)х3/8(М) TOPTUL",
+  "description": "",
+  "brand": {
+    "id": 4,
+    "name": "TOPTUL",
+    "slug": "toptul"
+  },
+  "supplier": {
+    "id": 1,
+    "name": "TT"
+  },
+  "category": {
+    "id": 127,
+    "name": "perehodnik-1/2 -",
+    "node_index": "structure/d_ruchnoy-instrument/d_adaptery-perehodniki/d_perehodnik-1-2",
+    "human_path": "structure / ruchnoy-instrument / adaptery-perehodniki / perehodnik-1-2"
+  },
+  "spine": {
+    "id": 133,
+    "name": "адаптер 1/2 на 3/8",
+    "node_index": "structure/d_ruchnoy-instrument/d_adaptery-perehodniki/d_perehodnik-1-2/s_adapter-1-2-na-3-8",
+    "human_path": "structure / ruchnoy-instrument / adaptery-perehodniki / perehodnik-1-2 / adapter-1-2-na-3-8"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_adaptery-perehodniki/d_perehodnik-1-2/s_adapter-1-2-na-3-8/p_caea1612",
+  "created_at": "2025-11-02T11:31:48.152Z"
+}

@@ -1,0 +1,29 @@
+{
+  "code": "669 450",
+  "name": "Переходник ударный 3/4\"F × 1/2\"M",
+  "description": "",
+  "brand": {
+    "id": 2,
+    "name": "Дело техники",
+    "slug": "delo-tehniki"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 138,
+    "name": "УДАРНЫЕ АДАПТЕРЫ",
+    "node_index": "structure/d_ruchnoy-instrument/d_adaptery-perehodniki/d_udarnye-adaptery",
+    "human_path": "structure / ruchnoy-instrument / adaptery-perehodniki / udarnye-adaptery"
+  },
+  "spine": {
+    "id": 131,
+    "name": "3/4-1/2 ударный переходник",
+    "node_index": "structure/d_ruchnoy-instrument/d_adaptery-perehodniki/d_udarnye-adaptery/s_3-4-1-2-udarnyy-perehodnik",
+    "human_path": "structure / ruchnoy-instrument / adaptery-perehodniki / udarnye-adaptery / 3-4-1-2-udarnyy-perehodnik"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_adaptery-perehodniki/d_udarnye-adaptery/s_3-4-1-2-udarnyy-perehodnik/p_669-450",
+  "created_at": "2025-11-02T11:01:11.849Z"
+}

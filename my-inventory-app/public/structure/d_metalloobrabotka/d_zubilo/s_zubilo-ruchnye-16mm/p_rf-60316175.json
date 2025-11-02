@@ -1,0 +1,29 @@
+{
+  "code": "RF-60316175",
+  "name": "Зубило с шестигранным основанием 16мм (L-175мм),на пластиковом держателе",
+  "description": "",
+  "brand": {
+    "id": 8,
+    "name": "RockForce",
+    "slug": "rockforce"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 137,
+    "name": "зубило",
+    "node_index": "structure/d_metalloobrabotka/d_zubilo",
+    "human_path": "structure / metalloobrabotka / zubilo"
+  },
+  "spine": {
+    "id": 130,
+    "name": "зубило ручные 16мм",
+    "node_index": "structure/d_metalloobrabotka/d_zubilo/s_zubilo-ruchnye-16mm",
+    "human_path": "structure / metalloobrabotka / zubilo / zubilo-ruchnye-16mm"
+  },
+  "images": [],
+  "node_index": "structure/d_metalloobrabotka/d_zubilo/s_zubilo-ruchnye-16mm/p_rf-60316175",
+  "created_at": "2025-11-02T10:55:36.254Z"
+}

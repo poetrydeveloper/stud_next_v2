@@ -1,0 +1,29 @@
+{
+  "code": "R7703502",
+  "name": "Клещи для самозажимных хомутов MUBEA ARNEZI",
+  "description": "",
+  "brand": {
+    "id": 5,
+    "name": "ARNEZI",
+    "slug": "arnezi"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 144,
+    "name": "Самозажимных хомутов",
+    "node_index": "structure/d_sharnirno-gubtsevyy-instrument/d_samozazhimnyh-homutov",
+    "human_path": "structure / sharnirno-gubtsevyy-instrument / samozazhimnyh-homutov"
+  },
+  "spine": {
+    "id": 135,
+    "name": "MUBEA - ЩИПЦЫ САМОЗАЖИМНЫХ ХОМУТОВ",
+    "node_index": "structure/d_sharnirno-gubtsevyy-instrument/d_samozazhimnyh-homutov/s_mubea-schiptsy-samozazhimnyh-homutov",
+    "human_path": "structure / sharnirno-gubtsevyy-instrument / samozazhimnyh-homutov / mubea-schiptsy-samozazhimnyh-homutov"
+  },
+  "images": [],
+  "node_index": "structure/d_sharnirno-gubtsevyy-instrument/d_samozazhimnyh-homutov/s_mubea-schiptsy-samozazhimnyh-homutov/p_r7703502",
+  "created_at": "2025-11-02T11:53:35.430Z"
+}
