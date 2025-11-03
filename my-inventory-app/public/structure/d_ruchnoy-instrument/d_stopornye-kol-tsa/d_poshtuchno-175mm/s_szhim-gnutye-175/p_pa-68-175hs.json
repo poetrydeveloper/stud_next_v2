@@ -1,0 +1,29 @@
+{
+  "code": "PA-68-175HS",
+  "name": "Съемник стопорных колец прямой на сжатие (L-175мм), в блистере",
+  "description": "",
+  "brand": {
+    "id": 18,
+    "name": "Partner",
+    "slug": "partner"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 159,
+    "name": "поштучно 175мм",
+    "node_index": "structure/d_ruchnoy-instrument/d_stopornye-kol-tsa/d_poshtuchno-175mm",
+    "human_path": "structure / ruchnoy-instrument / stopornye-kol-tsa / poshtuchno-175mm"
+  },
+  "spine": {
+    "id": 145,
+    "name": "сжим гнутые 175",
+    "node_index": "structure/d_ruchnoy-instrument/d_stopornye-kol-tsa/d_poshtuchno-175mm/s_szhim-gnutye-175",
+    "human_path": "structure / ruchnoy-instrument / stopornye-kol-tsa / poshtuchno-175mm / szhim-gnutye-175"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_stopornye-kol-tsa/d_poshtuchno-175mm/s_szhim-gnutye-175/p_pa-68-175hs",
+  "created_at": "2025-11-03T09:25:35.183Z"
+}

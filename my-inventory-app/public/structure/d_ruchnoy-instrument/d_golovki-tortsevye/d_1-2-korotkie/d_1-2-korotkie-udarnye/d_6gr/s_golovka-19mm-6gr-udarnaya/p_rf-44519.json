@@ -1,0 +1,29 @@
+{
+  "code": "RF-44519",
+  "name": "Головка ударная 19мм (6гр.), 1/2''",
+  "description": "",
+  "brand": {
+    "id": 8,
+    "name": "RockForce",
+    "slug": "rockforce"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 85,
+    "name": "6гр",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-2-korotkie/d_1-2-korotkie-udarnye/d_6gr",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / 1-2-korotkie / 1-2-korotkie-udarnye / 6gr"
+  },
+  "spine": {
+    "id": 42,
+    "name": "Головка 19мм 6гр ударная",
+    "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-2-korotkie/d_1-2-korotkie-udarnye/d_6gr/s_golovka-19mm-6gr-udarnaya",
+    "human_path": "structure / ruchnoy-instrument / golovki-tortsevye / 1-2-korotkie / 1-2-korotkie-udarnye / 6gr / golovka-19mm-6gr-udarnaya"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_golovki-tortsevye/d_1-2-korotkie/d_1-2-korotkie-udarnye/d_6gr/s_golovka-19mm-6gr-udarnaya/p_rf-44519",
+  "created_at": "2025-11-03T09:16:53.246Z"
+}

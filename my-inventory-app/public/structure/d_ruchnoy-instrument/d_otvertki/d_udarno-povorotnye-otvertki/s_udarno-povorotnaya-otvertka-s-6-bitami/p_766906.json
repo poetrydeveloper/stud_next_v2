@@ -1,0 +1,29 @@
+{
+  "code": "766906",
+  "name": "Отвёртка ударная со вставками 5/16\"",
+  "description": "",
+  "brand": {
+    "id": 2,
+    "name": "Дело техники",
+    "slug": "delo-tehniki"
+  },
+  "supplier": {
+    "id": 2,
+    "name": "Armtek"
+  },
+  "category": {
+    "id": 149,
+    "name": "ударно-поворотные отвертки",
+    "node_index": "structure/d_ruchnoy-instrument/d_otvertki/d_udarno-povorotnye-otvertki",
+    "human_path": "structure / ruchnoy-instrument / otvertki / udarno-povorotnye-otvertki"
+  },
+  "spine": {
+    "id": 139,
+    "name": "ударно-поворотная отвертка с 6 битами",
+    "node_index": "structure/d_ruchnoy-instrument/d_otvertki/d_udarno-povorotnye-otvertki/s_udarno-povorotnaya-otvertka-s-6-bitami",
+    "human_path": "structure / ruchnoy-instrument / otvertki / udarno-povorotnye-otvertki / udarno-povorotnaya-otvertka-s-6-bitami"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_otvertki/d_udarno-povorotnye-otvertki/s_udarno-povorotnaya-otvertka-s-6-bitami/p_766906",
+  "created_at": "2025-11-03T09:05:28.517Z"
+}

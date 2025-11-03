@@ -1,0 +1,29 @@
+{
+  "code": "PRO-6065",
+  "name": "Шприц автомобильный для смазки 400мл PRO STARTUL (PRO-6065) (рычажно-плунжерный, с гибким шлангом и стальной трубкой)",
+  "description": "",
+  "brand": {
+    "id": 6,
+    "name": "STARTUL",
+    "slug": "startul"
+  },
+  "supplier": {
+    "id": 1,
+    "name": "TT"
+  },
+  "category": {
+    "id": 146,
+    "name": "ШПРИЦЫ ЛИТОЛ",
+    "node_index": "structure/d_oborudovanie/d_shpritsy/d_shpritsy-litol",
+    "human_path": "structure / oborudovanie / shpritsy / shpritsy-litol"
+  },
+  "spine": {
+    "id": 136,
+    "name": "шприц для литола 400мм",
+    "node_index": "structure/d_oborudovanie/d_shpritsy/d_shpritsy-litol/s_shprits-dlya-litola-400mm",
+    "human_path": "structure / oborudovanie / shpritsy / shpritsy-litol / shprits-dlya-litola-400mm"
+  },
+  "images": [],
+  "node_index": "structure/d_oborudovanie/d_shpritsy/d_shpritsy-litol/s_shprits-dlya-litola-400mm/p_pro-6065",
+  "created_at": "2025-11-03T08:59:35.864Z"
+}
