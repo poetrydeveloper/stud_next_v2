@@ -72,31 +72,23 @@ export default function ProductUnitsPage() {
   };
 
   const handleUnitStatusChange = async (unitId: number, newStatus: string) => {
-    // Обновляем локальное состояние для мгновенного отклика
-    const updatedCategories = categories.map(category => ({
-      ...category,
-      spines: category.spines.map(spine => ({
-        ...spine,
-        productUnits: spine.productUnits.map(unit => 
-          unit.id === unitId ? { ...unit, statusCard: newStatus } : unit
-        )
-      }))
-    }));
-    
-    setCategories(updatedCategories);
-    
-    // Пересчитываем статистику
-    const allUnits = updatedCategories.flatMap(cat => 
-      cat.spines.flatMap(spine => spine.productUnits)
-    );
-    
-    setTotalUnits(allUnits.length);
-    setCandidateUnits(allUnits.filter(u => u.statusCard === "CANDIDATE").length);
-    
-    // Фоновая перезагрузка для синхронизации с сервером
-    setTimeout(() => {
-      loadData();
-    }, 500);
+  // ❌ УБИРАЕМ ВСЮ ЭТУ ЛОГИКУ - она вызывает перезагрузку
+  // Оставляем ТОЛЬКО если это критически необходимо для статистики
+  
+  // ЕСЛИ нужно обновить статистику - делаем это локально:
+  if (newStatus === "CANDIDATE") {
+    setCandidateUnits(prev => prev + 1);
+  } else if (newStatus === "IN_REQUEST") {
+    setCandidateUnits(prev => Math.max(0, prev - 1));
+  }
+  
+  // ❌ НИКАКОГО loadData() или setTimeout!
+};
+
+  // Функция для принудительного обновления данных
+  const handleRefresh = () => {
+    console.log("Manual refresh triggered");
+    loadData();
   };
 
   useEffect(() => {
@@ -148,11 +140,13 @@ export default function ProductUnitsPage() {
               <div className="text-sm text-gray-600">Всего: <span className="font-semibold">{totalUnits}</span></div>
               <div className="text-sm text-gray-600">Кандидатов: <span className="font-semibold text-yellow-600">{candidateUnits}</span></div>
               <button 
-                onClick={loadData}
-                className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
+                onClick={handleRefresh}
+                className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors flex items-center space-x-1"
                 title="Обновить данные"
+                disabled={isLoading}
               >
-                🔄
+                <span>🔄</span>
+                {isLoading && <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>}
               </button>
             </div>
           </div>
@@ -168,6 +162,12 @@ export default function ProductUnitsPage() {
             <div className="text-4xl mb-4">🌳</div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">Нет категорий</h3>
             <p className="text-gray-500 mb-4">Создайте категории и Spine чтобы начать работу</p>
+            <button 
+              onClick={handleRefresh}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+            >
+              Обновить
+            </button>
           </div>
         )}
       </div>

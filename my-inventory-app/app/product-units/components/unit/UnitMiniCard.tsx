@@ -33,6 +33,8 @@ interface ProductUnit {
 interface UnitMiniCardProps {
   unit: ProductUnit;
   onStatusChange?: (unitId: number, newStatus: string) => void;
+  onSpineRefresh?: () => void;
+  onStatsUpdate?: (type: 'candidate' | 'request', delta: number) => void;
 }
 
 const isRecentlyActive = (unit: ProductUnit) => {
@@ -45,12 +47,17 @@ const isRecentlySold = (unit: ProductUnit) => {
   return Date.now() - new Date(unit.soldAt).getTime() < 60 * 60 * 1000; // 60 минут
 };
 
-export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps) {
+export default function UnitMiniCard({ unit, onStatusChange, onSpineRefresh, onStatsUpdate }: UnitMiniCardProps) {
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentCardStatus, setCurrentCardStatus] = useState(unit.statusCard);
   const [currentProductStatus, setCurrentProductStatus] = useState(unit.statusProduct);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // ✅ ВАЖНО: СКРЫВАЕМ SPROUTED КАРТОЧКИ
+  if (currentCardStatus === "SPROUTED") {
+    return null; // Не рендерим вообще
+  }
 
   const mainImage = unit.product?.images?.find(img => img.isMain) || unit.product?.images?.[0];
   const imagePath = mainImage?.localPath || mainImage?.path;
@@ -93,6 +100,7 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
 
   const handleAddToCandidate = async () => {
     try {
+      setIsProcessing(true);
       const response = await fetch("/api/product-units", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -101,12 +109,14 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
 
       if (response.ok) {
         setCurrentCardStatus("CANDIDATE");
-        onStatusChange?.(unit.id, "CANDIDATE");
+        onStatsUpdate?.('candidate', 1);
       } else {
         console.error("Failed to update status");
       }
     } catch (error) {
       console.error("Error updating status:", error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -124,10 +134,9 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
       const data = await response.json();
       
       if (data.ok) {
-        // После поставки статус карты становится ARRIVED, а продукта - IN_STORE
-        setCurrentCardStatus("ARRIVED");
-        setCurrentProductStatus("IN_STORE");
-        onStatusChange?.(unit.id, "IN_STORE");
+        // После поставки статус карты становится IN_DELIVERY
+        setCurrentCardStatus("IN_DELIVERY");
+        // ❌ УБРАЛИ onStatusChange - он вызывает перезагрузку
       } else {
         alert(`Ошибка: ${data.error}`);
       }
@@ -151,10 +160,9 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
       const data = await response.json();
       
       if (data.ok) {
-        // При откате возвращаем в IN_REQUEST и сбрасываем физический статус
         setCurrentCardStatus("IN_REQUEST");
         setCurrentProductStatus(null);
-        onStatusChange?.(unit.id, "IN_REQUEST");
+        // ❌ УБРАЛИ onStatusChange - он вызывает перезагрузку
       } else {
         alert(`Ошибка: ${data.error}`);
       }
@@ -197,7 +205,6 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
             </div>
             
             <div className="flex items-center space-x-2 mb-1">
-              {/* ОТОБРАЖАЕМ ОБА СТАТУСА */}
               <span className={`text-xs px-2 py-0.5 rounded font-medium ${cardStatusConfig.bg} ${cardStatusConfig.text}`}>
                 {cardStatusConfig.icon} {cardStatusConfig.label}
               </span>
@@ -227,7 +234,6 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
                 <span>Артикул:</span>
                 <span className="font-mono">{productCode}</span>
               </div>
-              {/* SERIAL NUMBER ТОЛЬКО В РАСШИРЕННОМ ВИДЕ */}
               <div className="flex justify-between mt-1">
                 <span>Серийный:</span>
                 <span className="font-mono text-xs">{unit.serialNumber}</span>
@@ -238,9 +244,10 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
               {currentCardStatus === "CLEAR" && (
                 <button 
                   onClick={handleAddToCandidate} 
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1 px-2 rounded transition-colors"
+                  disabled={isProcessing}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1 px-2 rounded transition-colors disabled:opacity-50"
                 >
-                  В кандидаты
+                  {isProcessing ? "..." : "В кандидаты"}
                 </button>
               )}
               
@@ -263,7 +270,6 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
                 </button>
               )}
 
-              {/* КНОПКА ОТКАТА ДЛЯ IN_STORE ИЛИ ARRIVED */}
               {shouldShowRevert && (
                 <button 
                   onClick={handleRevertToRequest} 
@@ -285,8 +291,12 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
         {!isExpanded && (
           <div className="flex gap-1 mt-2">
             {currentCardStatus === "CLEAR" && (
-              <button onClick={handleAddToCandidate} className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1 px-2 rounded transition-colors">
-                В кандидаты
+              <button 
+                onClick={handleAddToCandidate} 
+                disabled={isProcessing}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1 px-2 rounded transition-colors disabled:opacity-50"
+              >
+                {isProcessing ? "..." : "В кандидаты"}
               </button>
             )}
             
@@ -306,7 +316,6 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
               </button>
             )}
 
-            {/* КНОПКА ОТКАТА ДЛЯ IN_STORE ИЛИ ARRIVED */}
             {shouldShowRevert && (
               <button 
                 onClick={handleRevertToRequest} 
@@ -323,12 +332,16 @@ export default function UnitMiniCard({ unit, onStatusChange }: UnitMiniCardProps
       {/* МОДАЛЬНОЕ ОКНО ЗАЯВКИ */}
       {showRequestModal && currentCardStatus === "CANDIDATE" && (
         <CreateRequestModal
-          unit={unit}
+          unit={{
+            ...unit,
+            statusCard: currentCardStatus
+          }}
           onClose={() => setShowRequestModal(false)}
           onSuccess={() => {
             setShowRequestModal(false);
             setCurrentCardStatus("IN_REQUEST");
-            onStatusChange?.(unit.id, "IN_REQUEST");
+            onStatsUpdate?.('request', -1);
+            onSpineRefresh?.();
           }}
         />
       )}

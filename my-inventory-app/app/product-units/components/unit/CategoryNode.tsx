@@ -11,7 +11,12 @@ interface CategoryNodeProps {
   onUnitStatusChange?: (unitId: number, newStatus: string) => void;
 }
 
-export default function CategoryNode({ node, expandedNodes, onToggle, onUnitStatusChange }: CategoryNodeProps) {
+export default function CategoryNode({ 
+  node, 
+  expandedNodes, 
+  onToggle, 
+  onUnitStatusChange
+}: CategoryNodeProps) {
   const isExpanded = expandedNodes.has(node.id);
   const hasChildren = node.children.length > 0;
 
@@ -20,6 +25,7 @@ export default function CategoryNode({ node, expandedNodes, onToggle, onUnitStat
       <CategoryHeader node={node} isExpanded={isExpanded} onToggle={() => onToggle(node.id)} />
       {isExpanded && (
         <div className="mt-2 space-y-2">
+          {/* Рекурсивно рендерим дочерние категории */}
           {node.children.filter(child => child.type === 'category').map(child => (
             <CategoryNode 
               key={`category-${child.id}`} 
@@ -29,6 +35,8 @@ export default function CategoryNode({ node, expandedNodes, onToggle, onUnitStat
               onUnitStatusChange={onUnitStatusChange}
             />
           ))}
+          
+          {/* Рендерим spines из node.spines */}
           {node.spines?.map(spine => (
             <SpineNode 
               key={`spine-${spine.id}`} 
@@ -37,6 +45,8 @@ export default function CategoryNode({ node, expandedNodes, onToggle, onUnitStat
               onUnitStatusChange={onUnitStatusChange}
             />
           ))}
+          
+          {/* Рендерим spines из node.children */}
           {node.children.filter(child => child.type === 'spine').map(child => (
             <SpineNode 
               key={`spine-${child.id}`} 

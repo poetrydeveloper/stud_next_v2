@@ -1,0 +1,29 @@
+{
+  "code": "JDAH8616",
+  "name": "Съемник-чашка масляных фильтров 86мм 16гр. TOPTUL",
+  "description": "",
+  "brand": {
+    "id": 4,
+    "name": "TOPTUL",
+    "slug": "toptul"
+  },
+  "supplier": {
+    "id": 1,
+    "name": "TT"
+  },
+  "category": {
+    "id": 160,
+    "name": "СЪЕМНИК ФИЛЬТРА - КРЫШКИ",
+    "node_index": "structure/d_spetsial-nyy-instrument/d_zamena-masla/d_s-emnik-fil-tra-kryshki",
+    "human_path": "structure / spetsial-nyy-instrument / zamena-masla / s-emnik-fil-tra-kryshki"
+  },
+  "spine": {
+    "id": 147,
+    "name": "размер 86 / 16мм",
+    "node_index": "structure/d_spetsial-nyy-instrument/d_zamena-masla/d_s-emnik-fil-tra-kryshki/s_razmer-86-16mm",
+    "human_path": "structure / spetsial-nyy-instrument / zamena-masla / s-emnik-fil-tra-kryshki / razmer-86-16mm"
+  },
+  "images": [],
+  "node_index": "structure/d_spetsial-nyy-instrument/d_zamena-masla/d_s-emnik-fil-tra-kryshki/s_razmer-86-16mm/p_jdah8616",
+  "created_at": "2025-11-05T06:46:32.510Z"
+}

@@ -1,0 +1,29 @@
+{
+  "code": "F-75512",
+  "name": "Ключ комбинированный 12мм",
+  "description": "",
+  "brand": {
+    "id": 12,
+    "name": "Forsage",
+    "slug": "forsage"
+  },
+  "supplier": {
+    "id": 3,
+    "name": "Форсаж"
+  },
+  "category": {
+    "id": 97,
+    "name": "комбинир. поштучно",
+    "node_index": "structure/d_ruchnoy-instrument/d_klyuchi/d_kombinir-poshtuchno",
+    "human_path": "structure / ruchnoy-instrument / klyuchi / kombinir-poshtuchno"
+  },
+  "spine": {
+    "id": 96,
+    "name": "ключ 12мм",
+    "node_index": "structure/d_ruchnoy-instrument/d_klyuchi/d_kombinir-poshtuchno/s_klyuch-12mm",
+    "human_path": "structure / ruchnoy-instrument / klyuchi / kombinir-poshtuchno / klyuch-12mm"
+  },
+  "images": [],
+  "node_index": "structure/d_ruchnoy-instrument/d_klyuchi/d_kombinir-poshtuchno/s_klyuch-12mm/p_f-75512",
+  "created_at": "2025-11-05T08:59:00.317Z"
+}

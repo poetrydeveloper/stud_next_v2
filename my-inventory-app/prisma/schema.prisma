@@ -143,17 +143,17 @@ enum ProductUnitPhysicalStatus {
 model DisassemblyScenario {
   id        Int    @id @default(autoincrement())
   name      String
-  parentProductCode String  // ← КОД продукта-родителя
-  childProductCodes Json    // ← МАССИВ кодов продуктов-детей
+  parentProductCode String  
+  childProductCodes Json    
   partsCount Int
   isActive Boolean @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  // Связь с ProductUnit
-  productUnits ProductUnit[] // ← ДОБАВИТЬ ЭТУ СВЯЗЬ
+
+  productUnits ProductUnit[]
 
   @@map("disassembly_scenarios")
-  @@unique([parentProductCode, name]) // Уникальность по коду + названию
+  @@unique([parentProductCode, name]) 
 }
 
 model ProductUnit {
