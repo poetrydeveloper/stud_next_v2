@@ -2,7 +2,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import TreeView from './components/TreeView';
+//import TreeView from './components/TreeView';
+import ImprovedTreeView from './components/ImprovedTreeView';
 import CategoryModal from './components/CategoryModal';
 import SpineModal from './components/SpineModal';
 import ProductModal from './components/ProductModal/index'; // ← ИМПОРТ ИЗ ПАПКИ INDEX
@@ -159,7 +160,7 @@ export default function SuperAddPage() {
           </button>
         </div>
         
-        <TreeView 
+        <ImprovedTreeView 
           tree={tree} 
           selectedPath={selectedPath}
           onSelect={setSelectedPath}
