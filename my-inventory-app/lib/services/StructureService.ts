@@ -154,23 +154,56 @@ export class StructureService {
   }
 
   private async enrichWithRussianNames(tree: any): Promise<any> {
-    const [categories, spines, products] = await Promise.all([
-      prisma.category.findMany({
-        select: { path: true, name: true }
-      }),
-      prisma.spine.findMany({
-        select: { slug: true, name: true }
-      }),
-      prisma.product.findMany({
-        select: { code: true, name: true }
-      })
-    ]);
+    try {
+      console.log('🔄 Начинаем обогащение дерева русскими названиями');
+      
+      const [categories, spines, products] = await Promise.all([
+        prisma.category.findMany({
+          select: { node_index: true, name: true } // ← ИСПОЛЬЗУЕМ node_index!
+        }),
+        prisma.spine.findMany({
+          select: { node_index: true, name: true } // ← И СПИНЫ ТОЖЕ!
+        }),
+        prisma.product.findMany({
+          select: { node_index: true, name: true, code: true } // ← И ПРОДУКТЫ!
+        })
+      ]);
 
-    const categoryMap = new Map(categories.map(cat => [cat.path, cat.name]));
-    const spineMap = new Map(spines.map(spine => [spine.slug, spine.name]));
-    const productMap = new Map(products.map(prod => [prod.code, prod.name]));
+      console.log('📊 Данные из БД:', {
+        categories: categories.length,
+        spines: spines.length, 
+        products: products.length
+      });
 
-    return this.enrichNode(tree, categoryMap, spineMap, productMap);
+      // Создаем мапы для быстрого поиска ПО node_index
+      const categoryMap = new Map();
+      categories.forEach(cat => {
+        categoryMap.set(cat.node_index, cat.name);
+        console.log(`🗂️ Категория: node_index="${cat.node_index}", name="${cat.name}"`);
+      });
+
+      const spineMap = new Map();
+      spines.forEach(spine => {
+        spineMap.set(spine.node_index, spine.name);
+        console.log(`🌿 Spine: node_index="${spine.node_index}", name="${spine.name}"`);
+      });
+
+      const productMap = new Map();
+      products.forEach(prod => {
+        // Для продуктов можно использовать И node_index И code
+        productMap.set(prod.node_index, prod.name);
+        productMap.set(prod.code, prod.name); // backup по коду
+        console.log(`📦 Продукт: node_index="${prod.node_index}", code="${prod.code}", name="${prod.name}"`);
+      });
+
+      const enrichedTree = this.enrichNode(tree, categoryMap, spineMap, productMap);
+      console.log('✅ Дерево обогащено русскими названиями');
+      return enrichedTree;
+      
+    } catch (error) {
+      console.error('❌ Ошибка при обогащении дерева:', error);
+      return tree;
+    }
   }
 
   private enrichNode(
@@ -186,23 +219,33 @@ export class StructureService {
       
       let russianName = technicalName;
       
-      if (nodeData.type === 'category') {
-        // Для категорий ищем по полному пути
-        russianName = categoryMap.get(nodeData.path) || technicalName;
-      } else if (nodeData.type === 'spine') {
-        // Для spines ищем по slug (последняя часть пути)
-        const spineSlug = nodeData.path.split('/').pop();
-        russianName = spineMap.get(spineSlug) || technicalName;
-      } else if (nodeData.type === 'product') {
-        // Для продуктов ищем по коду (убираем p_ и .json)
-        const productCode = technicalName.replace('p_', '').replace('.json', '');
-        russianName = productMap.get(productCode) || technicalName;
+      try {
+        if (nodeData.type === 'category') {
+          // ИЩЕМ ПО node_index (structure/d_pnevmatika)
+          russianName = categoryMap.get(nodeData.path) || technicalName;
+          console.log(`🔍 Категория: path="${nodeData.path}", найдено: "${russianName}"`);
+          
+        } else if (nodeData.type === 'spine') {
+          // Для spines тоже ищем по node_index
+          russianName = spineMap.get(nodeData.path) || technicalName;
+          console.log(`🔍 Spine: path="${nodeData.path}", найдено: "${russianName}"`);
+          
+        } else if (nodeData.type === 'product') {
+          // Для продуктов ищем по коду (убираем p_ и .json)
+          const productCode = technicalName.replace('p_', '').replace('.json', '');
+          russianName = productMap.get(productCode) || technicalName;
+          console.log(`🔍 Продукт: code="${productCode}", найдено: "${russianName}"`);
+        }
+      } catch (error) {
+        console.error(`❌ Ошибка обработки узла ${technicalName}:`, error);
       }
 
       result[technicalName] = {
         ...nodeData,
-        name: russianName, // ← ДОБАВЛЯЕМ РУССКОЕ НАЗВАНИЕ
-        children: nodeData.children ? this.enrichNode(nodeData.children, categoryMap, spineMap, productMap) : {}
+        name: russianName, // ← РУССКОЕ НАЗВАНИЕ ИЗ БАЗЫ ДАННЫХ
+        children: nodeData.children ? 
+          this.enrichNode(nodeData.children, categoryMap, spineMap, productMap) : 
+          {}
       };
     }
 
