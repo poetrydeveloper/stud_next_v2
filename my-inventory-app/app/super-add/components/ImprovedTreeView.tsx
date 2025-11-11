@@ -41,36 +41,28 @@ export default function ImprovedTreeView({ tree, selectedPath, onSelect }: TreeV
 
   // Функция для получения русского названия
   const getRussianName = (technicalName: string, data: any): string => {
-    try {
-      // Если в данных уже есть русское название - используем его
-      if (data.name && !data.name.startsWith('d_') && !data.name.startsWith('s_') && !data.name.startsWith('p_')) {
-        return data.name;
-      }
-      
-      // Для продуктов: убираем p_ и .json, ищем по коду
-      if (technicalName.startsWith('p_')) {
-        const productCode = technicalName.replace('p_', '').replace('.json', '');
-        return nameMapping[productCode] || `Продукт ${productCode}`;
-      }
-      
-      // Для категорий и spines: ищем по техническому имени (d_bity, s_torx_t30)
-      const russianName = nameMapping[technicalName];
-      if (russianName) {
-        return russianName;
-      }
-      
-      // Fallback: преобразуем техническое имя
-      return technicalName
-        .replace(/^d_/, '')
-        .replace(/^s_/, '')
-        .replace(/_/g, ' ')
-        .replace(/\b\w/g, l => l.toUpperCase());
-        
-    } catch (error) {
-      console.error('Ошибка преобразования имени:', error);
-      return technicalName;
+  try {
+    // ПРОСТО ИСПОЛЬЗУЕМ data.name который УЖЕ содержит русское название из БД
+    if (data.name) {
+      return data.name;
     }
-  };
+    
+    // Fallback на случай если data.name отсутствует
+    // Преобразуем техническое имя в читаемый формат
+    return technicalName
+      .replace(/^d_/, '')  // убираем префикс категории
+      .replace(/^s_/, '')  // убираем префикс spine
+      .replace(/^p_/, '')  // убираем префикс продукта
+      .replace(/\.json$/, '') // убираем расширение у продуктов
+      .replace(/_/g, ' ')  // заменяем подчеркивания на пробелы
+      .replace(/\b\w/g, l => l.toUpperCase()) // capitalize words
+      .trim();
+      
+  } catch (error) {
+    console.error('Ошибка преобразования имени:', error);
+    return technicalName;
+  }
+};
 
   console.log('🔍 ImprovedTreeView: ДАННЫЕ ДЕРЕВА', tree);
 

@@ -1,12 +1,12 @@
 # 🕵️‍♂️ ПОЛНЫЙ АНАЛИЗ NEXT.JS APP ROUTER ПРОЕКТА
 
-Сгенерировано: 27.10.2025, 13:19:14
+Сгенерировано: 11.11.2025, 13:26:08
 Структура: App Router (Next.js 13+)
 
 ## 🗄️ PRISMA СХЕМА
 
 **Файл:** prisma/schema.prisma
-**Модели:** 17
+**Модели:** 18
 
 ### Supplier
 **Поля:** 4
@@ -21,7 +21,7 @@
 **Ключевые:** id, email
 
 ### Category
-**Поля:** 10
+**Поля:** 11
 **Ключевые:** id, name, path, node_index, parent
 
 ### Brand
@@ -37,7 +37,7 @@
 **Ключевые:** id, productId
 
 ### DisassemblyScenario
-**Поля:** 8
+**Поля:** 6
 **Ключевые:** id, productUnits
 
 ### ProductUnit
@@ -76,9 +76,13 @@
 **Поля:** 6
 **Ключевые:** id, productUnitId, updatedAt
 
+### StockTrafficLight
+**Поля:** 10
+**Ключевые:** id, productCode, categoryId
+
 ## 🚀 API ROUTES (App Router)
 
-**Всего endpoints:** 66
+**Всего endpoints:** 71
 
 ### 📦 PRODUCT UNITS API (15)
 - **/api/product-units/by-product-code** [GET] - API endpoint
@@ -105,7 +109,7 @@
 - **/api/inventory/snapshots** [GET] - API endpoint
 - **/api/inventory/visual** [GET] - Складские операции
 
-### 🔧 ДРУГИЕ API (31)
+### 🔧 ДРУГИЕ API (36)
 - **/api/analytics/sales**
 - **/api/brands**
 - **/api/customers**
@@ -116,11 +120,11 @@
 - **/api/disassembly/assemble**
 - **/api/disassembly/execute**
 - **/api/disassembly/scenario**
-- ... и еще 21 endpoints
+- ... и еще 26 endpoints
 
 ## 📄 СТРАНИЦЫ (App Router)
 
-**Всего страниц:** 26
+**Всего страниц:** 29
 
 ### /analytics
 **Файл:** app\analytics\page.tsx
@@ -156,6 +160,9 @@
 **Файл:** app\categories\[id]\edit\page.tsx
 **Hooks:** useState, useEffect, useRouter
 
+### /deliveries
+**Файл:** app\deliveries\page.tsx
+
 ### /disassembly
 **Файл:** app\disassembly\page.tsx
 **Hooks:** useState, useEffect
@@ -173,9 +180,13 @@
 **Файл:** app\inventory\page.tsx
 **Компоненты:** InventoryCurrent, InventoryMovement, CreateSnapshotButton...
 
-### /inventory/visual
-**Файл:** app\inventory\visual\page.tsx
-**Компоненты:** InventoryVisual
+### /miller-browser
+**Файл:** app\miller-browser\page.tsx
+**Компоненты:** MillerColumns
+
+### /miller-full
+**Файл:** app\miller-full\page.tsx
+**Компоненты:** FullDataMillerColumns
 
 ### /
 **Файл:** app\page.tsx
@@ -224,14 +235,18 @@
 **Файл:** app\store\page.tsx
 **Hooks:** useState, useEffect
 
+### /store/visual
+**Файл:** app\store\visual\page.tsx
+**Компоненты:** InventoryVisual, VisualStoreDashboard
+
 ### /super-add
 **Файл:** app\super-add\page.tsx
-**Компоненты:** TreeView, CategoryModal, SpineModal...
+**Компоненты:** ImprovedTreeView, HorizontalTreeView, CategoryModal...
 **Hooks:** useState, useEffect
 
 ## ⚛️ REACT КОМПОНЕНТЫ
 
-**Всего компонентов:** 42
+**Всего компонентов:** 52
 
 ### 📦 PRODUCT UNIT КОМПОНЕНТЫ (12)
 - **CandidateUnitCard** - Модальное окно заявки
@@ -247,12 +262,13 @@
 - **UnitTreeView** - Карточка товарной единицы
 - **ProductUnitActions** - Карточка товарной единицы
 
-### 📊 INVENTORY КОМПОНЕНТЫ (3)
+### 📊 INVENTORY КОМПОНЕНТЫ (4)
 - **InventoryCurrent**
 - **InventoryMovement**
 - **InventoryVisual**
+- **VisualInventoryDashboard**
 
-### 🔧 ДРУГИЕ КОМПОНЕНТЫ (19)
+### 🔧 ДРУГИЕ КОМПОНЕНТЫ (28)
 - **SalesAnalytics**
 - **ClosePastCashDaysButton**
 - **DisassemblyExecuteButton**
@@ -260,10 +276,10 @@
 - **CreateSnapshotButton**
 - **SnapshotsHistory**
 - **LogsPanel_v2**
-- **ProductCard**
-- **ProductImage**
-- **CategoryStep**
-- ... и еще 9 компонентов
+- **Column**
+- **FullDataMillerColumns**
+- **MillerColumns**
+- ... и еще 18 компонентов
 
 ## 🛠️ БИБЛИОТЕКИ И СЕРВИСЫ
 
@@ -279,19 +295,20 @@
 - **requestValidator.ts** - Сервис/утилита
 - **unitCloneHelper.ts** - Работа с БД
 
-### 📁 lib/ (20)
+### 📁 lib/ (22)
 - **CashDayAutoCloseService.ts** - Работа с БД
 - **CashDayCoreService.ts** - Работа с БД
 - **CashEventService.ts** - Работа с БД
 - **CashReportService.ts** - Сервис/утилита
 - **CashValidationService.ts** - Сервис/утилита
 - **index.ts** - Сервис/утилита
+- **change-detection-service.ts** - Работа с БД
 - **decrypt-token.ts** - Сервис/утилита
 - **encrypt-token.ts** - Сервис/утилита
 - **file-storage-adapter.ts** - Сервис/утилита
 - **structure-helpers.ts** - Сервис/утилита
 - **image-sync-service.ts** - Сервис/утилита
-- **StructureService.ts** - Сервис/утилита
+- **StructureService.ts** - Работа с БД
 - **StructureSyncService.ts** - Работа с БД
 - **BaseSync.ts** - Сервис/утилита
 - **CategorySync.ts** - Работа с БД
@@ -299,6 +316,7 @@
 - **index.ts** - Сервис/утилита
 - **ProductSync.ts** - Работа с БД
 - **SpineSync.ts** - Работа с БД
+- **stock-traffic-light-service.ts** - Работа с БД
 - **translit.ts** - Сервис/утилита
 
 ## 💡 РЕКОМЕНДАЦИИ И ВЫВОДЫ

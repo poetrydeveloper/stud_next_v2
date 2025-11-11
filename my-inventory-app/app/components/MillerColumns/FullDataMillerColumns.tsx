@@ -1,7 +1,7 @@
 // components/MillerColumns/FullDataMillerColumns.tsx
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import styles from './MillerColumns.module.css';
 
 type TreeNode = {
@@ -17,25 +17,20 @@ type TreeNode = {
 
 type Props = { 
   initialData: TreeNode[];
-  stats: {
-    totalCategories: number;
-    totalSpines: number;
-    totalProducts: number;
-  };
 };
 
-// Функция для получения детей узла - ВЫНЕСЕМ НАВЕРХ
-const getChildren = (node: TreeNode): TreeNode[] => {
-  if (node.type === 'category') {
-    return [...(node.children || []), ...(node.spines || [])];
-  } else if (node.type === 'spine') {
-    return node.products || [];
-  }
-  return [];
-};
-
-export function FullDataMillerColumns({ initialData, stats }: Props) {
+export function FullDataMillerColumns({ initialData }: Props) {
   const [selectedPath, setSelectedPath] = useState<string[]>([]);
+
+  // Функция для получения детей узла
+  const getChildren = useCallback((node: TreeNode): TreeNode[] => {
+    if (node.type === 'category') {
+      return [...(node.children || []), ...(node.spines || [])];
+    } else if (node.type === 'spine') {
+      return node.products || [];
+    }
+    return [];
+  }, []);
 
   // Строим колонки на основе выбранного пути
   const columns = useMemo(() => {
@@ -56,7 +51,7 @@ export function FullDataMillerColumns({ initialData, stats }: Props) {
     }
     
     return result;
-  }, [initialData, selectedPath]);
+  }, [initialData, selectedPath, getChildren]);
 
   const handleSelect = (node: TreeNode, columnIndex: number) => {
     console.log('🖱️ Selected:', node.name, 'path:', node.path, 'type:', node.type);
@@ -71,36 +66,17 @@ export function FullDataMillerColumns({ initialData, stats }: Props) {
   };
 
   return (
-    <div>
-      {/* Статистика */}
-      <div className={styles.stats}>
-        <div className={styles.statItem}>
-          <span className={styles.statLabel}>Категории:</span>
-          <span className={styles.statValue}>{stats.totalCategories}</span>
-        </div>
-        <div className={styles.statItem}>
-          <span className={styles.statLabel}>Спайны:</span>
-          <span className={styles.statValue}>{stats.totalSpines}</span>
-        </div>
-        <div className={styles.statItem}>
-          <span className={styles.statLabel}>Товары:</span>
-          <span className={styles.statValue}>{stats.totalProducts}</span>
-        </div>
-      </div>
-
-      {/* Miller Columns */}
-      <div className={styles.wrapper}>
-        <div className={styles.scroller}>
-          {columns.map((nodes, columnIndex) => (
-            <Column
-              key={`column-${columnIndex}`}
-              nodes={nodes}
-              onSelect={(node) => handleSelect(node, columnIndex)}
-              selectedPath={selectedPath}
-              columnIndex={columnIndex}
-            />
-          ))}
-        </div>
+    <div className={styles.wrapper}>
+      <div className={styles.scroller}>
+        {columns.map((nodes, columnIndex) => (
+          <Column
+            key={`column-${columnIndex}`}
+            nodes={nodes}
+            onSelect={(node) => handleSelect(node, columnIndex)}
+            selectedPath={selectedPath}
+            columnIndex={columnIndex}
+          />
+        ))}
       </div>
     </div>
   );

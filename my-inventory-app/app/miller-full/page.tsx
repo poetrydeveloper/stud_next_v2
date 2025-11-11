@@ -27,7 +27,6 @@ export default async function MillerFullPage() {
   
   return (
     <main className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Браузер каталога (Full Data)</h1>
       <FullDataMillerColumns initialData={initialData} stats={stats} />
     </main>
   );

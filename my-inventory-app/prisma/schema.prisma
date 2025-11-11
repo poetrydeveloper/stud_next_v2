@@ -112,7 +112,7 @@ model ProductImage {
   @@map("product_images")
 }
 
-// Новый enum для статусов разборки
+
 enum UnitDisassemblyStatus {
   MONOLITH
   DISASSEMBLED
