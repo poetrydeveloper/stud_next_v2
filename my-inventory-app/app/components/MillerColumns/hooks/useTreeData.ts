@@ -9,8 +9,10 @@ type TreeNode = {
   type: 'category' | 'spine' | 'product';
   hasChildren: boolean;
   children?: TreeNode[];
-  spines?: TreeNode[];
-  products?: TreeNode[];
+  spines?: TreeNode[]; // ← ЭТО ПОЛЕ НУЖНО ОБРАБАТЫВАТЬ
+  products?: TreeNode[]; // ← И ЭТО ТОЖЕ
+  code?: string;
+  brand?: string;
 };
 
 export function useTreeData(initialData: TreeNode[]) {
@@ -20,10 +22,16 @@ export function useTreeData(initialData: TreeNode[]) {
 
   const refreshData = () => setRefreshTrigger(prev => prev + 1);
 
+  // ФИКС: Обрабатываем все возможные типы детей
   const getChildren = useCallback((node: TreeNode): TreeNode[] => {
     if (node.type === 'category') {
-      return [...(node.children || []), ...(node.spines || [])];
+      // Для категории: children + spines
+      return [
+        ...(node.children || []),
+        ...(node.spines || [])
+      ];
     } else if (node.type === 'spine') {
+      // Для spine: products
       return node.products || [];
     }
     return [];
@@ -100,6 +108,7 @@ export function useTreeData(initialData: TreeNode[]) {
     setSelectedPath(newPath);
   };
 
+  // ... остальные методы остаются без изменений
   const handleCreateCategory = async (name: string, parentPath: string) => {
     const currentNodes = getCurrentLevelNodes();
     const parentNode = findParentNode();
@@ -171,7 +180,7 @@ export function useTreeData(initialData: TreeNode[]) {
     }
   };
 
-  const handleCreateProduct = async (code: string, name: string, description?: string) => {
+  const handleCreateProduct = async (code: string, name: string, description?: string, brandId?: number, supplierId?: number) => {
     const currentNodes = getCurrentLevelNodes();
     const parentNode = findParentNode();
     
@@ -194,6 +203,8 @@ export function useTreeData(initialData: TreeNode[]) {
       formData.append('name', name);
       formData.append('description', description || '');
       formData.append('parentPath', selectedPath.join('/'));
+      if (brandId) formData.append('brandId', brandId.toString());
+      if (supplierId) formData.append('supplierId', supplierId.toString());
 
       const response = await fetch('/api/structure/product', {
         method: 'POST',

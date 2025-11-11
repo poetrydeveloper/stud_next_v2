@@ -8,6 +8,8 @@ type TreeNode = {
   path: string;
   type: 'category' | 'spine' | 'product';
   hasChildren: boolean;
+  code?: string;
+  brand?: string;
 };
 
 type ColumnProps = {
@@ -46,6 +48,15 @@ export function Column({
     return node.hasChildren;
   };
 
+  const getNodeIcon = (node: TreeNode) => {
+    switch (node.type) {
+      case 'category': return '📁';
+      case 'spine': return '🌿';
+      case 'product': return '📦';
+      default: return '❓';
+    }
+  };
+
   return (
     <div className={styles.column}>
       <ColumnHeader 
@@ -63,7 +74,10 @@ export function Column({
             className={getRowClass(node)}
             onClick={() => onSelect(node, columnIndex)}
           >
-            <span className={styles.label}>{node.name}</span>
+            <span className={styles.label}>
+              {getNodeIcon(node)} {node.name}
+              {node.type === 'product' && node.code && ` (${node.code})`}
+            </span>
 
             {showArrow(node) && (
               <span className={styles.arrow}>›</span>
