@@ -1,7 +1,13 @@
 // components/MillerColumns/FullDataMillerColumns.tsx
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState } from 'react';
+import { Column } from './Column/Column';
+import { useTreeData } from './hooks/useTreeData';
+import { CategoryModal } from './modals/CategoryModal';
+import { SpineModal } from './modals/SpineModal';
+import { ProductModal } from './modals/ProductModal';
+import { ProductUnitsModal } from './modals/ProductUnitsModal';
 import styles from './MillerColumns.module.css';
 
 type TreeNode = {
@@ -19,119 +25,92 @@ type Props = {
   initialData: TreeNode[];
 };
 
+type ModalType = 'category' | 'spine' | 'product' | 'productUnits' | null;
+
 export function FullDataMillerColumns({ initialData }: Props) {
-  const [selectedPath, setSelectedPath] = useState<string[]>([]);
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null);
+  
+  const {
+    columns,
+    selectedPath,
+    handleSelect,
+    refreshData,
+    handleCreateCategory,
+    handleCreateSpine,
+    handleCreateProduct,
+    getParentNodeForColumn
+  } = useTreeData(initialData);
 
-  // Функция для получения детей узла
-  const getChildren = useCallback((node: TreeNode): TreeNode[] => {
-    if (node.type === 'category') {
-      return [...(node.children || []), ...(node.spines || [])];
-    } else if (node.type === 'spine') {
-      return node.products || [];
-    }
-    return [];
-  }, []);
+  const handleCloseModal = () => {
+    setActiveModal(null);
+    setSelectedNode(null);
+  };
 
-  // Строим колонки на основе выбранного пути
-  const columns = useMemo(() => {
-    const result: TreeNode[][] = [initialData];
-    
-    let currentLevel = initialData;
-    
-    // Проходим по выбранному пути и находим детей для каждого уровня
-    for (const pathSegment of selectedPath) {
-      const nextNode = currentLevel.find(node => node.path === pathSegment);
-      if (nextNode) {
-        const children = getChildren(nextNode);
-        if (children.length > 0) {
-          result.push(children);
-          currentLevel = children;
-        }
-      }
+  const handleNodeSelect = (node: TreeNode, columnIndex: number) => {
+    // Для продуктов открываем модалку с product_units
+    if (node.type === 'product') {
+      setSelectedNode(node);
+      setActiveModal('productUnits');
+    } else {
+      // Для категорий и spine'ов - навигация
+      handleSelect(node, columnIndex);
     }
-    
-    return result;
-  }, [initialData, selectedPath, getChildren]);
-
-  const handleSelect = (node: TreeNode, columnIndex: number) => {
-    console.log('🖱️ Selected:', node.name, 'path:', node.path, 'type:', node.type);
-    
-    // Обрезаем путь до текущей колонки и добавляем новый сегмент
-    const newPath = selectedPath.slice(0, columnIndex);
-    if (node.hasChildren && node.type !== 'product') {
-      newPath.push(node.path);
-    }
-    
-    setSelectedPath(newPath);
   };
 
   return (
     <div className={styles.wrapper}>
       <div className={styles.scroller}>
-        {columns.map((nodes, columnIndex) => (
-          <Column
-            key={`column-${columnIndex}`}
-            nodes={nodes}
-            onSelect={(node) => handleSelect(node, columnIndex)}
-            selectedPath={selectedPath}
-            columnIndex={columnIndex}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// Column component
-function Column({ 
-  nodes, 
-  onSelect, 
-  selectedPath,
-  columnIndex 
-}: { 
-  nodes: TreeNode[]; 
-  onSelect: (node: TreeNode) => void;
-  selectedPath: string[];
-  columnIndex: number;
-}) {
-  const getRowClass = (node: TreeNode) => {
-    const baseClass = styles.row;
-    const isSelected = selectedPath[columnIndex] === node.path;
-    
-    if (isSelected) {
-      return `${baseClass} ${styles.selectedRow}`;
-    }
-    if (node.type === 'spine') return `${baseClass} ${styles.spineRow}`;
-    if (node.type === 'product') return `${baseClass} ${styles.productRow}`;
-    return baseClass;
-  };
-
-  const showArrow = (node: TreeNode) => {
-    if (node.type === 'product') return false;
-    return node.hasChildren;
-  };
-
-  return (
-    <div className={styles.column}>
-      <div className={styles.header}>
-        <button className={styles.addBtn}>+</button>
+        {columns.map((nodes, columnIndex) => {
+          const parentNode = getParentNodeForColumn(columnIndex);
+          
+          return (
+            <Column
+              key={`column-${columnIndex}`}
+              nodes={nodes}
+              columnIndex={columnIndex}
+              selectedPath={selectedPath}
+              onSelect={handleNodeSelect}
+              parentNodeType={parentNode?.type}
+              onCreateCategory={() => setActiveModal('category')}
+              onCreateSpine={() => setActiveModal('spine')}
+              onCreateProduct={() => setActiveModal('product')}
+            />
+          );
+        })}
       </div>
 
-      <ul className={styles.list}>
-        {nodes.map(node => (
-          <li
-            key={`${node.type}-${node.id}-${node.path}`}
-            className={getRowClass(node)}
-            onClick={() => onSelect(node)}
-          >
-            <span className={styles.label}>{node.name}</span>
+      {/* Модальные окна */}
+      {activeModal === 'category' && (
+        <CategoryModal
+          onClose={handleCloseModal}
+          onSubmit={handleCreateCategory}
+          parentPath={selectedPath.join('/')}
+        />
+      )}
 
-            {showArrow(node) && (
-              <span className={styles.arrow}>›</span>
-            )}
-          </li>
-        ))}
-      </ul>
+      {activeModal === 'spine' && (
+        <SpineModal
+          onClose={handleCloseModal}
+          onSubmit={handleCreateSpine}
+          parentPath={selectedPath.join('/')}
+        />
+      )}
+
+      {activeModal === 'product' && (
+        <ProductModal
+          onClose={handleCloseModal}
+          onSubmit={handleCreateProduct}
+          parentPath={selectedPath.join('/')}
+        />
+      )}
+
+      {activeModal === 'productUnits' && selectedNode && (
+        <ProductUnitsModal
+          onClose={handleCloseModal}
+          product={selectedNode}
+        />
+      )}
     </div>
   );
 }
