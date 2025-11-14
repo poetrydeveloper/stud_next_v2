@@ -1,0 +1,398 @@
+// schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Supplier {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  productUnits ProductUnit[]
+
+  @@map("suppliers")
+}
+
+model Customer {
+  id    Int    @id @default(autoincrement())
+  name  String
+  phone String?
+  notes String?
+
+  productUnits ProductUnit[]
+
+  @@map("customers")
+}
+
+model User {
+  id    Int    @id @default(autoincrement())
+  email String @unique
+  name  String?
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  slug     String    @unique
+  path     String    @unique
+
+  // НОВЫЕ ПОЛЯ для системы индексов
+  node_index   String?   @unique  // "0_1V01_2V03_3V01" - машинный индекс
+  human_path   String?             // "/Инструмент/Ручной/Биты/10мм" - человеческий путь
+  parent_id    Int?                // резервная связь для целостности
+  products Product[]
+  spines   Spine[]
+
+  // СВЯЗЬ ДЛЯ parent_id
+  parent   Category?   @relation("CategoryChildren", fields: [parent_id], references: [id])
+  children Category[]  @relation("CategoryChildren")
+
+  stockTrafficLights StockTrafficLight[]
+
+  @@map("categories")
+  @@index([path])
+  @@index([node_index])           // индекс для быстрого поиска по node_index
+  @@index([parent_id])            // индекс для родительских связей
+}
+
+model Brand {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  products Product[]
+
+  @@map("brands")
+}
+
+model Product {
+  id          Int       @id @default(autoincrement())
+  code        String    @unique
+  name        String
+  description String?
+  categoryId  Int?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  brandId     Int
+  brand       Brand    @relation(fields: [brandId], references: [id])
+  spineId     Int?
+  spine       Spine?    @relation(fields: [spineId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // НОВЫЕ ПОЛЯ для системы индексов
+  node_index   String?   @unique  // "0_1V01_2V03_3V01_S[kluch_10mm]_P[f75510]"
+  human_path   String?             // "/Инструмент/Ручной/Биты/10мм/Ключ 10мм/Арт. f75510"
+
+  // СВЯЗИ (сохраняем существующие)
+  images       ProductImage[]
+  productUnits ProductUnit[]
+
+  @@map("products")
+  @@index([node_index])  // индекс для быстрого поиска
+}
+
+model ProductImage {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  filename  String
+  path      String
+  isMain    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  localPath String?
+  githubUrl String?
+  storageType String @default("local")
+
+  @@map("product_images")
+}
+
+
+enum UnitDisassemblyStatus {
+  MONOLITH
+  DISASSEMBLED
+  PARTIAL
+  COLLECTED
+  RESTORED
+}
+
+enum ProductUnitCardStatus {
+  CLEAR
+  CANDIDATE
+  SPROUTED
+  IN_REQUEST
+  IN_DELIVERY
+  ARRIVED
+}
+
+enum ProductUnitPhysicalStatus {
+  IN_STORE
+  SOLD
+  CREDIT
+  LOST
+  IN_DISASSEMBLED
+  IN_COLLECTED
+}
+
+// Новая модель для сценариев разборки
+model DisassemblyScenario {
+  id        Int    @id @default(autoincrement())
+  name      String
+  parentProductCode String  
+  childProductCodes Json    
+  partsCount Int
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  productUnits ProductUnit[]
+
+  @@map("disassembly_scenarios")
+  @@unique([parentProductCode, name]) 
+}
+
+model ProductUnit {
+  id           Int      @id @default(autoincrement())
+  serialNumber String   @unique @map("serial_number")
+  productId    Int
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  spineId      Int?
+  spine        Spine?   @relation(fields: [spineId], references: [id])
+
+  parentProductUnitId Int?
+  parentProductUnit   ProductUnit? @relation("ProductUnitChildren", fields: [parentProductUnitId], references: [id])
+  childProductUnits   ProductUnit[] @relation("ProductUnitChildren")
+
+  productCode         String? @map("product_code")
+  productName         String? @map("product_name")
+  productDescription  String? @map("product_description")
+  productCategoryId   Int?    @map("product_category_id")
+  productCategoryName String? @map("product_category_name")
+  productTags         Json?   @map("product_tags")
+
+  quantityInCandidate Int?       @default(0) @map("quantity_in_candidate")
+  createdAtCandidate  DateTime?  @map("created_at_candidate")
+  quantityInRequest   Int?       @default(0) @map("quantity_in_request")
+  createdAtRequest    DateTime?  @map("created_at_request")
+  requestPricePerUnit Float?     @map("request_price_per_unit")
+
+  statusCard          ProductUnitCardStatus
+  statusProduct       ProductUnitPhysicalStatus?
+  isReturned          Boolean   @default(false)
+  returnedAt          DateTime? @map("returned_at")
+
+  salePrice    Float?    @map("sale_price")
+  soldAt       DateTime? @map("sold_at")
+  isCredit     Boolean   @default(false) @map("is_credit")
+  creditPaidAt DateTime? @map("credit_paid_at")
+
+  supplierId Int?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+  customerId Int?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  // Новые поля для разборки/сборки
+  disassemblyStatus      UnitDisassemblyStatus @default(MONOLITH)
+  disassembledParentId   Int?
+  disassembledParent     ProductUnit? @relation("DisassemblyParent", fields: [disassembledParentId], references: [id])
+  disassemblyScenarioId  Int? // ← ДОБАВИТЬ ЭТО ПОЛЕ
+  disassemblyScenario    DisassemblyScenario? @relation(fields: [disassemblyScenarioId], references: [id]) // ← ИСПРАВИТЬ
+  isParsingAlgorithm     Boolean @default(false)
+  partialChildren        ProductUnit[] @relation("DisassemblyParent")
+
+  logs        ProductUnitLog[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  cashEvents  CashEvent[]
+
+  inventorySnapshots InventorySnapshot[]
+  salesHistory       ProductSalesHistory[]
+  inventoryForecasts InventoryForecast[]   
+  reorderPoints      ReorderPoint[]        
+
+  @@map("product_units")
+}
+
+model CashDay {
+  id        Int       @id @default(autoincrement())
+  date      DateTime  @unique @map("date")
+  isClosed  Boolean   @default(false) @map("is_closed")
+  total     Float     @default(0.00) @map("total")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  events CashEvent[]
+
+  @@map("cash_days")
+}
+
+model CashEvent {
+  id        Int           @id @default(autoincrement())
+  type      CashEventType @map("type")
+  amount    Float         @map("amount")
+  notes     String?       @map("notes")
+  cashDayId Int           @map("cash_day_id")
+  cashDay   CashDay       @relation(fields: [cashDayId], references: [id], onDelete: Cascade)
+  productUnitId Int?      @map("product_unit_id")
+  productUnit   ProductUnit? @relation(fields: [productUnitId], references: [id], onDelete: SetNull)
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  salesHistory ProductSalesHistory[]
+
+  @@map("cash_events")
+}
+
+enum CashEventType {
+  SALE
+  RETURN
+  PRICE_QUERY
+  ORDER
+}
+
+model Spine {
+  id         Int        @id @default(autoincrement())
+  name       String
+  slug       String     @unique
+  categoryId Int?
+  category   Category?  @relation(fields: [categoryId], references: [id])
+  imagePath  String?
+  brandData  Json?      @db.Json
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  // НОВЫЕ ПОЛЯ для системы индексов
+  node_index   String?   @unique  // "0_1V01_2V03_3V01_S[kluch_10mm]"
+  human_path   String?             // "/Инструмент/Ручной/Биты/10мм/Ключ 10мм"
+
+  // СВЯЗИ (сохраняем существующие)
+  products     Product[]
+  productUnits ProductUnit[]
+
+  @@map("spines")
+  @@index([node_index])  // индекс для быстрого поиска
+}
+
+model ProductUnitLog {
+  id            Int         @id @default(autoincrement())
+  productUnitId Int
+  productUnit   ProductUnit @relation(fields: [productUnitId], references: [id], onDelete: Cascade)
+  type          String?
+  message       String
+  meta          Json?
+  createdAt     DateTime    @default(now())
+
+  @@map("product_unit_logs")
+}
+
+model InventorySnapshot {
+  id            Int      @id @default(autoincrement())
+  snapshotDate  DateTime
+  
+  // СВЯЗЬ С PRODUCT_UNIT ДЛЯ ДЕТАЛЬНОЙ АНАЛИТИКИ
+  productUnitId Int?
+  productUnit   ProductUnit? @relation(fields: [productUnitId], references: [id])
+  
+  // ДАННЫЕ НА МОМЕНТ СНИМКА
+  statusProduct ProductUnitPhysicalStatus? // Статус на момент снимка
+  salePrice     Float?                     // Цена на момент снимка
+  stockValue    Float?                     // Стоимость этой единицы
+  
+  periodType    String // "daily", "weekly", "monthly"
+  
+  createdAt DateTime @default(now())
+  
+  @@map("inventory_snapshots")
+  @@unique([snapshotDate, productUnitId, periodType])
+}
+
+model ProductSalesHistory {
+  id          Int      @id @default(autoincrement())
+  
+  // СВЯЗЬ С PRODUCT_UNIT (какая единица продана)
+  productUnitId Int
+  productUnit   ProductUnit @relation(fields: [productUnitId], references: [id])
+  
+  // СВЯЗЬ С CASH_EVENT (факт продажи)
+  cashEventId   Int
+  cashEvent     CashEvent @relation(fields: [cashEventId], references: [id])
+  
+  periodDate  DateTime // Дата периода продажи
+  periodType  String   // "daily", "weekly", "monthly"
+  
+  // ДАННЫЕ ПРОДАЖИ
+  salePrice    Float   // Цена продажи
+  soldAt       DateTime // Дата продажи
+  
+  createdAt DateTime @default(now())
+  
+  @@map("product_sales_history")
+  @@unique([productUnitId, cashEventId])
+}
+
+model InventoryForecast {
+  id          Int      @id @default(autoincrement())
+  
+  // СВЯЗЬ С PRODUCT_UNIT (а не с Product)
+  productUnitId Int
+  productUnit   ProductUnit @relation(fields: [productUnitId], references: [id])
+  
+  forecastDate DateTime
+  periodStart  DateTime
+  periodEnd    DateTime
+  periodType   String
+  
+  predictedSales Int
+  recommendedOrder Int
+  confidence     Float
+  actualSales    Int?
+  accuracy       Float?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("inventory_forecasts")
+  @@unique([productUnitId, periodStart, periodType])
+}
+
+model ReorderPoint {
+  id          Int      @id @default(autoincrement())
+  
+  // СВЯЗЬ С PRODUCT_UNIT (а не с Product)
+  productUnitId Int
+  productUnit   ProductUnit @relation(fields: [productUnitId], references: [id])
+  
+  minStock    Int
+  maxStock    Int
+  reorderQty  Int
+  leadTime    Int
+  safetyStock Int
+  
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("reorder_points")
+  @@unique([productUnitId])
+}
+
+model StockTrafficLight {
+  id          Int      @id @default(autoincrement())
+  productCode String   @unique
+  brandName   String
+  minStock    Int      @default(1)    // 🔴 Красный если меньше
+  normalStock Int      @default(2)    // 🟡 Желтый если меньше  
+  goodStock   Int      @default(3)    // 🟢 Зеленый если больше
+  weeklySales Int      @default(0)    // Продано за текущую неделю
+  categoryId  Int?
+  category    Category? @relation(fields: [categoryId], references: [id]) // ← связь с Category
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("stock_traffic_lights")
+}

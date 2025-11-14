@@ -1,0 +1,376 @@
+# 🔍 ДИАГНОСТИКА СТРУКТУРЫ ПРОЕКТА
+
+Время: 27.10.2025, 13:15:06
+Корень: C:\projects\проект_интернет_магазина\stud_next_v2\my-inventory-app
+
+✅ Корневая директория существует
+
+## 📂 СОДЕРЖИМОЕ КОРНЕВОЙ ДИРЕКТОРИИ
+
+📄 .env
+📄 .gitignore
+📁 .next/
+📄 .prettierrc
+📁 app/
+  📁 analytics/
+  📁 api/
+  📁 brands/
+  📁 cash/
+  📁 cash-days/
+  📁 categories/
+  📁 components/
+  📁 disassembly/
+  📄 favicon.ico
+  📄 globals.css
+  📁 hooks/
+  📁 inventory/
+  📄 layout.tsx
+  📁 lib/
+  📄 page.tsx
+  📁 product-units/
+  📁 products/
+  📁 store/
+  📁 super-add/
+  📁 types/
+📁 backups/
+📄 eslint.config.mjs
+📄 git
+📁 lib/
+  📁 cash/
+  📁 decryption/
+  📄 file-storage-adapter.ts
+  📁 helpers/
+  📄 image-sync-service.ts
+  📁 services/
+  📄 translit.ts
+📄 next-env.d.ts
+📄 next.config.ts
+📁 node_modules/
+📄 package-lock.json
+📄 package.json
+📄 postcss.config.mjs
+📁 prisma/
+  📁 migrations/
+  📄 schema.prisma
+📁 public/
+📄 README.md
+📁 scripts/
+📄 tailwind.config.js
+📄 tsconfig.json
+📁 V_SCRIPTS/
+📁 ПРОЕКТ NEXT JS/
+
+## 🔎 ПОИСК КЛЮЧЕВЫХ ПАПОК
+
+✅ Найдена: app/
+  📁 analytics/
+    📄 page.tsx
+  📁 api/
+    📁 analytics/
+    📁 brands/
+    📁 cash-days/
+    📁 categories/
+    📁 customers/
+    📁 deliveries/
+    📁 disassembly/
+    📁 images/
+    📁 inventory/
+    📁 product-units/
+    📁 products/
+    📁 spines/
+    📁 store/
+    📁 structure/
+    📁 super-add/
+    📁 suppliers/
+  📁 brands/
+    📁 new/
+    📄 page.tsx
+  📁 cash/
+    📄 CashDayAutoCloseService.ts
+    📄 CashDayCoreService.ts
+    📄 CashEventService.ts
+    📄 CashReportService.ts
+    📄 CashValidationService.ts
+    📄 index.ts
+  📁 cash-days/
+    📁 components/
+    📄 page.tsx
+    📁 [id]/
+  📁 categories/
+    📁 new/
+    📄 page.tsx
+    📁 [id]/
+  📁 components/
+    📁 analytics/
+    📄 CandidateUnitCard.tsx
+    📄 CandidateUnitsGrid.tsx
+    📄 ClosePastCashDaysButton.tsx
+    📄 CreateProductUnitForm.tsx
+    📄 DisassemblyExecuteButton.tsx
+    📄 DisassemblyScenarioForm.tsx
+    📁 inventory/
+    📄 LogsPanel_v2.tsx
+    📄 ProductCard.tsx
+    📄 ProductImage.tsx
+    📄 ProductUnitActions.tsx
+    📄 ProductUnitCard.tsx
+    📄 ProductUnitItem_v2.tsx
+    📄 ProductUnitList_v2.tsx
+    📄 ProductUnitStatusPanel_v2.tsx
+    📄 ProductUnitSummaryPanel.tsx
+    📄 SpineCard.tsx
+    📄 SpineCardFull.tsx
+    📄 SpineCard_v2.tsx
+    📄 SpineTree.tsx
+    📁 steps/
+    📁 super_add/
+    📁 unit/
+    📁 units_components/
+    📄 WizardContent.tsx
+    📄 WizardFooter.tsx
+    📄 WizardHeader.tsx
+  📁 disassembly/
+    📄 page.tsx
+    📁 scenario/
+  📄 favicon.ico
+  📄 globals.css
+  📁 hooks/
+    📄 useImage.ts
+  📁 inventory/
+    📄 page.tsx
+    📁 visual/
+  📄 layout.tsx
+  📁 lib/
+    📄 deliveryService.ts
+    📄 disassemblyService.ts
+    📄 disassemblyValidationService.ts
+    📁 helper_product_units/
+    📄 prisma.ts
+    📄 prismaLogMiddleware.ts
+    📄 productUnitLogger.ts
+    📄 requestService.ts
+    📄 requestValidator.ts
+    📄 unitCloneHelper.ts
+  📄 page.tsx
+  📁 product-units/
+    📁 candidates/
+    📄 CandidateUnitsView.tsx
+    📄 CompactUnitsView.tsx
+    📁 components/
+    📁 new/
+    📄 page.tsx
+    📄 UnitDetailClient.tsx
+    📄 UnitsGrid.tsx
+    📁 [id]/
+  📁 products/
+    📁 new/
+    📄 page.tsx
+    📁 [id]/
+  📁 store/
+    📄 AssemblyButton.tsx
+    📄 CashDayPanel.tsx
+    📄 CategoryTree.tsx
+    📄 DisassemblyButtons.tsx
+    📄 page.tsx
+    📄 SaleButtons.tsx
+    📄 SaleModal.tsx
+    📄 SpineGrid.tsx
+    📄 StoreSearch.tsx
+  📁 super-add/
+    📁 components/
+    📄 page.tsx
+    📄 types.ts
+  📁 types/
+    📄 product-unit.ts
+✅ Найдена: app/api/
+  📁 analytics/
+    📁 sales/
+  📁 brands/
+    📄 route.ts
+  📁 cash-days/
+    📁 close-past/
+    📁 current/
+    📁 open/
+    📄 route.ts
+    📁 [id]/
+  📁 categories/
+    📄 route.ts
+    📁 tree/
+    📁 [id]/
+  📁 customers/
+    📄 route.ts
+    📁 [id]/
+  📁 deliveries/
+    📁 complete/
+    📁 confirm/
+    📁 pending/
+  📁 disassembly/
+    📁 assemble/
+    📁 execute/
+    📁 scenario/
+    📁 scenarios/
+    📁 unit/
+  📁 images/
+    📁 [...path]/
+  📁 inventory/
+    📁 current/
+    📁 movement/
+    📁 snapshots/
+    📁 visual/
+  📁 product-units/
+    📁 by-product-code/
+    📁 create/
+    📁 helpers/
+    📄 helpers.ts
+    📁 page-data/
+    📄 readme.md
+    📄 readme_api_product-units_route.md
+    📁 request/
+    📁 revert-to-request/
+    📄 route.ts
+    📁 search/
+    📁 [id]/
+  📁 products/
+    📄 route.ts
+    📁 search/
+    📁 v2/
+    📁 [id]/
+  📁 spines/
+    📁 category/
+    📄 route.ts
+    📁 stats/
+    📁 tree/
+    📁 [id]/
+  📁 store/
+    📄 route.ts
+  📁 structure/
+    📁 category/
+    📁 delete/
+    📁 find-spine/
+    📁 product/
+    📁 spine/
+    📁 tree/
+  📁 super-add/
+    📁 create-chain/
+  📁 suppliers/
+    📄 route.ts
+✅ Найдена: app/components/
+  📁 analytics/
+    📄 SalesAnalytics.tsx
+  📄 CandidateUnitCard.tsx
+  📄 CandidateUnitsGrid.tsx
+  📄 ClosePastCashDaysButton.tsx
+  📄 CreateProductUnitForm.tsx
+  📄 DisassemblyExecuteButton.tsx
+  📄 DisassemblyScenarioForm.tsx
+  📁 inventory/
+    📄 CreateSnapshotButton.tsx
+    📄 InventoryCurrent.tsx
+    📄 InventoryMovement.tsx
+    📄 InventoryVisual.tsx
+    📄 SnapshotsHistory.tsx
+  📄 LogsPanel_v2.tsx
+  📄 ProductCard.tsx
+  📄 ProductImage.tsx
+  📄 ProductUnitActions.tsx
+  📄 ProductUnitCard.tsx
+  📄 ProductUnitItem_v2.tsx
+  📄 ProductUnitList_v2.tsx
+  📄 ProductUnitStatusPanel_v2.tsx
+  📄 ProductUnitSummaryPanel.tsx
+  📄 SpineCard.tsx
+  📄 SpineCardFull.tsx
+  📄 SpineCard_v2.tsx
+  📄 SpineTree.tsx
+  📁 steps/
+    📄 CategoryStep.tsx
+    📄 ProductStep.tsx
+    📄 ProductUnitStep.tsx
+    📄 SpineStep.tsx
+  📁 super_add/
+    📁 hooks/
+    📄 SuperAddWizard.tsx
+    📄 TreeNode.tsx
+    📄 VisualTree.tsx
+  📁 unit/
+    📄 CategoryTreeView.tsx
+    📄 CreateRequestModal.tsx
+    📄 SpineCard.tsx
+    📄 SpineNode.tsx
+    📄 StatusStats.tsx
+    📄 treeUtils.ts
+    📄 UnitTreeView.tsx
+  📁 units_components/
+    📄 ProductUnitActions.tsx
+  📄 WizardContent.tsx
+  📄 WizardFooter.tsx
+  📄 WizardHeader.tsx
+✅ Найдена: app/lib/
+  📄 deliveryService.ts
+  📄 disassemblyService.ts
+  📄 disassemblyValidationService.ts
+  📁 helper_product_units/
+    📄 unitCloneHelper.ts
+  📄 prisma.ts
+  📄 prismaLogMiddleware.ts
+  📄 productUnitLogger.ts
+  📄 requestService.ts
+  📄 requestValidator.ts
+  📄 unitCloneHelper.ts
+✅ Найдена: prisma/
+  📁 migrations/
+    📁 20250821120718_init/
+    📁 20250822101836_add_products/
+    📁 20250828083337_add_requests/
+    📁 20250828090249_add_requestitem_status_nullable_request/
+    📁 20250830104144_add_supplier_customer_relations/
+    📁 20250909092344_delivery/
+    📁 20250911110306_add_product_units_relations/
+    📁 20250914115946_add_cash_system/
+    📁 20250923114109_add_cash_event_relation/
+    📁 20250925093430_init/
+    📁 20250925110251_add_productunit_fields/
+    📁 20250926073852_add_spine_entity/
+    📁 20250930104749_add_product_unit_logs/
+    📁 20251005102252_add_brand_data_to_spine/
+    📁 20251008080927_add_storage_fields_to_product_image/
+    📁 20251009111713_add_disassembly_feature/
+    📁 20251010105616_fix_disassembly_relations/
+    📁 20251015073418_add_inventory_analytics_models/
+    📁 20251021093444_init_node_index_system/
+    📁 20251025070255_1/
+    📄 migration_lock.toml
+  📄 schema.prisma
+❌ Не найдена: components/
+❌ Не найдена: pages/
+❌ Не найдена: src/
+✅ Найдена: lib/
+  📁 cash/
+    📄 CashDayAutoCloseService.ts
+    📄 CashDayCoreService.ts
+    📄 CashEventService.ts
+    📄 CashReportService.ts
+    📄 CashValidationService.ts
+    📄 index.ts
+  📁 decryption/
+    📄 decrypt-token.ts
+    📄 encrypt-token.ts
+  📄 file-storage-adapter.ts
+  📁 helpers/
+    📄 structure-helpers.ts
+  📄 image-sync-service.ts
+  📁 services/
+    📄 StructureService.ts
+    📄 StructureSyncService.ts
+    📁 sync/
+  📄 translit.ts
+
+## 📊 СТАТИСТИКА ФАЙЛОВ
+
+.tsx: 115 файлов
+.ts: 124 файлов
+.jsx: 0 файлов
+.js: 19 файлов
+.prisma: 1 файлов
+  - prisma\schema.prisma
+.md: 16 файлов

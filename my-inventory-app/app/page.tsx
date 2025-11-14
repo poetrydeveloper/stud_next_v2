@@ -1,88 +1,79 @@
 // app/page.tsx
+'use client'
 
-import Link from "next/link";
+import { useState } from 'react'
+
+type ActiveTab = 'products' | 'cashday' | 'analytics' | 'export'
 
 export default function HomePage() {
+  const [activeTab, setActiveTab] = useState<ActiveTab>('products')
+
+  const tabs = {
+    products: { label: 'Карта товаров', icon: '🗂️' },
+    cashday: { label: 'Касса', icon: '💰' },
+    analytics: { label: 'Аналитика', icon: '📊' },
+    export: { label: 'Экспорт', icon: '📤' }
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-800 mb-4">
-            📦 Система управления инвентарем
-          </h1>
-          <p className="text-lg text-gray-600 mb-8">
-            Управляйте товарами, заявками и поставками в одном месте
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <DashboardCard 
-              title="Товары" 
-              description="Управление товарами и категориями"
-              href="/products"
-              icon="📦"
-            />
-            <DashboardCard 
-              title="Заявки" 
-              description="Просмотр и управление заявками"
-              href="/requests"
-              icon="📋"
-            />
-            <DashboardCard 
-              title="Кандидаты" 
-              description="Предзаявки и кандидаты"
-              href="/requests/candidates"
-              icon="⭐"
-            />
-            <DashboardCard 
-              title="Поставщики" 
-              description="Управление поставщиками"
-              href="/suppliers"
-              icon="🏢"
-            />
-            <DashboardCard 
-              title="Клиенты" 
-              description="Управление клиентами"
-              href="/customers"
-              icon="👥"
-            />
-            <DashboardCard 
-              title="Категории" 
-              description="Управление категориями товаров"
-              href="/categories/tree"
-              icon="📂"
-            />
-            <DashboardCard 
-              title="Бренды" 
-              description="Создание и управление брендами"
-              href="/brands"
-              icon="🏷️"
-            />
+    <div className="h-full flex flex-col">
+      {/* Контент вкладок */}
+      <div className="flex-1 p-4 overflow-auto">
+        {activeTab === 'products' && (
+          <div className="h-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
+            <div className="text-center text-gray-500">
+              <div className="text-4xl mb-2">🗂️</div>
+              <p className="text-lg">Карта товаров</p>
+              <p className="text-sm">Miller Columns View будет здесь</p>
+            </div>
           </div>
+        )}
+
+        {activeTab === 'cashday' && (
+          <div className="h-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
+            <div className="text-center text-gray-500">
+              <div className="text-4xl mb-2">💰</div>
+              <p className="text-lg">Текущий кассовый день</p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'analytics' && (
+          <div className="h-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
+            <div className="text-center text-gray-500">
+              <div className="text-4xl mb-2">📊</div>
+              <p className="text-lg">Аналитика и отчеты</p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'export' && (
+          <div className="h-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
+            <div className="text-center text-gray-500">
+              <div className="text-4xl mb-2">📤</div>
+              <p className="text-lg">Экспорт данных</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Нижняя панель для мобильной навигации */}
+      <div className="bg-white border-t border-gray-200 p-2 md:hidden">
+        <div className="flex justify-around">
+          {Object.entries(tabs).map(([key, tab]) => (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key as ActiveTab)}
+              className={`flex flex-col items-center p-2 rounded-lg min-w-[60px] transition-colors ${
+                activeTab === key ? 'bg-blue-50 text-blue-600' : 'text-gray-600'
+              }`}
+            >
+              <span className="text-xl">{tab.icon}</span>
+              <span className="text-xs mt-1">{tab.label}</span>
+            </button>
+          ))}
         </div>
       </div>
     </div>
-  );
-}
-
-function DashboardCard({
-  title,
-  description,
-  href,
-  icon
-}: { 
-  title: string; 
-  description: string; 
-  href: string;
-  icon: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="block p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200"
-    >
-      <div className="text-3xl mb-4">{icon}</div>
-      <h2 className="text-xl font-semibold text-gray-800 mb-2">{title}</h2>
-      <p className="text-gray-600">{description}</p>
-    </Link>
-  );
+  )
 }

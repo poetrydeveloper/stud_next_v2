@@ -1,0 +1,296 @@
+/* components/MillerColumns/MillerColumns.module.css */
+.wrapper {
+  width: 100%;
+  height: 600px;
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.scroller {
+  display: flex;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.column {
+  width: 280px;
+  height: 100%;
+  border-right: 1px solid #e1e5e9;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.header {
+  padding: 12px;
+  border-bottom: 1px solid #e1e5e9;
+  background: #f8f9fa;
+  display: flex;
+  gap: 8px;
+}
+
+.addBtn {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: white;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.addBtn:hover {
+  background: #f3f4f6;
+}
+
+.list {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f3f4;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.row:hover {
+  background: #f8f9fa;
+}
+
+.selectedRow {
+  background: #e3f2fd;
+  border-left: 3px solid #1976d2;
+}
+
+.spineRow {
+  background: #f3e5f5;
+}
+
+.productRow {
+  background: #e8f5e8;
+}
+
+.label {
+  flex: 1;
+  font-size: 14px;
+  color: #1f2937;
+}
+
+.arrow {
+  color: #6b7280;
+  font-size: 16px;
+  margin-left: 8px;
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90vw;
+}
+
+.modalContent h3 {
+  margin: 0 0 20px 0;
+  color: #1f2937;
+}
+
+.formGroup {
+  margin-bottom: 16px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.formGroup input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.formInfo {
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: #f3f4f6;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.modalActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.modalActions button {
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.modalActions button[type="submit"] {
+  background: #1976d2;
+  color: white;
+  border-color: #1976d2;
+}
+
+.modalActions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Стили для улучшенного модального окна */
+.modalTitle {
+  margin: 0 0 20px 0;
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* .inputError {
+  border-color: #ef4444 !important;
+  focus: ring-2 ring-red-500;
+} */
+
+.errorText {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.createNewSection {
+  margin-top: 0.5rem;
+}
+
+.createNewInput {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.createNewBtn {
+  padding: 0.5rem 0.75rem;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.createNewBtn:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.createNewBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancelBtn {
+  padding: 0.5rem 1rem;
+  color: #6b7280;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.cancelBtn:hover:not(:disabled) {
+  color: #374151;
+}
+
+.submitBtn {
+  padding: 0.5rem 1rem;
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: #6d28d9;
+}
+
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.panelOverlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 400px;
+  background: white;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.panelContent {
+  padding: 24px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.panelTitle {
+  margin: 0 0 20px 0;
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.selectedProduct {
+  background: #f3f4f6;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.panelActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}

@@ -1,0 +1,341 @@
+# 🕵️‍♂️ ПОЛНЫЙ АНАЛИЗ NEXT.JS APP ROUTER ПРОЕКТА
+
+Сгенерировано: 11.11.2025, 13:26:08
+Структура: App Router (Next.js 13+)
+
+## 🗄️ PRISMA СХЕМА
+
+**Файл:** prisma/schema.prisma
+**Модели:** 18
+
+### Supplier
+**Поля:** 4
+**Ключевые:** id, name
+
+### Customer
+**Поля:** 4
+**Ключевые:** id
+
+### User
+**Поля:** 4
+**Ключевые:** id, email
+
+### Category
+**Поля:** 11
+**Ключевые:** id, name, path, node_index, parent
+
+### Brand
+**Поля:** 7
+**Ключевые:** id, name, slug
+
+### Product
+**Поля:** 12
+**Ключевые:** id, code, category, brandId, spineId
+
+### ProductImage
+**Поля:** 7
+**Ключевые:** id, productId
+
+### DisassemblyScenario
+**Поля:** 6
+**Ключевые:** id, productUnits
+
+### ProductUnit
+**Поля:** 35
+**Ключевые:** id, serialNumber, productId, spineId, parentProductUnitId
+
+### CashDay
+**Поля:** 8
+**Ключевые:** id, date
+
+### CashEvent
+**Поля:** 11
+**Ключевые:** id, cashDay, productUnit
+
+### Spine
+**Поля:** 10
+**Ключевые:** id, name, categoryId, node_index
+
+### ProductUnitLog
+**Поля:** 5
+**Ключевые:** id, productUnitId
+
+### InventorySnapshot
+**Поля:** 9
+**Ключевые:** id, productUnitId, createdAt
+
+### ProductSalesHistory
+**Поля:** 9
+**Ключевые:** id, productUnitId, cashEventId, createdAt
+
+### InventoryForecast
+**Поля:** 6
+**Ключевые:** id, productUnitId, updatedAt
+
+### ReorderPoint
+**Поля:** 6
+**Ключевые:** id, productUnitId, updatedAt
+
+### StockTrafficLight
+**Поля:** 10
+**Ключевые:** id, productCode, categoryId
+
+## 🚀 API ROUTES (App Router)
+
+**Всего endpoints:** 71
+
+### 📦 PRODUCT UNITS API (15)
+- **/api/product-units/by-product-code** [GET] - API endpoint
+- **/api/product-units/create** [POST] - API endpoint
+- **/api/product-units/page-data** [GET] - API endpoint
+- **/api/product-units/request** [POST] - Создание заявок
+- **/api/product-units/revert-to-request** [POST] - Складские операции
+- **/api/product-units** [GET,PATCH] - API endpoint
+- **/api/product-units/search** [GET] - Складские операции
+- **/api/product-units/:id/delivery** [PATCH] - Складские операции
+- **/api/product-units/:id/logs** [GET] - API endpoint
+- **/api/product-units/:id/return** [PATCH] - Продажи
+- **/api/product-units/:id** [GET,PATCH] - Продажи
+- **/api/product-units/:id/sale** [PATCH] - Продажи
+- **/api/product-units/:id/sprout** [POST] - Управление кандидатами
+- **/api/product-units/:id/status** [POST] - API endpoint
+- **/api/product-units/:id/toggle-candidate** [POST] - API endpoint
+  ⚠️ Нет обработки ошибок
+
+### 📊 INVENTORY API (5)
+- **/api/inventory/current** [GET] - Складские операции
+- **/api/inventory/movement** [GET] - API endpoint
+- **/api/inventory/snapshots/daily** [POST] - Складские операции
+- **/api/inventory/snapshots** [GET] - API endpoint
+- **/api/inventory/visual** [GET] - Складские операции
+
+### 🔧 ДРУГИЕ API (36)
+- **/api/analytics/sales**
+- **/api/brands**
+- **/api/customers**
+- **/api/customers/:id**
+- **/api/deliveries/complete**
+- **/api/deliveries/confirm**
+- **/api/deliveries/pending**
+- **/api/disassembly/assemble**
+- **/api/disassembly/execute**
+- **/api/disassembly/scenario**
+- ... и еще 26 endpoints
+
+## 📄 СТРАНИЦЫ (App Router)
+
+**Всего страниц:** 29
+
+### /analytics
+**Файл:** app\analytics\page.tsx
+**Компоненты:** SalesAnalytics
+
+### /brands/new
+**Файл:** app\brands\new\page.tsx
+**Hooks:** useState, useRouter
+
+### /brands
+**Файл:** app\brands\page.tsx
+**Hooks:** useState, useEffect
+
+### /cash-days
+**Файл:** app\cash-days\page.tsx
+**Компоненты:** ActiveCashDay, ClosedCashDays, WeeklyStats
+**Hooks:** useState, useEffect
+
+### /cash-days/:id
+**Файл:** app\cash-days\[id]\page.tsx
+**Hooks:** useState, useEffect
+
+### /categories/new
+**Файл:** app\categories\new\page.tsx
+**Компоненты:** CategoryCreationForm, SpineCreationForm, Notification
+**Hooks:** useState, useEffect
+
+### /categories
+**Файл:** app\categories\page.tsx
+**Hooks:** useState, useEffect
+
+### /categories/:id/edit
+**Файл:** app\categories\[id]\edit\page.tsx
+**Hooks:** useState, useEffect, useRouter
+
+### /deliveries
+**Файл:** app\deliveries\page.tsx
+
+### /disassembly
+**Файл:** app\disassembly\page.tsx
+**Hooks:** useState, useEffect
+
+### /disassembly/scenario/create
+**Файл:** app\disassembly\scenario\create\page.tsx
+**Компоненты:** DisassemblyScenarioForm
+**Hooks:** useState, useEffect
+
+### /disassembly/scenario/:id
+**Файл:** app\disassembly\scenario\[id]\page.tsx
+**Hooks:** useState, useEffect, useRouter
+
+### /inventory
+**Файл:** app\inventory\page.tsx
+**Компоненты:** InventoryCurrent, InventoryMovement, CreateSnapshotButton...
+
+### /miller-browser
+**Файл:** app\miller-browser\page.tsx
+**Компоненты:** MillerColumns
+
+### /miller-full
+**Файл:** app\miller-full\page.tsx
+**Компоненты:** FullDataMillerColumns
+
+### /
+**Файл:** app\page.tsx
+
+### /product-units/candidates
+**Файл:** app\product-units\candidates\page.tsx
+**Компоненты:** CandidateUnitsGrid
+**Hooks:** useState, useEffect
+
+### /product-units/new
+**Файл:** app\product-units\new\page.tsx
+**Hooks:** useState, useEffect, useRouter
+
+### /product-units
+**Файл:** app\product-units\page.tsx
+**Компоненты:** CategoryTreeView
+**Hooks:** useState, useEffect
+
+### /product-units/:id/edit
+**Файл:** app\product-units\[id]\edit\page.tsx
+**Hooks:** useState, useEffect, useRouter
+
+### /product-units/:id/logs
+**Файл:** app\product-units\[id]\logs\page.tsx
+**Hooks:** useState, useEffect, useRouter
+
+### /product-units/:id
+**Файл:** app\product-units\[id]\page.tsx
+
+### /products/new
+**Файл:** app\products\new\page.tsx
+**Hooks:** useState, useEffect, useRouter
+
+### /products
+**Файл:** app\products\page.tsx
+**Компоненты:** ProductCard
+
+### /products/:id/edit
+**Файл:** app\products\[id]\edit\page.tsx
+**Hooks:** useState, useEffect, useRouter
+
+### /products/:id
+**Файл:** app\products\[id]\page.tsx
+
+### /store
+**Файл:** app\store\page.tsx
+**Hooks:** useState, useEffect
+
+### /store/visual
+**Файл:** app\store\visual\page.tsx
+**Компоненты:** InventoryVisual, VisualStoreDashboard
+
+### /super-add
+**Файл:** app\super-add\page.tsx
+**Компоненты:** ImprovedTreeView, HorizontalTreeView, CategoryModal...
+**Hooks:** useState, useEffect
+
+## ⚛️ REACT КОМПОНЕНТЫ
+
+**Всего компонентов:** 52
+
+### 📦 PRODUCT UNIT КОМПОНЕНТЫ (12)
+- **CandidateUnitCard** - Модальное окно заявки
+- **CandidateUnitsGrid** - React компонент
+- **CreateProductUnitForm** - React компонент
+- **ProductUnitActions** - Карточка товарной единицы
+- **ProductUnitCard** - Карточка товарной единицы
+- **ProductUnitItem_v2** - React компонент
+- **ProductUnitList_v2** - React компонент
+- **ProductUnitStatusPanel_v2** - React компонент
+- **ProductUnitSummaryPanel** - React компонент
+- **ProductUnitStep** - React компонент
+- **UnitTreeView** - Карточка товарной единицы
+- **ProductUnitActions** - Карточка товарной единицы
+
+### 📊 INVENTORY КОМПОНЕНТЫ (4)
+- **InventoryCurrent**
+- **InventoryMovement**
+- **InventoryVisual**
+- **VisualInventoryDashboard**
+
+### 🔧 ДРУГИЕ КОМПОНЕНТЫ (28)
+- **SalesAnalytics**
+- **ClosePastCashDaysButton**
+- **DisassemblyExecuteButton**
+- **DisassemblyScenarioForm**
+- **CreateSnapshotButton**
+- **SnapshotsHistory**
+- **LogsPanel_v2**
+- **Column**
+- **FullDataMillerColumns**
+- **MillerColumns**
+- ... и еще 18 компонентов
+
+## 🛠️ БИБЛИОТЕКИ И СЕРВИСЫ
+
+### 📁 app/lib/ (10)
+- **deliveryService.ts** - Сервис доставки
+- **disassemblyService.ts** - Работа с БД
+- **disassemblyValidationService.ts** - Работа с БД
+- **unitCloneHelper.ts** - Работа с БД
+- **prisma.ts** - Работа с БД
+- **prismaLogMiddleware.ts** - Работа с БД
+- **productUnitLogger.ts** - Работа с БД
+- **requestService.ts** - Сервис заявок
+- **requestValidator.ts** - Сервис/утилита
+- **unitCloneHelper.ts** - Работа с БД
+
+### 📁 lib/ (22)
+- **CashDayAutoCloseService.ts** - Работа с БД
+- **CashDayCoreService.ts** - Работа с БД
+- **CashEventService.ts** - Работа с БД
+- **CashReportService.ts** - Сервис/утилита
+- **CashValidationService.ts** - Сервис/утилита
+- **index.ts** - Сервис/утилита
+- **change-detection-service.ts** - Работа с БД
+- **decrypt-token.ts** - Сервис/утилита
+- **encrypt-token.ts** - Сервис/утилита
+- **file-storage-adapter.ts** - Сервис/утилита
+- **structure-helpers.ts** - Сервис/утилита
+- **image-sync-service.ts** - Сервис/утилита
+- **StructureService.ts** - Работа с БД
+- **StructureSyncService.ts** - Работа с БД
+- **BaseSync.ts** - Сервис/утилита
+- **CategorySync.ts** - Работа с БД
+- **DeleteSync.ts** - Работа с БД
+- **index.ts** - Сервис/утилита
+- **ProductSync.ts** - Работа с БД
+- **SpineSync.ts** - Работа с БД
+- **stock-traffic-light-service.ts** - Работа с БД
+- **translit.ts** - Сервис/утилита
+
+## 💡 РЕКОМЕНДАЦИИ И ВЫВОДЫ
+
+### 🎯 ОСНОВНЫЕ ВЫВОДЫ:
+- ✅ Проект использует современный Next.js App Router
+- ✅ Хорошо структурированная кодовая база
+- ✅ Полноценная система управления товарами
+- ✅ Развитая API архитектура
+
+### 🔧 РЕКОМЕНДАЦИИ ПО РАЗРАБОТКЕ:
+1. **Индикаторы активности** - добавить временные метки в ProductUnit
+2. **Валидация API** - добавить обработку ошибок во всех endpoints
+3. **Тепловая карта** - интегрировать нормативы остатков
+4. **Модальные окна** - исправить передачу данных в CreateRequestModal
+5. **Обновление состояния** - улучшить синхронизацию после операций
+
+### 🚀 ПРИОРИТЕТНЫЕ ЗАДАЧИ:
+- Исправить модальное окно заявок (цена/количество)
+- Добавить индикаторы недавней активности
+- Реализовать систему нормативов остатков
+- Улучшить обработку ошибок в API
