@@ -1,8 +1,10 @@
-// components/miller-columns/MillerColumns.tsx - ОБНОВЛЕННЫЙ С РАЗВЕРТКОЙ
+// components/miller-columns/MillerColumns.tsx - ОБНОВЛЕННЫЙ С МОДАЛКАМИ
 'use client'
 
 import { useState, useEffect } from 'react'
 import Column from './Column'
+import CreateCategoryModal from './modals/CreateCategoryModal'
+import CreateSpineModal from './modals/CreateSpineModal'
 import { Category, Spine, Product, ColumnItem } from './types'
 import styles from './MillerColumns.module.css'
 
@@ -12,10 +14,18 @@ interface MillerColumnsProps {
 
 export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
   const [columns, setColumns] = useState<ColumnItem[][]>([[]])
-  const [selectedItems, setSelectedItems] = useState<number[]>([]) // ID выбранных элементов по колонкам
+  const [selectedItems, setSelectedItems] = useState<number[]>([])
   const [loading, setLoading] = useState(true)
   const [activeColumn, setActiveColumn] = useState<number | null>(null)
-  const [collapsedColumns, setCollapsedColumns] = useState<number[]>([]) // Колонки с эффектом сминания
+  const [collapsedColumns, setCollapsedColumns] = useState<number[]>([])
+  
+  // Состояния для модалок
+  const [createModal, setCreateModal] = useState<{
+    type: 'category' | 'spine' | null;
+    parentCategory?: Category;
+    category?: Category;
+  }>({ type: null })
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   // Загружаем корневые категории при монтировании
   useEffect(() => {
@@ -121,9 +131,8 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
     }
   }
 
-  // НОВАЯ ФУНКЦИЯ: Развернуть колонку при клике на свернутый элемент
+  // Развернуть колонку при клике на свернутый элемент
   const expandColumn = (columnIndex: number) => {
-    // Убираем эффект сминания для этой колонки
     setCollapsedColumns(prev => prev.filter(idx => idx !== columnIndex))
     setActiveColumn(columnIndex)
   }
@@ -153,14 +162,123 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
   }
 
   const handleColumnReset = (columnIndex: number) => {
-    // Сбрасываем колонки до выбранного индекса
     const newColumns = columns.slice(0, columnIndex + 1)
     setColumns(newColumns)
     setSelectedItems(prev => prev.slice(0, columnIndex))
-    
-    // Убираем эффект сминания для колонок после сброшенной
     setCollapsedColumns(prev => prev.filter(idx => idx <= columnIndex))
     setActiveColumn(columnIndex)
+  }
+
+  // ОБРАБОТЧИКИ СОЗДАНИЯ ЭЛЕМЕНТОВ
+  const handleCreateCategory = (parentCategory?: Category) => {
+    setCreateModal({ 
+      type: 'category', 
+      parentCategory 
+    })
+    setIsCreateModalOpen(true)
+  }
+
+  const handleCreateSpine = (category: Category) => {
+    setCreateModal({ 
+      type: 'spine', 
+      category 
+    })
+    setIsCreateModalOpen(true)
+  }
+
+  // ФУНКЦИИ СОЗДАНИЯ ЧЕРЕЗ API
+  const createCategory = async (name: string, parentId?: number) => {
+    try {
+      const response = await fetch('/api/categories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          parentId: parentId || null,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create category')
+      }
+
+      const newCategory = await response.json()
+      
+      // Перезагружаем данные после создания
+      if (parentId) {
+        // Перезагружаем дочерние элементы родительской категории
+        const parentColumnIndex = columns.findIndex(col => 
+          col.some(item => item.data.id === parentId)
+        )
+        if (parentColumnIndex !== -1) {
+          const parentItem = columns[parentColumnIndex].find(item => item.data.id === parentId)
+          if (parentItem) {
+            await handleItemSelect(parentItem, parentColumnIndex)
+          }
+        }
+      } else {
+        // Если это корневая категория, перезагружаем корень
+        await loadRootCategories()
+      }
+
+      return newCategory
+    } catch (error) {
+      console.error('Error creating category:', error)
+      throw error
+    }
+  }
+
+  const createSpine = async (name: string, categoryId: number) => {
+    try {
+      const response = await fetch('/api/spines', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          categoryId,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create spine')
+      }
+
+      const newSpine = await response.json()
+      
+      // Перезагружаем дочерние элементы категории
+      const categoryColumnIndex = columns.findIndex(col => 
+        col.some(item => item.data.id === categoryId)
+      )
+      if (categoryColumnIndex !== -1) {
+        const categoryItem = columns[categoryColumnIndex].find(item => item.data.id === categoryId)
+        if (categoryItem) {
+          await handleItemSelect(categoryItem, categoryColumnIndex)
+        }
+      }
+
+      return newSpine
+    } catch (error) {
+      console.error('Error creating spine:', error)
+      throw error
+    }
+  }
+
+  // ОБРАБОТЧИК СОЗДАНИЯ ИЗ МОДАЛКИ
+  const handleCreateSubmit = async (name: string, parentId?: number) => {
+    if (createModal.type === 'category') {
+      await createCategory(name, parentId)
+    } else if (createModal.type === 'spine' && createModal.category) {
+      await createSpine(name, createModal.category.id)
+    }
+  }
+
+  const closeCreateModal = () => {
+    setIsCreateModalOpen(false)
+    setCreateModal({ type: null })
   }
 
   // Проверяем, выбран ли элемент в колонке
@@ -209,6 +327,8 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
             isCollapsed={isColumnCollapsed(index)}
             parentType={getParentTypeForColumn(index)}
             showCreateButtons={index === columns.length - 1}
+            onCreateCategory={handleCreateCategory}
+            onCreateSpine={handleCreateSpine}
           />
         ))}
         
@@ -225,6 +345,25 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
           </div>
         )}
       </div>
+
+      {/* Модальные окна создания */}
+      {createModal.type === 'category' && (
+        <CreateCategoryModal
+          isOpen={isCreateModalOpen}
+          onClose={closeCreateModal}
+          onCreate={handleCreateSubmit}
+          parentCategory={createModal.parentCategory}
+        />
+      )}
+
+      {createModal.type === 'spine' && createModal.category && (
+        <CreateSpineModal
+          isOpen={isCreateModalOpen}
+          onClose={closeCreateModal}
+          onCreate={handleCreateSubmit}
+          category={createModal.category}
+        />
+      )}
     </div>
   )
 }

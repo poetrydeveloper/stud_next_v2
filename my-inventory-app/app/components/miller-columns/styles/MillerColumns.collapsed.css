@@ -1,0 +1,129 @@
+/* components/miller-columns/styles/MillerColumns.collapsed.css */
+/* ЭФФЕКТ СМИНАНИЯ - КОЛОНКА СТАНОВИТСЯ УЗКОЙ */
+.millerColumn.collapsed {
+  width: 80px;
+  background: #f8fafc;
+  position: relative;
+}
+
+.millerColumn.collapsed .millerList,
+.millerColumn.collapsed .millerStatusBar,
+.millerColumn.collapsed .millerCreateButtons {
+  opacity: 1; /* УБИРАЕМ прозрачность для видимости */
+  pointer-events: auto; /* РАЗРЕШАЕМ клики */
+}
+
+/* УЛУЧШЕННЫЕ СТИЛИ ДЛЯ СВЕРНУТЫХ ЭЛЕМЕНТОВ */
+.millerColumn.collapsed .millerRow {
+  padding: 12px 6px !important; /* Увеличиваем паддинг */
+  margin: 4px 4px !important;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  height: 100px !important; /* Увеличиваем высоту */
+  justify-content: center;
+  align-items: center;
+  min-height: 80px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+/* УЛУЧШЕННАЯ ТИПОГРАФИКА ДЛЯ ЧИТАЕМОСТИ */
+.millerColumn.collapsed .millerLabel {
+  font-size: 13px !important; /* Увеличиваем шрифт */
+  font-weight: 600 !important; /* Делаем полужирным */
+  text-align: center;
+  transform: rotate(180deg);
+  letter-spacing: 0.3px; /* Увеличиваем расстояние между буквами */
+  line-height: 1.3;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Легкая тень для контраста */
+  color: #1f2937 !important; /* Темный цвет для лучшей видимости */
+}
+
+/* Ховер-эффекты для свернутых элементов */
+.millerColumn.collapsed .millerRow:hover {
+  background: #e5e7eb !important;
+  border-color: #d1d5db !important;
+  transform: translateX(-2px) scale(1.02) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Выбранный элемент в свернутой колонке */
+.millerColumn.collapsed .millerRowSelected {
+  background: #374151 !important;
+  color: white !important;
+  border-color: #374151 !important;
+  box-shadow: 0 2px 8px rgba(55, 65, 81, 0.3);
+}
+
+.millerColumn.collapsed .millerRowSelected .millerLabel {
+  color: white !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.millerColumn.collapsed .millerRowSelected:hover {
+  background: #4b5563 !important;
+  border-color: #4b5563 !important;
+}
+
+/* Spine в свернутом состоянии */
+.millerColumn.collapsed .millerSpineRow {
+  background: #dcfce7;
+  border-color: #bbf7d0;
+}
+
+.millerColumn.collapsed .millerSpineRowSelected {
+  background: #16a34a !important;
+  color: white !important;
+  border-color: #15803d !important;
+}
+
+.millerColumn.collapsed .millerSpineRow:hover {
+  background: #bbf7d0 !important;
+  border-color: #86efac !important;
+}
+
+/* Product в свернутом состоянии */
+.millerColumn.collapsed .millerProductRow {
+  background: #fef9c3;
+  border-color: #fde047;
+}
+
+.millerColumn.collapsed .millerProductRowSelected {
+  background: #eab308 !important;
+  color: white !important;
+  border-color: #ca8a04 !important;
+}
+
+.millerColumn.collapsed .millerProductRow:hover {
+  background: #fde047 !important;
+  border-color: #facc15 !important;
+}
+
+/* Скрываем лишние элементы в свернутом виде */
+.millerColumn.collapsed .millerLabel > div:not(:first-child) {
+  display: none;
+}
+
+.millerColumn.collapsed .millerArrow,
+.millerColumn.collapsed .millerChildrenIndicator {
+  display: none;
+}
+
+/* Улучшаем видимость кнопок создания в свернутом виде */
+.millerColumn.collapsed .millerCreateButtons {
+  padding: 8px 4px;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.millerColumn.collapsed .millerCreateBtn {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  padding: 8px 4px;
+}

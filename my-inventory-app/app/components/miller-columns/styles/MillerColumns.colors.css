@@ -1,0 +1,31 @@
+/* components/miller-columns/styles/MillerColumns.colors.css */
+/* ЦВЕТА СОГЛАСНО ТЗ - КАТЕГОРИИ */
+.millerRowSelected {
+  background: #374151 !important;
+  color: white;
+  border-color: #374151;
+}
+
+/* SPINE - ЗЕЛЕНЫЕ */
+.millerSpineRow {
+  background: #dcfce7;
+  border-color: #bbf7d0;
+}
+
+.millerSpineRowSelected {
+  background: #16a34a !important;
+  color: white;
+  border-color: #15803d;
+}
+
+/* PRODUCT - ЖЕЛТЫЕ */
+.millerProductRow {
+  background: #fef9c3;
+  border-color: #fde047;
+}
+
+.millerProductRowSelected {
+  background: #eab308 !important;
+  color: white;
+  border-color: #ca8a04;
+}

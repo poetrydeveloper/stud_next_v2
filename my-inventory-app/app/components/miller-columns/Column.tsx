@@ -1,4 +1,4 @@
-// components/miller-columns/Column.tsx - ОБНОВЛЕННЫЙ С ЭФФЕКТОМ СМИНАНИЯ
+// components/miller-columns/Column.tsx - ИСПРАВЛЕННЫЙ
 'use client'
 
 import { ColumnItem } from './types'
@@ -18,6 +18,8 @@ interface ColumnProps {
   isCollapsed?: boolean
   parentType?: 'category' | 'spine' | null
   showCreateButtons?: boolean
+  onCreateCategory?: (parentCategory?: any) => void
+  onCreateSpine?: (category: any) => void
 }
 
 export default function Column({ 
@@ -30,15 +32,73 @@ export default function Column({
   isActive = false,
   isCollapsed = false,
   parentType,
-  showCreateButtons = false
+  showCreateButtons = false,
+  onCreateCategory,
+  onCreateSpine
 }: ColumnProps) {
+
+  // ФУНКЦИЯ ДЛЯ КНОПОК СОЗДАНИЯ
+  const getCreateButtons = () => {
+    if (isCollapsed) return null
+
+    // КОРНЕВАЯ КОЛОНКА
+    if (columnIndex === 0) {
+      return (
+        <div className={styles.millerCreateButtons}>
+          <button 
+            className={styles.millerCreateBtn}
+            onClick={() => onCreateCategory?.()}
+          >
+            + Категория
+          </button>
+        </div>
+      )
+    }
+
+    if (!showCreateButtons) return null
+
+    // КОЛОНКА КАТЕГОРИИ
+    if (parentType === 'category') {
+      const parentItem = items.find(item => isItemSelected(item.data.id))
+      return (
+        <div className={styles.millerCreateButtons}>
+          <button 
+            className={styles.millerCreateBtn}
+            onClick={() => onCreateCategory?.(parentItem?.data)}
+          >
+            + Категория
+          </button>
+          <button 
+            className={styles.millerCreateBtn}
+            onClick={() => onCreateSpine?.(parentItem?.data)}
+          >
+            + Spine
+          </button>
+        </div>
+      )
+    }
+
+    // КОЛОНКА SPINE
+    if (parentType === 'spine') {
+      return (
+        <div className={styles.millerCreateButtons}>
+          <button className={styles.millerCreateBtn}>
+            + Продукт
+          </button>
+        </div>
+      )
+    }
+
+    return null
+  }
+
   const getCellComponent = (item: ColumnItem, index: number) => {
     const commonProps = {
       item: item.data,
       onClick: () => onItemSelect(item, columnIndex),
       isSelected: isItemSelected(item.data.id),
       showChildrenIndicator: item.type !== 'product' && item.data.hasChildren,
-      isCollapsed: isCollapsed // Передаем состояние сминания в ячейки
+      isCollapsed: isCollapsed
     }
 
     switch (item.type) {
@@ -68,49 +128,9 @@ export default function Column({
     }
   }
 
-  // Определяем какие кнопки создания показывать
-  const getCreateButtons = () => {
-    if (!showCreateButtons || isCollapsed) return null // Не показываем кнопки в свернутом состоянии
-
-    if (columnIndex === 0) {
-      return (
-        <div className={styles.millerCreateButtons}>
-          <button className={styles.millerCreateBtn}>
-            + Категория
-          </button>
-        </div>
-      )
-    }
-
-    if (parentType === 'category') {
-      return (
-        <div className={styles.millerCreateButtons}>
-          <button className={styles.millerCreateBtn}>
-            + Категория
-          </button>
-          <button className={styles.millerCreateBtn}>
-            + Spine
-          </button>
-        </div>
-      )
-    }
-
-    if (parentType === 'spine') {
-      return (
-        <div className={styles.millerCreateButtons}>
-          <button className={styles.millerCreateBtn}>
-            + Продукт
-          </button>
-        </div>
-      )
-    }
-
-    return null
-  }
-
   return (
     <div className={`${styles.millerColumn} ${isCollapsed ? styles.collapsed : ''} ${isActive ? styles.millerColumnActive : ''}`}>
-      {/* Кнопки создания вместо заголовка */}
+      {/* Кнопки создания */}
       {getCreateButtons()}
 
       {/* Список элементов */}
