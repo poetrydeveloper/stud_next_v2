@@ -1,8 +1,21 @@
-// components/miller-columns/ProductCell.tsx - ОБНОВЛЕННАЯ ВЕРСИЯ
+// components/miller-columns/ProductCell.tsx - ОБНОВЛЕННЫЙ С ЭФФЕКТОМ СМИНАНИЯ
 import { CellProps } from './types'
 import { Product } from './types'
+import styles from './MillerColumns.module.css'
 
-export default function ProductCell({ item, onClick, isSelected }: CellProps<Product>) {
+export default function ProductCell({ 
+  item, 
+  onClick, 
+  isSelected,
+  isCollapsed = false 
+}: CellProps<Product> & { isCollapsed?: boolean }) {
+  const getRowClass = () => {
+    const baseClass = `${styles.millerRow} ${styles.millerProductRow}`
+    const selectedClass = isSelected ? styles.millerProductRowSelected : ''
+    const collapsedClass = isCollapsed ? styles.collapsedRow : ''
+    return `${baseClass} ${selectedClass} ${collapsedClass}`
+  }
+
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       CLEAR: 'bg-gray-400',
@@ -19,47 +32,107 @@ export default function ProductCell({ item, onClick, isSelected }: CellProps<Pro
     return colors[status] || 'bg-gray-300'
   }
 
+  const getStatusName = (status: string) => {
+    const names: Record<string, string> = {
+      CLEAR: 'Чистый',
+      CANDIDATE: 'Кандидат',
+      SPROUTED: 'Росток',
+      IN_REQUEST: 'В заявке',
+      IN_DELIVERY: 'Доставка',
+      ARRIVED: 'Прибыл',
+      IN_STORE: 'В магазине',
+      SOLD: 'Продан',
+      CREDIT: 'Кредит',
+      LOST: 'Потерян'
+    }
+    return names[status] || status
+  }
+
+  // Создаем статусы из productUnits если statusCounts нет
+  const getStatusCounts = () => {
+    if (item.statusCounts && Object.keys(item.statusCounts).length > 0) {
+      return item.statusCounts
+    }
+    
+    // Создаем статусы из productUnits
+    const counts: Record<string, number> = {}
+    if (item.productUnits) {
+      item.productUnits.forEach(unit => {
+        const status = unit.statusCard || unit.statusProduct
+        if (status) {
+          counts[status] = (counts[status] || 0) + 1
+        }
+      })
+    }
+    return counts
+  }
+
+  const statusCounts = getStatusCounts()
+  const activeStatuses = Object.entries(statusCounts)
+    .filter(([_, count]) => count > 0)
+    .slice(0, 3)
+
+  // В свернутом состоянии показываем только название
+  if (isCollapsed) {
+    return (
+      <div
+        onClick={onClick}
+        className={getRowClass()}
+        title={`${item.name} (${item.code})`}
+      >
+        <div className={styles.millerLabel}>
+          <div className="font-medium truncate">{item.name}</div>
+        </div>
+      </div>
+    )
+  }
+
+  // Полноценное отображение
   return (
     <div
       onClick={onClick}
-      className={`p-4 rounded-lg border cursor-pointer transition-all active:scale-95 ${
-        isSelected 
-          ? 'bg-yellow-200 border-yellow-400 shadow-sm' 
-          : 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100'
-      }`}
+      className={getRowClass()}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h3 className="font-medium text-gray-800">{item.name}</h3>
-          <p className="text-sm text-gray-600 mt-1">{item.code}</p>
-          <p className="text-xs text-gray-500 mt-1">Бренд: {item.brand.name}</p>
-          
-          {/* Статусы */}
+      <div className={styles.millerLabel}>
+        <div className="font-medium">{item.name}</div>
+        <div className="text-sm text-gray-600 mt-1">Арт: {item.code}</div>
+        <div className="text-xs text-gray-500 mt-1">
+          Бренд: {item.brand?.name || 'Не указан'}
+        </div>
+        
+        {/* Статусы */}
+        {activeStatuses.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
-            {Object.entries(item.statusCounts)
-              .filter(([_, count]) => count > 0)
-              .slice(0, 3) // Показываем только первые 3 статуса
-              .map(([status, count]) => (
-                <div
-                  key={status}
-                  className={`px-2 py-1 rounded text-xs text-white ${getStatusColor(status)}`}
-                  title={status}
-                >
-                  {count}
-                </div>
-              ))
-            }
-            {Object.keys(item.statusCounts).filter(key => item.statusCounts[key] > 0).length > 3 && (
-              <div className="px-2 py-1 rounded text-xs bg-gray-200 text-gray-600">
-                +{Object.keys(item.statusCounts).filter(key => item.statusCounts[key] > 0).length - 3}
+            {activeStatuses.map(([status, count]) => (
+              <div
+                key={status}
+                className={`px-2 py-1 rounded text-xs text-white ${getStatusColor(status)}`}
+                title={`${getStatusName(status)}: ${count} ед.`}
+              >
+                {count}
+              </div>
+            ))}
+            {Object.keys(statusCounts).filter(key => statusCounts[key] > 0).length > 3 && (
+              <div 
+                className="px-2 py-1 rounded text-xs bg-gray-200 text-gray-600"
+                title="Еще статусы..."
+              >
+                +{Object.keys(statusCounts).filter(key => statusCounts[key] > 0).length - 3}
               </div>
             )}
           </div>
-        </div>
+        )}
         
-        <div className={`text-lg ${isSelected ? 'text-yellow-700' : 'text-yellow-600'}`}>
-          👁️
-        </div>
+        {/* Если нет статусов, показываем общее количество */}
+        {activeStatuses.length === 0 && item._count.productUnits > 0 && (
+          <div className="text-xs text-gray-500 mt-2">
+            Всего единиц: {item._count.productUnits}
+          </div>
+        )}
+      </div>
+      
+      <div className="flex items-center">
+        <span className={`${styles.millerArrow} text-yellow-600`}>👁️</span>
       </div>
     </div>
   )

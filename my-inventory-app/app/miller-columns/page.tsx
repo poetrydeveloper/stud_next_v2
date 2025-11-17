@@ -22,9 +22,9 @@ export default function MillerColumnsPage() {
   }
 
   return (
-    <div className="h-full flex">
+    <div className="h-full"> {/* УБИРАЕМ flex здесь */}
       {/* Основная область - Miller Columns */}
-      <div className={`${showMovementBoard ? 'w-2/3' : 'w-full'} transition-all duration-300`}>
+      <div className={`${showMovementBoard ? 'w-2/3 float-left' : 'w-full'} transition-all duration-300 h-full`}>
         <div className="h-full bg-white rounded-lg border border-gray-200">
           <div className="p-4 border-b border-gray-200">
             <h1 className="text-xl font-bold text-gray-800">🗂️ Карта товаров</h1>
@@ -33,15 +33,14 @@ export default function MillerColumnsPage() {
             </p>
           </div>
           
-          <div className="h-[calc(100%-80px)]">
-            <MillerColumns onProductSelect={handleProductSelect} />
-          </div>
+          {/* УБИРАЕМ лишнюю обертку с flex */}
+          <MillerColumns onProductSelect={handleProductSelect} />
         </div>
       </div>
 
       {/* Табло движений - выезжает справа */}
       {showMovementBoard && (
-        <div className="w-1/3 transition-all duration-300">
+        <div className="w-1/3 float-left transition-all duration-300 h-full">
           <MovementBoard 
             product={selectedProduct}
             onClose={handleCloseMovementBoard}

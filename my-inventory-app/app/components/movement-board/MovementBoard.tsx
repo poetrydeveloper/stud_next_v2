@@ -1,7 +1,10 @@
-// components/movement-board/MovementBoard.tsx
+// components/movement-board/MovementBoard.tsx - ИСПРАВЛЕННЫЙ
 'use client'
 
-import { Product } from '@/components/miller-columns/types'
+import { Product } from '@/app/components/miller-columns/types'
+import ProductInfo from './ProductInfo'
+import Timeline from './Timeline' // ← ДОБАВИТЬ ИМПОРТ
+import ActionButtons from './ActionButtons' // ← ДОБАВИТЬ ИМПОРТ
 
 interface MovementBoardProps {
   product: Product

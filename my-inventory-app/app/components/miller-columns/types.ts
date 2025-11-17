@@ -1,4 +1,4 @@
-// components/miller-columns/types.ts - ОБНОВЛЕННАЯ ВЕРСИЯ
+// components/miller-columns/types.ts - ОБНОВЛЕННАЯ ВЕРСИЯ С ЭФФЕКТОМ СМИНАНИЯ
 export type Category = {
   id: number
   name: string
@@ -57,4 +57,6 @@ export interface CellProps<T> {
   item: T
   onClick: () => void
   isSelected: boolean
+  showChildrenIndicator?: boolean
+  isCollapsed?: boolean // ← ДОБАВЛЯЕМ ДЛЯ ЭФФЕКТА СМИНАНИЯ
 }

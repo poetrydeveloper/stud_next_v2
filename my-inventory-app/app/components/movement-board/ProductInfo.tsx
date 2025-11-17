@@ -1,5 +1,6 @@
-// components/movement-board/ProductInfo.tsx
-import { Product } from '@/components/miller-columns/types'
+// components/movement-board/ProductInfo.tsx - ИСПРАВЛЕННЫЙ
+import { Product } from '@/app/components/miller-columns/types'
+import StatusBadge from './StatusBadge' // ← ДОБАВИТЬ ИМПОРТ
 
 interface ProductInfoProps {
   product: Product

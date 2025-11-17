@@ -1,5 +1,5 @@
 // components/movement-board/ActionButtons.tsx
-import { Product } from '@/components/miller-columns/types'
+import { Product } from '@/app/components/miller-columns/types'
 
 interface ActionButtonsProps {
   product: Product

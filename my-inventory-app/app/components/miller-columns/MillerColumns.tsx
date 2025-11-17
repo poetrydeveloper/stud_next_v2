@@ -1,9 +1,10 @@
-// components/miller-columns/MillerColumns.tsx - ДОБАВЛЯЕМ ВЫДЕЛЕНИЕ
+// components/miller-columns/MillerColumns.tsx - ОБНОВЛЕННЫЙ С РАЗВЕРТКОЙ
 'use client'
 
 import { useState, useEffect } from 'react'
 import Column from './Column'
 import { Category, Spine, Product, ColumnItem } from './types'
+import styles from './MillerColumns.module.css'
 
 interface MillerColumnsProps {
   onProductSelect: (product: Product) => void
@@ -13,6 +14,8 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
   const [columns, setColumns] = useState<ColumnItem[][]>([[]])
   const [selectedItems, setSelectedItems] = useState<number[]>([]) // ID выбранных элементов по колонкам
   const [loading, setLoading] = useState(true)
+  const [activeColumn, setActiveColumn] = useState<number | null>(null)
+  const [collapsedColumns, setCollapsedColumns] = useState<number[]>([]) // Колонки с эффектом сминания
 
   // Загружаем корневые категории при монтировании
   useEffect(() => {
@@ -33,6 +36,8 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
         
         setColumns([rootCategories])
         setSelectedItems([])
+        setActiveColumn(0)
+        setCollapsedColumns([])
       } else {
         console.error('Failed to load root categories:', result.error)
       }
@@ -67,6 +72,10 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
         
         setColumns(newColumns)
         
+        // Эффект сминания: добавляем текущую колонку в свернутые
+        setCollapsedColumns(prev => [...prev.filter(idx => idx !== columnIndex), columnIndex])
+        setActiveColumn(columnIndex + 1)
+        
         // Обновляем выбранные элементы
         const newSelectedItems = selectedItems.slice(0, columnIndex)
         newSelectedItems.push(category.id)
@@ -96,6 +105,10 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
         
         setColumns(newColumns)
         
+        // Эффект сминания: добавляем текущую колонку в свернутые
+        setCollapsedColumns(prev => [...prev.filter(idx => idx !== columnIndex), columnIndex])
+        setActiveColumn(columnIndex + 1)
+        
         // Обновляем выбранные элементы
         const newSelectedItems = selectedItems.slice(0, columnIndex)
         newSelectedItems.push(spine.id)
@@ -108,7 +121,20 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
     }
   }
 
+  // НОВАЯ ФУНКЦИЯ: Развернуть колонку при клике на свернутый элемент
+  const expandColumn = (columnIndex: number) => {
+    // Убираем эффект сминания для этой колонки
+    setCollapsedColumns(prev => prev.filter(idx => idx !== columnIndex))
+    setActiveColumn(columnIndex)
+  }
+
   const handleItemSelect = async (item: ColumnItem, columnIndex: number) => {
+    // Если колонка свернута - сначала разворачиваем ее
+    if (collapsedColumns.includes(columnIndex)) {
+      expandColumn(columnIndex)
+      return
+    }
+    
     if (item.type === 'category') {
       await loadCategoryChildren(item.data as Category, columnIndex)
     } else if (item.type === 'spine') {
@@ -118,14 +144,23 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
       const newSelectedItems = selectedItems.slice(0, columnIndex)
       newSelectedItems.push(item.data.id)
       setSelectedItems(newSelectedItems)
+      
+      // Эффект сминания для последней колонки с продуктом
+      setCollapsedColumns(prev => [...prev.filter(idx => idx !== columnIndex), columnIndex])
+      
       onProductSelect(item.data as Product)
     }
   }
 
   const handleColumnReset = (columnIndex: number) => {
     // Сбрасываем колонки до выбранного индекса
-    setColumns(prev => prev.slice(0, columnIndex + 1))
+    const newColumns = columns.slice(0, columnIndex + 1)
+    setColumns(newColumns)
     setSelectedItems(prev => prev.slice(0, columnIndex))
+    
+    // Убираем эффект сминания для колонок после сброшенной
+    setCollapsedColumns(prev => prev.filter(idx => idx <= columnIndex))
+    setActiveColumn(columnIndex)
   }
 
   // Проверяем, выбран ли элемент в колонке
@@ -133,33 +168,63 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
     return selectedItems[columnIndex] === itemId
   }
 
+  // Получаем тип родительского элемента для колонки
+  const getParentTypeForColumn = (columnIndex: number): 'category' | 'spine' | null => {
+    if (columnIndex === 0) return null
+    
+    const parentItem = columns[columnIndex - 1]?.find(item => 
+      selectedItems[columnIndex - 1] === item.data.id
+    )
+    
+    return parentItem?.type === 'spine' ? 'spine' : 'category'
+  }
+
+  // Проверяем, должна ли колонка быть свернутой
+  const isColumnCollapsed = (columnIndex: number) => {
+    return collapsedColumns.includes(columnIndex)
+  }
+
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-gray-500">Загрузка категорий...</div>
+      <div className={styles.millerLoadingContainer}>
+        <div className={styles.millerSpinner}></div>
+        <div className={styles.millerLoadingText}>Загрузка категорий...</div>
       </div>
     )
   }
 
   return (
-    <div className="h-full flex">
-      {columns.map((columnItems, index) => (
-        <Column
-          key={index}
-          items={columnItems}
-          columnIndex={index}
-          onItemSelect={handleItemSelect}
-          onColumnReset={handleColumnReset}
-          isLastColumn={index === columns.length - 1}
-          isItemSelected={(itemId) => isItemSelected(index, itemId)}
-        />
-      ))}
-      
-      {columns.length === 0 && (
-        <div className="flex-1 flex items-center justify-center text-gray-500">
-          Нет данных для отображения
-        </div>
-      )}
+    <div className={styles.millerWrapper}>
+      <div className={styles.millerScroller}>
+        {columns.map((columnItems, index) => (
+          <Column
+            key={index}
+            items={columnItems}
+            columnIndex={index}
+            onItemSelect={handleItemSelect}
+            onColumnReset={handleColumnReset}
+            isLastColumn={index === columns.length - 1}
+            isItemSelected={(itemId) => isItemSelected(index, itemId)}
+            isActive={activeColumn === index}
+            isCollapsed={isColumnCollapsed(index)}
+            parentType={getParentTypeForColumn(index)}
+            showCreateButtons={index === columns.length - 1}
+          />
+        ))}
+        
+        {columns.length === 0 && (
+          <div className={styles.millerEmptyState}>
+            <div className={styles.millerEmptyIcon}>📁</div>
+            <div className={styles.millerEmptyText}>Нет данных для отображения</div>
+            <button 
+              className={styles.millerRetryButton}
+              onClick={loadRootCategories}
+            >
+              Попробовать снова
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

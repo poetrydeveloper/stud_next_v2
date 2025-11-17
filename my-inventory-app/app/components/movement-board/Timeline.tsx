@@ -1,5 +1,6 @@
-// components/movement-board/Timeline.tsx
+// components/movement-board/Timeline.tsx - ИСПРАВЛЕННЫЙ
 import { Product } from '@/components/miller-columns/types'
+import TimelineEvent from './TimelineEvent' // ← ДОБАВИТЬ ИМПОРТ
 
 interface TimelineProps {
   product: Product

@@ -1,0 +1,296 @@
+/* components/miller-columns/MillerColumns.module.css */
+.millerWrapper {
+  width: 100%;
+  height: 80vh;
+  border: 1px solid #e1e5e9;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.millerScroller {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: #fafafa;
+}
+
+/* БАЗОВАЯ КОЛОНКА */
+.millerColumn {
+  width: 320px;
+  height: 100%;
+  border-right: 1px solid #e1e5e9;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  background: white;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+/* ЭФФЕКТ СМИНАНИЯ - КОЛОНКА СТАНОВИТСЯ УЗКОЙ */
+.millerColumn.collapsed {
+  width: 80px;
+  background: #f8fafc;
+}
+
+.millerColumn.collapsed .millerList,
+.millerColumn.collapsed .millerStatusBar,
+.millerColumn.collapsed .millerCreateButtons {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.millerColumn.collapsed .millerRow {
+  padding: 8px 4px;
+  margin: 2px 4px;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  height: 120px;
+  justify-content: center;
+}
+
+.millerColumn.collapsed .millerLabel {
+  font-size: 10px;
+  text-align: center;
+  transform: rotate(180deg);
+}
+
+.millerColumn.collapsed .millerLabel > div:first-child {
+  font-weight: 600;
+}
+
+.millerColumn.collapsed .millerLabel > div:not(:first-child) {
+  display: none; /* Скрываем статистику в свернутом виде */
+}
+
+.millerColumn.collapsed .millerArrow,
+.millerColumn.collapsed .millerChildrenIndicator {
+  display: none; /* Скрываем стрелки в свернутом виде */
+}
+
+/* Кнопки создания */
+.millerCreateButtons {
+  padding: 12px;
+  border-bottom: 1px solid #e1e5e9;
+  background: #f8f9fa;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.millerCreateBtn {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+  min-width: 0;
+}
+
+.millerCreateBtn:hover {
+  background: #f3f4f6;
+  transform: translateY(-1px);
+}
+
+/* Остальные стили остаются прежними... */
+.millerList {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+}
+
+.millerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  position: relative;
+}
+
+.millerRow:hover {
+  background: #f8f9fa;
+  border-color: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+/* ЦВЕТА СОГЛАСНО ТЗ */
+.millerRowSelected {
+  background: #374151 !important;
+  color: white;
+  border-color: #374151;
+}
+
+.millerSpineRow {
+  background: #dcfce7;
+  border-color: #bbf7d0;
+}
+
+.millerSpineRowSelected {
+  background: #16a34a !important;
+  color: white;
+  border-color: #15803d;
+}
+
+.millerProductRow {
+  background: #fef9c3;
+  border-color: #fde047;
+}
+
+.millerProductRowSelected {
+  background: #eab308 !important;
+  color: white;
+  border-color: #ca8a04;
+}
+
+.millerLabel {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: inherit;
+  min-width: 0;
+}
+
+.millerArrow {
+  color: #6b7280;
+  font-size: 16px;
+  margin-left: 8px;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.millerChildrenIndicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  margin-left: 8px;
+  animation: millerPulse 2s infinite;
+  flex-shrink: 0;
+}
+
+.millerStatusBar {
+  padding: 12px 16px;
+  border-top: 1px solid #e1e5e9;
+  background: #f8f9fa;
+  font-size: 12px;
+  color: #6b7280;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.millerItemCount {
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+}
+
+/* Анимации */
+@keyframes millerPulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Свернутая колонка - делаем элементы более интерактивными */
+.millerColumn.collapsed .millerList,
+.millerColumn.collapsed .millerStatusBar,
+.millerColumn.collapsed .millerCreateButtons {
+  opacity: 0.7; /* Увеличиваем прозрачность для лучшей видимости */
+  pointer-events: auto; /* Разрешаем клики */
+}
+
+.millerColumn.collapsed .millerRow {
+  padding: 8px 4px;
+  margin: 2px 4px;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  height: 120px;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+/* Ховер-эффекты для свернутых элементов */
+.millerColumn.collapsed .millerRow:hover {
+  background: #f3f4f6 !important;
+  border-color: #e5e7eb;
+  transform: translateX(-2px);
+}
+
+/* Выбранный элемент в свернутой колонке */
+.millerColumn.collapsed .millerRowSelected {
+  background: #374151 !important;
+  color: white;
+  border-color: #374151;
+}
+
+.millerColumn.collapsed .millerRowSelected:hover {
+  background: #4b5563 !important;
+  border-color: #4b5563;
+}
+
+/* Spine в свернутом состоянии */
+.millerColumn.collapsed .millerSpineRow {
+  background: #dcfce7;
+}
+
+.millerColumn.collapsed .millerSpineRowSelected {
+  background: #16a34a !important;
+  color: white;
+}
+
+.millerColumn.collapsed .millerSpineRow:hover {
+  background: #bbf7d0 !important;
+}
+
+/* Product в свернутом состоянии */
+.millerColumn.collapsed .millerProductRow {
+  background: #fef9c3;
+}
+
+.millerColumn.collapsed .millerProductRowSelected {
+  background: #eab308 !important;
+  color: white;
+}
+
+.millerColumn.collapsed .millerProductRow:hover {
+  background: #fde047 !important;
+}
+
+.millerColumn.collapsed .millerLabel {
+  font-size: 10px;
+  text-align: center;
+  transform: rotate(180deg);
+  font-weight: 500;
+}
+
+.millerColumn.collapsed .millerLabel > div:first-child {
+  font-weight: 600;
+}
+
+.millerColumn.collapsed .millerLabel > div:not(:first-child) {
+  display: none;
+}
+
+.millerColumn.collapsed .millerArrow,
+.millerColumn.collapsed .millerChildrenIndicator {
+  display: none;
+}
