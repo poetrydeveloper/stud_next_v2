@@ -1,4 +1,4 @@
-// components/miller-columns/MillerColumns.tsx - ОБНОВЛЕННЫЙ С МОДАЛКАМИ
+// components/miller-columns/MillerColumns.tsx - ПОЛНЫЙ КОД С ОТЛАДКОЙ
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -171,19 +171,29 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
 
   // ОБРАБОТЧИКИ СОЗДАНИЯ ЭЛЕМЕНТОВ
   const handleCreateCategory = (parentCategory?: Category) => {
+    console.log('🎯 handleCreateCategory CALLED with:', {
+      parentCategory: parentCategory?.name,
+      hasParent: !!parentCategory
+    })
     setCreateModal({ 
       type: 'category', 
       parentCategory 
     })
     setIsCreateModalOpen(true)
+    console.log('🎯 Modal state updated:', { type: 'category', isOpen: true })
   }
 
   const handleCreateSpine = (category: Category) => {
+    console.log('🎯 handleCreateSpine CALLED with:', {
+      category: category?.name,
+      categoryId: category?.id
+    })
     setCreateModal({ 
       type: 'spine', 
       category 
     })
     setIsCreateModalOpen(true)
+    console.log('🎯 Modal state updated:', { type: 'spine', isOpen: true })
   }
 
   // ФУНКЦИИ СОЗДАНИЯ ЧЕРЕЗ API
@@ -277,8 +287,10 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
   }
 
   const closeCreateModal = () => {
+    console.log('🎯 CLOSING MODAL, current state:', { createModal, isCreateModalOpen })
     setIsCreateModalOpen(false)
     setCreateModal({ type: null })
+    console.log('🎯 MODAL CLOSED, new state:', { createModal: { type: null }, isCreateModalOpen: false })
   }
 
   // Проверяем, выбран ли элемент в колонке
@@ -310,6 +322,12 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
       </div>
     )
   }
+
+  // ДОБАВЛЯЕМ ОТЛАДКУ ТЕКУЩЕГО СОСТОЯНИЯ МОДАЛОК
+  console.log('🎯 MillerColumns CURRENT MODAL STATE:', {
+    createModal,
+    isCreateModalOpen
+  })
 
   return (
     <div className={styles.millerWrapper}>

@@ -136,3 +136,64 @@
   50% { opacity: 0.5; }
   100% { opacity: 1; }
 }
+
+/* Стили для кнопок создания на карточках */
+.millerCellWithButtons {
+  position: relative;
+  width: 100%;
+}
+
+.millerItemCreateButtons {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.millerCellWithButtons:hover .millerItemCreateButtons {
+  opacity: 1;
+}
+
+.millerItemCreateBtn {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.millerItemCreateBtn:hover {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+  transform: scale(1.05);
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+/* Убедимся что кнопки не перекрывают контент */
+.millerRow {
+  position: relative;
+  padding-right: 80px; /* Место для кнопок */
+}
+
+/* Адаптация для свернутого состояния */
+.collapsedRow .millerItemCreateButtons {
+  display: none; /* Скрываем кнопки в свернутом состоянии */
+}
+
+/* Улучшаем отступы для контента с кнопками */
+.millerLabel {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: inherit;
+  min-width: 0;
+  padding-right: 8px; /* Дополнительный отступ справа */
+}
