@@ -6,11 +6,13 @@ export type Category = {
   path: string
   node_index: string | null
   human_path: string | null
-  _count: {
+  _count?: {
     children: number
     products: number
     spines: number
   }
+  hasChildren?: boolean
+  categoryId?: number // для обратной совместимости
 }
 
 export type Spine = {
@@ -20,10 +22,12 @@ export type Spine = {
   node_index: string | null
   human_path: string | null
   imagePath: string | null
-  _count: {
+  categoryId: number
+  _count?: {
     products: number
     productUnits: number
   }
+  hasChildren?: boolean
 }
 
 export type Product = {
@@ -31,21 +35,23 @@ export type Product = {
   code: string
   name: string
   description?: string
-  brand: {
+  brand?: {
     id: number
     name: string
     slug: string
   }
-  productUnits: Array<{
+  productUnits?: Array<{
     id: number
     statusCard: string
     statusProduct: string
     createdAt: string
   }>
-  _count: {
+  _count?: {
     productUnits: number
   }
-  statusCounts: Record<string, number>
+  statusCounts?: Record<string, number>
+  spineId?: number
+  categoryId?: number
 }
 
 export type ColumnItem = {

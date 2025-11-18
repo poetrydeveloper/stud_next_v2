@@ -1,4 +1,3 @@
-// components/miller-columns/ProductCell.tsx - ОБНОВЛЕННЫЙ С ЭФФЕКТОМ СМИНАНИЯ
 import { CellProps } from './types'
 import { Product } from './types'
 import styles from './MillerColumns.module.css'
@@ -9,6 +8,19 @@ export default function ProductCell({
   isSelected,
   isCollapsed = false 
 }: CellProps<Product> & { isCollapsed?: boolean }) {
+  // ПОЛНАЯ ЗАЩИТА ОТ UNDEFINED
+  if (!item) {
+    return (
+      <div className={`${styles.millerRow} ${styles.millerProductRow}`}>
+        <div className={styles.millerLabel}>
+          <div className="text-gray-400">Загрузка...</div>
+        </div>
+      </div>
+    )
+  }
+
+  const _count = item._count || { productUnits: 0 }
+
   const getRowClass = () => {
     const baseClass = `${styles.millerRow} ${styles.millerProductRow}`
     const selectedClass = isSelected ? styles.millerProductRowSelected : ''
@@ -78,10 +90,10 @@ export default function ProductCell({
       <div
         onClick={onClick}
         className={getRowClass()}
-        title={`${item.name} (${item.code})`}
+        title={`${item.name || 'Без названия'} (${item.code || 'без кода'})`}
       >
         <div className={styles.millerLabel}>
-          <div className="font-medium truncate">{item.name}</div>
+          <div className="font-medium truncate">{item.name || 'Без названия'}</div>
         </div>
       </div>
     )
@@ -94,8 +106,8 @@ export default function ProductCell({
       className={getRowClass()}
     >
       <div className={styles.millerLabel}>
-        <div className="font-medium">{item.name}</div>
-        <div className="text-sm text-gray-600 mt-1">Арт: {item.code}</div>
+        <div className="font-medium">{item.name || 'Без названия'}</div>
+        <div className="text-sm text-gray-600 mt-1">Арт: {item.code || 'без кода'}</div>
         <div className="text-xs text-gray-500 mt-1">
           Бренд: {item.brand?.name || 'Не указан'}
         </div>
@@ -124,9 +136,9 @@ export default function ProductCell({
         )}
         
         {/* Если нет статусов, показываем общее количество */}
-        {activeStatuses.length === 0 && item._count.productUnits > 0 && (
+        {activeStatuses.length === 0 && _count.productUnits > 0 && (
           <div className="text-xs text-gray-500 mt-2">
-            Всего единиц: {item._count.productUnits}
+            Всего единиц: {_count.productUnits}
           </div>
         )}
       </div>
