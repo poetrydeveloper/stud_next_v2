@@ -1,4 +1,4 @@
-// CreateCategoryModal.tsx - ПОЛНЫЙ ФИКС С АБСОЛЮТНЫМИ СТИЛЯМИ
+// app/ components/ miller-columns/  modal/CreateCategoryModal.tsx - ПОЛНЫЙ ФИКС С АБСОЛЮТНЫМИ СТИЛЯМИ
 'use client';
 
 import { useState, useEffect } from 'react';

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { generateSlug } from "@/lib/translit";
-import { ProductUnitPhysicalStatus } from "@prisma/client";
+import { ProductUnitPhysicalStatus, ProductUnitCardStatus } from "@prisma/client";
 import { nodeIndexService } from "@/app/lib/node-index/NodeIndexService";
 
-// GET метод оставляем без изменений
+// GET метод с исправленной фильтрацией по обоим типам статусов
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -12,33 +12,55 @@ export async function GET(request: Request) {
     const categoryId = searchParams.get('categoryId');
     const includeEmpty = searchParams.get('includeEmpty') !== 'false';
 
-    // Активные статусы для отображения (включая разобранные)
-    const activeStatuses: ProductUnitPhysicalStatus[] = [
+    // Статусы для отображения (оба типа)
+    const physicalStatuses: ProductUnitPhysicalStatus[] = [
       'IN_STORE', 
-      'CLEAR', 
-      'IN_REQUEST', 
-      'IN_DELIVERY', 
-      'ARRIVED', 
       'IN_DISASSEMBLED',
       'IN_COLLECTED'
     ];
 
-    // Парсим статус фильтр - может быть строкой или массивом
+    const cardStatuses: ProductUnitCardStatus[] = [
+      'CLEAR', 
+      'IN_REQUEST', 
+      'IN_DELIVERY', 
+      'ARRIVED'
+    ];
+
+    // Парсим статус фильтр
     let statusWhereCondition = {};
     if (statusFilter) {
       if (statusFilter.includes(',')) {
-        const statuses = statusFilter.split(',').filter(s => s.trim() !== '') as ProductUnitPhysicalStatus[];
+        const statuses = statusFilter.split(',').filter(s => s.trim() !== '');
+        
+        // Разделяем статусы по типам
+        const physicalStatusesFilter = statuses.filter(s => 
+          Object.values(ProductUnitPhysicalStatus).includes(s as ProductUnitPhysicalStatus)
+        );
+        const cardStatusesFilter = statuses.filter(s => 
+          Object.values(ProductUnitCardStatus).includes(s as ProductUnitCardStatus)
+        );
+
         statusWhereCondition = {
-          statusProduct: { in: statuses }
+          OR: [
+            ...(physicalStatusesFilter.length > 0 ? [{ statusProduct: { in: physicalStatusesFilter } }] : []),
+            ...(cardStatusesFilter.length > 0 ? [{ statusCard: { in: cardStatusesFilter } }] : [])
+          ]
         };
       } else {
-        statusWhereCondition = {
-          statusProduct: statusFilter as ProductUnitPhysicalStatus
-        };
+        // Один статус
+        if (Object.values(ProductUnitPhysicalStatus).includes(statusFilter as ProductUnitPhysicalStatus)) {
+          statusWhereCondition = { statusProduct: statusFilter as ProductUnitPhysicalStatus };
+        } else if (Object.values(ProductUnitCardStatus).includes(statusFilter as ProductUnitCardStatus)) {
+          statusWhereCondition = { statusCard: statusFilter as ProductUnitCardStatus };
+        }
       }
     } else {
+      // По умолчанию - оба типа статусов
       statusWhereCondition = {
-        statusProduct: { in: activeStatuses }
+        OR: [
+          { statusProduct: { in: physicalStatuses } },
+          { statusCard: { in: cardStatuses } }
+        ]
       };
     }
 

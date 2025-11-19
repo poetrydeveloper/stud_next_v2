@@ -1,4 +1,4 @@
-// CreateSpineModal.tsx - ФИКСИРОВАННАЯ ВЕРСИЯ
+//app/ components/ miller-columns/  modal/ CreateSpineModal.tsx
 'use client';
 
 import { useState } from 'react';

@@ -1,3 +1,4 @@
+// components/miller-columns/Column.tsx
 'use client'
 import { ColumnItem } from './types'
 import CategoryCell from './CategoryCell'
@@ -6,6 +7,7 @@ import ProductCell from './ProductCell'
 import styles from './MillerColumns.module.css'
 import { getCreateButtons } from './utils/createButtons'
 import { getCellComponent } from './utils/cellComponents'
+import { getParentTypeForColumn, shouldShowCreateButtons } from './utils/columnUtils'
 
 interface ColumnProps {
   items: ColumnItem[]
@@ -16,11 +18,13 @@ interface ColumnProps {
   isItemSelected: (itemId: number) => boolean
   isActive?: boolean
   isCollapsed?: boolean
-  parentType?: 'category' | 'spine' | null
   showCreateButtons?: boolean
   onCreateCategory?: (parentCategory?: any) => void
   onCreateSpine?: (category: any) => void
   onCreateProduct?: (spine?: any, category?: any) => void
+  // ДОБАВЛЯЕМ необходимые данные для вычислений
+  allColumns?: ColumnItem[][]
+  selectedItems?: number[]
 }
 
 export default function Column({ 
@@ -32,23 +36,34 @@ export default function Column({
   isItemSelected,
   isActive = false,
   isCollapsed = false,
-  parentType,
   showCreateButtons = false,
   onCreateCategory,
   onCreateSpine,
-  onCreateProduct
+  onCreateProduct,
+  // Новые props
+  allColumns = [],
+  selectedItems = []
 }: ColumnProps) {
 
-  console.log('🔍 Column received items:', items)
-  console.log('🔍 First item details:', items[0])
-  console.log('🔍 First item data:', items[0]?.data)
-  console.log('🔍 First item name:', items[0]?.data?.name)
+  // ВЫЧИСЛЯЕМ parentType на основе данных
+  const parentType = getParentTypeForColumn(allColumns, selectedItems, columnIndex)
+  const actualShowCreateButtons = shouldShowCreateButtons(allColumns, columnIndex, isLastColumn)
+
+  console.log('🔍 Column UTILS DEBUG:', {
+    columnIndex,
+    parentType,
+    showCreateButtons: actualShowCreateButtons,
+    itemsCount: items.length,
+    firstItemType: items[0]?.type,
+    allColumnsLength: allColumns.length,
+    selectedItems
+  })
 
   const createButtons = getCreateButtons({
     columnIndex,
     isCollapsed,
     parentType,
-    showCreateButtons,
+    showCreateButtons: actualShowCreateButtons,
     onCreateCategory,
     onCreateSpine,
     onCreateProduct
@@ -68,9 +83,6 @@ export default function Column({
           </div>
         ) : (
           items.map((item, index) => {
-            console.log(`🔍 Column mapping item ${index}:`, item)
-            console.log(`🔍 Column mapping item.data ${index}:`, item.data)
-            console.log(`🔍 Column mapping item.data.name ${index}:`, item.data?.name)
             return getCellComponent({
               item,
               index,

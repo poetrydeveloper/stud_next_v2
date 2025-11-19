@@ -1,5 +1,7 @@
+// components/miller-columns/MillerColumns.tsx
 'use client'
 
+import { useEffect } from 'react'
 import { useMillerColumns } from './hooks/useMillerColumns'
 import { useCreateModals } from './hooks/useCreateModals'
 import { useCreateHandlers } from './hooks/useCreateHandlers'
@@ -44,6 +46,17 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
     handleProductCreated
   } = useCreateHandlers(columns, selectedItems, handleItemSelect, loadRootCategories)
 
+  // ОТСЛЕЖИВАНИЕ ИЗМЕНЕНИЙ СОСТОЯНИЯ МОДАЛКИ
+  useEffect(() => {
+    console.log('🎯 MODAL STATE UPDATED:', {
+      createModalType: createModal.type,
+      isCreateModalOpen,
+      hasSpine: !!createModal.spine,
+      spineName: createModal.spine?.name,
+      spineId: createModal.spine?.id
+    })
+  }, [createModal.type, isCreateModalOpen, createModal.spine])
+
   if (loading) {
     return (
       <div className={styles.millerLoadingContainer}>
@@ -53,9 +66,10 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
     )
   }
 
-  console.log('🎯 MillerColumns CURRENT MODAL STATE:', {
-    createModal,
-    isCreateModalOpen
+  console.log('🎯 MillerColumns RENDER:', {
+    columns: columns.map(col => col.length),
+    modal: createModal.type,
+    modalOpen: isCreateModalOpen
   })
 
   return (
@@ -72,11 +86,12 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
             isItemSelected={(itemId) => isItemSelected(index, itemId)}
             isActive={activeColumn === index}
             isCollapsed={isColumnCollapsed(index)}
-            parentType={getParentTypeForColumn(index)}
             showCreateButtons={index === columns.length - 1}
             onCreateCategory={handleCreateCategory}
             onCreateSpine={handleCreateSpine}
             onCreateProduct={handleCreateProduct}
+            allColumns={columns}
+            selectedItems={selectedItems}
           />
         ))}
         
@@ -94,7 +109,7 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
         )}
       </div>
 
-      {/* Модальные окна создания */}
+      {/* Модальные окна создания - УПРОЩЕННАЯ ЛОГИКА */}
       {createModal.type === 'category' && (
         <CreateCategoryModal
           isOpen={isCreateModalOpen}
@@ -104,7 +119,7 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
         />
       )}
 
-      {createModal.type === 'spine' && createModal.category && (
+      {createModal.type === 'spine' && (
         <CreateSpineModal
           isOpen={isCreateModalOpen}
           onClose={closeCreateModal}
@@ -113,14 +128,34 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
         />
       )}
 
-      {createModal.type === 'product' && createModal.spine && (
+      {createModal.type === 'product' && (
         <CreateProductModal
           isOpen={isCreateModalOpen}
           onClose={closeCreateModal}
           onProductCreated={handleProductCreated}
-          spineId={createModal.spine.id}
-          categoryId={createModal.category?.id}
+          spineId={createModal.spine?.id}
+          categoryId={createModal.spine?.categoryId || createModal.category?.id}
         />
+      )}
+
+      {/* ДЕБАГ-ИНФОРМАЦИЯ */}
+      {process.env.NODE_ENV === 'development' && (
+        <div style={{
+          position: 'fixed',
+          bottom: '10px',
+          right: '10px',
+          background: 'rgba(0,0,0,0.8)',
+          color: 'white',
+          padding: '10px',
+          borderRadius: '5px',
+          fontSize: '12px',
+          zIndex: 9999
+        }}>
+          <div>Modal: {createModal.type || 'none'}</div>
+          <div>Open: {isCreateModalOpen ? 'yes' : 'no'}</div>
+          <div>Spine: {createModal.spine?.name || 'none'}</div>
+          <div>SpineId: {createModal.spine?.id || 'none'}</div>
+        </div>
       )}
     </div>
   )

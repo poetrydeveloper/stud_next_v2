@@ -1,4 +1,5 @@
-import { useState } from 'react'
+// components/miller-columns/hooks/useCreateModals.ts
+import { useState, useCallback } from 'react'
 import { Category } from '../types'
 
 export function useCreateModals() {
@@ -11,7 +12,7 @@ export function useCreateModals() {
   
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
-  const handleCreateCategory = (parentCategory?: Category) => {
+  const handleCreateCategory = useCallback((parentCategory?: Category) => {
     console.log('🎯 handleCreateCategory CALLED with:', {
       parentCategory: parentCategory?.name,
       hasParent: !!parentCategory
@@ -21,9 +22,9 @@ export function useCreateModals() {
       parentCategory 
     })
     setIsCreateModalOpen(true)
-  }
+  }, [])
 
-  const handleCreateSpine = (category: Category) => {
+  const handleCreateSpine = useCallback((category: Category) => {
     console.log('🎯 handleCreateSpine CALLED with:', {
       category: category?.name,
       categoryId: category?.id
@@ -33,9 +34,9 @@ export function useCreateModals() {
       category 
     })
     setIsCreateModalOpen(true)
-  }
+  }, [])
 
-  const handleCreateProduct = (spine?: any, category?: Category) => {
+  const handleCreateProduct = useCallback((spine?: any, category?: Category) => {
     console.log('🎯 handleCreateProduct CALLED with:', {
       spine: spine?.name,
       spineId: spine?.id,
@@ -47,13 +48,14 @@ export function useCreateModals() {
       category
     })
     setIsCreateModalOpen(true)
-  }
+  }, [])
 
-  const closeCreateModal = () => {
-    console.log('🎯 CLOSING MODAL, current state:', { createModal, isCreateModalOpen })
-    setIsCreateModalOpen(false)
+  const closeCreateModal = useCallback(() => {
+    console.log('🎯 CLOSING MODAL')
+    // ВАЖНО: сначала сбрасываем состояние, потом закрываем
     setCreateModal({ type: null })
-  }
+    setIsCreateModalOpen(false)
+  }, [])
 
   return {
     createModal,

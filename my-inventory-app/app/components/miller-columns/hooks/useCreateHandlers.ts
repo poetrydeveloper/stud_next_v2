@@ -1,3 +1,4 @@
+// components/miller-columns/hooks/useCreateHandlers.ts
 import { ColumnItem } from '../types'
 import { apiService } from '../services/apiService'
 
@@ -8,8 +9,34 @@ export function useCreateHandlers(
   loadRootCategories: () => Promise<void>
 ) {
   const handleCreateSubmit = async (name: string, parentId?: number) => {
-    // Этот метод теперь только для категорий и spine
-    // Продукты обрабатываются отдельно через handleProductCreated
+    try {
+      console.log('🎯 handleCreateSubmit called:', { name, parentId })
+      
+      // Определяем тип создания по контексту
+      const lastSelectedItemId = selectedItems[selectedItems.length - 1]
+      const lastColumn = columns[columns.length - 1]
+      const selectedItem = lastColumn?.find(item => item.data.id === lastSelectedItemId)
+      
+      if (selectedItem?.type === 'category') {
+        // Создаем подкатегорию
+        console.log('📁 Creating subcategory for:', selectedItem.data.name)
+        await apiService.createCategory(name, selectedItem.data.id)
+        await handleItemSelect(selectedItem, columns.length - 1)
+      } else if (parentId) {
+        // Создаем spine в категории
+        console.log('🟢 Creating spine for category ID:', parentId)
+        await apiService.createSpine(name, parentId)
+        await loadRootCategories() // Перезагружаем корневые категории
+      } else {
+        // Создаем корневую категорию
+        console.log('🏠 Creating root category')
+        await apiService.createCategory(name)
+        await loadRootCategories()
+      }
+    } catch (error) {
+      console.error('❌ Error in handleCreateSubmit:', error)
+      throw error
+    }
   }
 
   const handleProductCreated = async (newProduct: any) => {

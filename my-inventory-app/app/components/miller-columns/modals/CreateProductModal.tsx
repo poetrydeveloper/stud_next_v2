@@ -1,7 +1,7 @@
+// components/miller-columns/modals/CreateProductModal.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Loader2, Upload, Image as ImageIcon } from 'lucide-react'
 
 interface CreateProductModalProps {
   isOpen: boolean
@@ -9,18 +9,6 @@ interface CreateProductModalProps {
   onProductCreated: (product: any) => void
   spineId?: number
   categoryId?: number
-}
-
-interface Brand {
-  id: number
-  name: string
-}
-
-interface Spine {
-  id: number
-  name: string
-  node_index?: string
-  human_path?: string
 }
 
 export default function CreateProductModal({ 
@@ -31,128 +19,204 @@ export default function CreateProductModal({
   categoryId 
 }: CreateProductModalProps) {
   const [loading, setLoading] = useState(false)
-  const [brands, setBrands] = useState<Brand[]>([])
-  const [spines, setSpines] = useState<Spine[]>([])
-  const [brandsLoading, setBrandsLoading] = useState(true)
-  const [spinesLoading, setSpinesLoading] = useState(true)
-  const [selectedImages, setSelectedImages] = useState<File[]>([])
-  const [imagePreviews, setImagePreviews] = useState<string[]>([])
-
+  const [brands, setBrands] = useState<any[]>([])
+  const [suppliers, setSuppliers] = useState<any[]>([])
+  const [showNewBrand, setShowNewBrand] = useState(false)
+  const [showNewSupplier, setShowNewSupplier] = useState(false)
+  const [newBrandName, setNewBrandName] = useState('')
+  const [newSupplierName, setNewSupplierName] = useState('')
+  
   const [formData, setFormData] = useState({
-    code: '',
     name: '',
+    code: '',
     description: '',
     brandId: '',
-    spineId: spineId ? spineId.toString() : '',
+    supplierId: ''
   })
 
-  // Загружаем бренды и spines при открытии модалки
+  console.log('🎯 CreateProductModal RENDERING!', {
+    isOpen,
+    spineId,
+    categoryId
+  })
+
+  // Загружаем бренды и поставщиков
   useEffect(() => {
     if (isOpen) {
       fetchBrands()
-      fetchSpines()
+      fetchSuppliers()
     }
   }, [isOpen])
 
   const fetchBrands = async () => {
     try {
-      setBrandsLoading(true)
+      console.log('🎯 Fetching brands...')
       const response = await fetch('/api/brands')
-      if (response.ok) {
-        const brandsData = await response.json()
-        setBrands(brandsData)
-      }
-    } catch (error) {
-      console.error('Error fetching brands:', error)
-    } finally {
-      setBrandsLoading(false)
-    }
-  }
-
-  const fetchSpines = async () => {
-    try {
-      setSpinesLoading(true)
-      let url = '/api/spines'
-      if (categoryId) {
-        url += `?categoryId=${categoryId}`
-      }
+      console.log('🎯 Brands response status:', response.status)
       
-      const response = await fetch(url)
       if (response.ok) {
-        const spinesData = await response.json()
-        setSpines(spinesData)
+        const result = await response.json()
+        console.log('🎯 Brands result:', result)
         
-        // Если передан spineId, устанавливаем его по умолчанию
-        if (spineId && !formData.spineId) {
-          setFormData(prev => ({ ...prev, spineId: spineId.toString() }))
+        // Пробуем разные варианты структуры ответа
+        let brandsData = []
+        
+        if (Array.isArray(result)) {
+          brandsData = result
+        } else if (Array.isArray(result.data)) {
+          brandsData = result.data
+        } else if (Array.isArray(result.brands)) {
+          brandsData = result.brands
+        } else if (result && typeof result === 'object') {
+          // Если это объект, пробуем извлечь массив из свойств
+          brandsData = Object.values(result)
         }
+        
+        console.log('🎯 Extracted brands data:', brandsData)
+        
+        if (Array.isArray(brandsData) && brandsData.length > 0) {
+          setBrands(brandsData)
+        } else {
+          console.log('🎯 No brands found, using empty array')
+          setBrands([])
+        }
+      } else {
+        console.error('❌ Failed to fetch brands')
+        setBrands([])
       }
     } catch (error) {
-      console.error('Error fetching spines:', error)
-    } finally {
-      setSpinesLoading(false)
+      console.error('❌ Error loading brands:', error)
+      setBrands([])
     }
   }
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files) return
-
-    const newFiles = Array.from(files)
-    setSelectedImages(prev => [...prev, ...newFiles])
-
-    // Создаем превью
-    const newPreviews = newFiles.map(file => URL.createObjectURL(file))
-    setImagePreviews(prev => [...prev, ...newPreviews])
+  const fetchSuppliers = async () => {
+    try {
+      const response = await fetch('/api/suppliers')
+      if (response.ok) {
+        const result = await response.json()
+        let suppliersData = []
+        
+        if (Array.isArray(result)) {
+          suppliersData = result
+        } else if (Array.isArray(result.data)) {
+          suppliersData = result.data
+        } else if (Array.isArray(result.suppliers)) {
+          suppliersData = result.suppliers
+        }
+        
+        setSuppliers(suppliersData || [])
+      }
+    } catch (error) {
+      console.error('Error loading suppliers:', error)
+      setSuppliers([])
+    }
   }
 
-  const removeImage = (index: number) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index))
-    setImagePreviews(prev => {
-      URL.revokeObjectURL(prev[index])
-      return prev.filter((_, i) => i !== index)
-    })
+  const createNewBrand = async () => {
+    if (!newBrandName.trim()) {
+      alert('Введите название бренда')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/brands', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: newBrandName })
+      })
+
+      if (response.ok) {
+        const newBrand = await response.json()
+        setBrands(prev => [...prev, newBrand.data || newBrand])
+        setFormData(prev => ({ ...prev, brandId: (newBrand.data?.id || newBrand.id).toString() }))
+        setNewBrandName('')
+        setShowNewBrand(false)
+      } else {
+        alert('Ошибка при создании бренда')
+      }
+    } catch (error) {
+      console.error('Error creating brand:', error)
+      alert('Ошибка при создании бренда')
+    }
+  }
+
+  const createNewSupplier = async () => {
+    if (!newSupplierName.trim()) {
+      alert('Введите название поставщика')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/suppliers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: newSupplierName })
+      })
+
+      if (response.ok) {
+        const newSupplier = await response.json()
+        setSuppliers(prev => [...prev, newSupplier.data || newSupplier])
+        setFormData(prev => ({ ...prev, supplierId: (newSupplier.data?.id || newSupplier.id).toString() }))
+        setNewSupplierName('')
+        setShowNewSupplier(false)
+      } else {
+        alert('Ошибка при создании поставщика')
+      }
+    } catch (error) {
+      console.error('Error creating supplier:', error)
+      alert('Ошибка при создании поставщика')
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('🎯 Submitting product form...', formData)
     setLoading(true)
 
     try {
       const submitData = new FormData()
-      
-      // Добавляем текстовые данные
       submitData.append('name', formData.name)
       submitData.append('code', formData.code)
       submitData.append('description', formData.description)
       submitData.append('brandId', formData.brandId)
-      submitData.append('spineId', formData.spineId)
+      
+      if (formData.supplierId) {
+        submitData.append('supplierId', formData.supplierId)
+      }
+      
+      if (spineId) {
+        submitData.append('spineId', spineId.toString())
+      }
       
       if (categoryId) {
         submitData.append('categoryId', categoryId.toString())
       }
 
-      // Добавляем изображения
-      selectedImages.forEach((image, index) => {
-        submitData.append('images', image)
-      })
-
-      const response = await fetch('/api/products', {
+      console.log('🎯 Sending FormData to /api/products...')
+      const response = await fetch('/api/products', { 
         method: 'POST',
-        body: submitData,
-        // Не устанавливаем Content-Type - браузер сделает это сам с boundary
+        body: submitData
       })
-
+      
+      console.log('🎯 Response status:', response.status)
       const result = await response.json()
+      console.log('🎯 Response result:', result)
 
       if (response.ok && result.ok) {
+        console.log('✅ Product created successfully:', result.data)
         onProductCreated(result.data)
         handleClose()
       } else {
+        console.error('❌ Error creating product:', result.error)
         alert(result.error || 'Failed to create product')
       }
     } catch (error) {
-      console.error('Error creating product:', error)
+      console.error('❌ Network error creating product:', error)
       alert('Failed to create product')
     } finally {
       setLoading(false)
@@ -160,222 +224,381 @@ export default function CreateProductModal({
   }
 
   const handleClose = () => {
+    console.log('🎯 Closing product modal')
     setFormData({
-      code: '',
       name: '',
+      code: '',
       description: '',
       brandId: '',
-      spineId: spineId ? spineId.toString() : '',
+      supplierId: ''
     })
-    setSelectedImages([])
-    setImagePreviews([])
-    // Очищаем объекты URL для предотвращения утечек памяти
-    imagePreviews.forEach(url => URL.revokeObjectURL(url))
+    setNewBrandName('')
+    setNewSupplierName('')
+    setShowNewBrand(false)
+    setShowNewSupplier(false)
     onClose()
   }
 
-  if (!isOpen) return null
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  if (!isOpen) {
+    console.log('🎯 Modal not open, skipping render')
+    return null
+  }
+
+  console.log('🎯 Rendering CreateProductModal UI')
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white z-10">
-          <h2 className="text-lg font-semibold">Создать продукт</h2>
-          <button
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 10000,
+    }}>
+      <div style={{
+        background: 'white',
+        borderRadius: '8px',
+        padding: '24px',
+        width: '95%',
+        maxWidth: '600px',
+        maxHeight: '95vh',
+        overflow: 'auto',
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '20px',
+          borderBottom: '1px solid #e5e7eb',
+          paddingBottom: '16px'
+        }}>
+          <h2 style={{ 
+            margin: 0, 
+            fontSize: '1.5rem', 
+            fontWeight: '600',
+            color: '#1f2937'
+          }}>
+            Создать новый товар
+          </h2>
+          <button 
             onClick={handleClose}
-            className="p-1 hover:bg-gray-100 rounded"
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '24px',
+              cursor: 'pointer',
+              color: '#6b7280',
+              padding: '4px'
+            }}
           >
-            <X size={20} />
+            ×
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Основная информация */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Код продукта *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Например: ART-001"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Название продукта *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Например: Набор бит 50 предметов"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Бренд *
-                </label>
-                {brandsLoading ? (
-                  <div className="flex items-center space-x-2">
-                    <Loader2 size={16} className="animate-spin" />
-                    <span className="text-sm text-gray-500">Загрузка брендов...</span>
-                  </div>
-                ) : (
-                  <select
-                    required
-                    value={formData.brandId}
-                    onChange={(e) => setFormData({ ...formData, brandId: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Выберите бренд</option>
-                    {brands.map((brand) => (
-                      <option key={brand.id} value={brand.id}>
-                        {brand.name}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Spine *
-                </label>
-                {spinesLoading ? (
-                  <div className="flex items-center space-x-2">
-                    <Loader2 size={16} className="animate-spin" />
-                    <span className="text-sm text-gray-500">Загрузка spines...</span>
-                  </div>
-                ) : (
-                  <select
-                    required
-                    value={formData.spineId}
-                    onChange={(e) => setFormData({ ...formData, spineId: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    disabled={!!spineId} // Если spineId передан, делаем поле readonly
-                  >
-                    <option value="">Выберите spine</option>
-                    {spines.map((spine) => (
-                      <option key={spine.id} value={spine.id}>
-                        {spine.name} {spine.human_path && `(${spine.human_path})`}
-                      </option>
-                    ))}
-                  </select>
-                )}
-                {spineId && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Spine предварительно выбран из навигации
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Изображения и описание */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Изображения
-                </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageSelect}
-                    className="hidden"
-                    id="image-upload"
-                  />
-                  <label
-                    htmlFor="image-upload"
-                    className="flex flex-col items-center justify-center cursor-pointer p-4 hover:bg-gray-50 rounded"
-                  >
-                    <Upload size={24} className="text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-600 text-center">
-                      Нажмите для загрузки изображений<br />
-                      <span className="text-xs text-gray-400">Поддерживаются JPG, PNG</span>
-                    </span>
-                  </label>
-                  
-                  {/* Превью изображений */}
-                  {imagePreviews.length > 0 && (
-                    <div className="mt-4 grid grid-cols-3 gap-2">
-                      {imagePreviews.map((preview, index) => (
-                        <div key={index} className="relative group">
-                          <img
-                            src={preview}
-                            alt={`Preview ${index + 1}`}
-                            className="w-full h-20 object-cover rounded"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeImage(index)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X size={12} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Описание
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={4}
-                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Описание продукта..."
-                />
-              </div>
-            </div>
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ 
+              display: 'block', 
+              marginBottom: '6px',
+              fontWeight: '500',
+              color: '#374151'
+            }}>
+              Название товара *
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '1rem'
+              }}
+              placeholder="Введите название товара"
+              required
+            />
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-end space-x-2 pt-4 border-t">
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ 
+              display: 'block', 
+              marginBottom: '6px',
+              fontWeight: '500',
+              color: '#374151'
+            }}>
+              Артикул (SKU) *
+            </label>
+            <input
+              type="text"
+              name="code"
+              value={formData.code}
+              onChange={handleChange}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '1rem'
+              }}
+              placeholder="Введите артикул"
+              required
+            />
+          </div>
+
+          {/* Бренд с возможностью создания нового */}
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <label style={{ 
+                fontWeight: '500',
+                color: '#374151'
+              }}>
+                Бренд *
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowNewBrand(!showNewBrand)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#3b82f6',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem'
+                }}
+              >
+                {showNewBrand ? '← Выбрать из списка' : '+ Создать новый'}
+              </button>
+            </div>
+
+            {!showNewBrand ? (
+              <select
+                name="brandId"
+                value={formData.brandId}
+                onChange={handleChange}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  fontSize: '1rem'
+                }}
+                required
+              >
+                <option value="">Выберите бренд</option>
+                {Array.isArray(brands) && brands.map((brand: any) => (
+                  <option key={brand.id} value={brand.id}>
+                    {brand.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  value={newBrandName}
+                  onChange={(e) => setNewBrandName(e.target.value)}
+                  style={{
+                    flex: 1,
+                    padding: '10px 12px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '1rem'
+                  }}
+                  placeholder="Введите название нового бренда"
+                />
+                <button
+                  type="button"
+                  onClick={createNewBrand}
+                  style={{
+                    padding: '10px 16px',
+                    background: '#10b981',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  Создать
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Поставщик с возможностью создания нового */}
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <label style={{ 
+                fontWeight: '500',
+                color: '#374151'
+              }}>
+                Поставщик
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowNewSupplier(!showNewSupplier)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#3b82f6',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem'
+                }}
+              >
+                {showNewSupplier ? '← Выбрать из списка' : '+ Создать нового'}
+              </button>
+            </div>
+
+            {!showNewSupplier ? (
+              <select
+                name="supplierId"
+                value={formData.supplierId}
+                onChange={handleChange}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  fontSize: '1rem'
+                }}
+              >
+                <option value="">Выберите поставщика (опционально)</option>
+                {Array.isArray(suppliers) && suppliers.map((supplier: any) => (
+                  <option key={supplier.id} value={supplier.id}>
+                    {supplier.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  value={newSupplierName}
+                  onChange={(e) => setNewSupplierName(e.target.value)}
+                  style={{
+                    flex: 1,
+                    padding: '10px 12px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '1rem'
+                  }}
+                  placeholder="Введите название нового поставщика"
+                />
+                <button
+                  type="button"
+                  onClick={createNewSupplier}
+                  style={{
+                    padding: '10px 16px',
+                    background: '#10b981',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  Создать
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ 
+              display: 'block', 
+              marginBottom: '6px',
+              fontWeight: '500',
+              color: '#374151'
+            }}>
+              Описание
+            </label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '1rem',
+                minHeight: '80px',
+                resize: 'vertical'
+              }}
+              placeholder="Введите описание товара"
+            />
+          </div>
+
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'flex-end', 
+            gap: '12px',
+            marginTop: '24px',
+            paddingTop: '20px',
+            borderTop: '1px solid #e5e7eb'
+          }}>
             <button
               type="button"
               onClick={handleClose}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
-              disabled={loading}
+              style={{
+                padding: '10px 20px',
+                background: '#f3f4f6',
+                color: '#374151',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer'
+              }}
             >
               Отмена
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              style={{
+                padding: '10px 20px',
+                background: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
             >
-              {loading ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  <span>Создание...</span>
-                </>
-              ) : (
-                <>
-                  <ImageIcon size={16} />
-                  <span>Создать продукт</span>
-                </>
-              )}
+              {loading ? 'Создание...' : 'Создать товар'}
             </button>
           </div>
         </form>
+
+        {/* Дебаг-информация */}
+        <div style={{
+          marginTop: '20px',
+          padding: '12px',
+          background: '#f8f9fa',
+          borderRadius: '6px',
+          fontSize: '12px',
+          color: '#6c757d',
+          border: '1px solid #e9ecef'
+        }}>
+          <div><strong>Debug Info:</strong></div>
+          <div>Spine ID: {spineId || 'undefined'}</div>
+          <div>Category ID: {categoryId || 'undefined'}</div>
+          <div>Brands: {Array.isArray(brands) ? brands.length : 'NOT ARRAY'}</div>
+          <div>Suppliers: {Array.isArray(suppliers) ? suppliers.length : 'NOT ARRAY'}</div>
+        </div>
       </div>
     </div>
   )

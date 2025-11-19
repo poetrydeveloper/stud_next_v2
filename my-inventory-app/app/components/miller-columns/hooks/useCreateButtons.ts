@@ -1,3 +1,4 @@
+// miller columns / hooks / use create button
 import { ColumnItem } from '../types'
 import styles from '../MillerColumns.module.css'
 
@@ -128,7 +129,7 @@ export function useCreateButtons({
       )
     }
 
-    // Для spine
+    // Для spine - ПОЛНАЯ ОТЛАДКА!
     if (item.type === 'spine') {
       return (
         <div className={styles.millerItemCreateButtons}>
@@ -136,11 +137,32 @@ export function useCreateButtons({
             className={styles.millerItemCreateBtn}
             onClick={(e) => {
               e.stopPropagation()
-              console.log('🎯 CREATE PRODUCT CLICKED:', {
-                spineName: item.data.name,
-                spineId: item.data.id,
-              })
-              onCreateProduct?.(item.data, { id: item.data.categoryId })
+              
+              // ПРИНУДИТЕЛЬНАЯ ОТЛАДКА
+              console.log('🎯🎯🎯 CREATE PRODUCT BUTTON CLICKED!')
+              console.log('🔍 Full spine data:', item.data)
+              console.log('🔍 onCreateProduct function:', onCreateProduct)
+              console.log('🔍 Function type:', typeof onCreateProduct)
+              
+              // ВРЕМЕННО - покажем alert чтобы убедиться что клик работает
+              alert(`Кнопка "+📦" нажата! Spine: ${item.data.name}`)
+              
+              // Проверяем что функция существует перед вызовом
+              if (onCreateProduct) {
+                console.log('🚀 Calling onCreateProduct with:', {
+                  spine: item.data,
+                  category: item.data.category
+                })
+                onCreateProduct(item.data, item.data.category)
+                console.log('✅ onCreateProduct called successfully')
+              } else {
+                console.error('❌ ERROR: onCreateProduct is undefined!')
+                console.error('❌ Available props:', {
+                  onCreateCategory: !!onCreateCategory,
+                  onCreateSpine: !!onCreateSpine,
+                  onCreateProduct: !!onCreateProduct
+                })
+              }
             }}
             title="Создать продукт"
           >

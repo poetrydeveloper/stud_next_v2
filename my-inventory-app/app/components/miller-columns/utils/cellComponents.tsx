@@ -1,3 +1,4 @@
+// components/miller-columns/utils/cellComponents.tsx
 import React from 'react'
 import { ColumnItem } from '../types'
 import CategoryCell from '../CategoryCell'
@@ -30,7 +31,7 @@ export function getCellComponent({
   onCreateProduct
 }: CellComponentProps): React.ReactNode {
 
-  console.log('🔍 getCellComponent item:', item)
+  console.log('🔍 getCellComponent item:', item.type, item.data?.name)
 
   // Защита от undefined
   if (!item || !item.data) {
@@ -50,22 +51,31 @@ export function getCellComponent({
     isCollapsed: isCollapsed
   }
 
-  // Обертка с кнопками создания
+  // ОТЛАДКА: проверяем какие функции передаются
+  console.log('🔍 getCellComponent - available create functions:', {
+    hasOnCreateCategory: !!onCreateCategory,
+    hasOnCreateSpine: !!onCreateSpine,
+    hasOnCreateProduct: !!onCreateProduct,
+    itemType: item.type
+  })
+
+  // Обертка с кнопками создания - УБРАНА ЛИШНЯЯ ОБЕРТКА
   const CellWithButtons = ({ children }: { children: React.ReactNode }) => (
     <div className={styles.millerCellWithButtons}>
       {children}
-      {getItemCreateButtons(item, onCreateCategory, onCreateSpine, onCreateProduct)}
+      {/* ПРИНУДИТЕЛЬНО ДЕЛАЕМ КНОПКИ ВИДИМЫМИ */}
+      <div style={{ opacity: 1, pointerEvents: 'auto' }}>
+        {getItemCreateButtons(item, onCreateCategory, onCreateSpine, onCreateProduct)}
+      </div>
     </div>
   )
-
-  console.log('🔍 getCellComponent passing to CategoryCell:', item.data)
 
   switch (item.type) {
     case 'category':
       return (
         <CellWithButtons key={`category-${item.data.id}-${index}`}>
           <CategoryCell 
-            item={item.data} // ← ИСПРАВЛЕНО: было category={item.data}, должно быть item={item.data}
+            item={item.data}
             {...baseProps}
           />
         </CellWithButtons>
@@ -74,7 +84,7 @@ export function getCellComponent({
       return (
         <CellWithButtons key={`spine-${item.data.id}-${index}`}>
           <SpineCell 
-            item={item.data} // ← ИСПРАВЛЕНО
+            item={item.data}
             {...baseProps}
           />
         </CellWithButtons>
@@ -83,7 +93,7 @@ export function getCellComponent({
       return (
         <CellWithButtons key={`product-${item.data.id}-${index}`}>
           <ProductCell 
-            item={item.data} // ← ИСПРАВЛЕНО
+            item={item.data}
             {...baseProps}
           />
         </CellWithButtons>

@@ -197,3 +197,9 @@
   min-width: 0;
   padding-right: 8px; /* Дополнительный отступ справа */
 }
+
+/* ДОПОЛНИТЕЛЬНЫЙ СТИЛЬ - кнопки всегда видны */
+.millerItemCreateButtons.alwaysVisible {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
