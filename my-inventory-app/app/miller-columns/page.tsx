@@ -3,45 +3,54 @@
 
 import { useState } from 'react'
 import MillerColumns from '@/app/components/miller-columns/MillerColumns'
-import MovementBoard from '@/app/components/movement-board/MovementBoard'
+import ProductMovementDashboard from '@/app/components/movement-board/ProductMovementDashboard' // ← ИЗМЕНИЛ ИМПОРТ
 
 export default function MillerColumnsPage() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const [showMovementBoard, setShowMovementBoard] = useState(false)
+  const [millerWidth, setMillerWidth] = useState(800) // начальная ширина
 
-  // Обработчик выбора продукта в Miller Columns
   const handleProductSelect = (product: any) => {
     setSelectedProduct(product)
     setShowMovementBoard(true)
   }
 
-  // Закрытие табло движений
   const handleCloseMovementBoard = () => {
     setShowMovementBoard(false)
     setSelectedProduct(null)
   }
 
+  // Обработчик изменения ширины Miller Columns
+  const handleMillerWidthChange = (width: number) => {
+    setMillerWidth(width + 32) // добавляем отступы
+  }
+
   return (
-    <div className="h-full"> {/* УБИРАЕМ flex здесь */}
-      {/* Основная область - Miller Columns */}
-      <div className={`${showMovementBoard ? 'w-2/3 float-left' : 'w-full'} transition-all duration-300 h-full`}>
-        <div className="h-full bg-white rounded-lg border border-gray-200">
-          <div className="p-4 border-b border-gray-200">
-            <h1 className="text-xl font-bold text-gray-800">🗂️ Карта товаров</h1>
-            <p className="text-sm text-gray-600 mt-1">
-              Навигация по категориям → Spine → Продукты
-            </p>
+    <div className="flex h-full">
+      {/* Левая панель - Miller Columns */}
+      <div 
+        className="transition-all duration-300 h-full flex flex-col flex-shrink-0"
+        style={{ width: showMovementBoard ? `${millerWidth}px` : '100%' }}
+      >
+        <div className="h-full bg-white rounded-lg border border-gray-200 flex flex-col">
+          {/* УБИРАЕМ заголовок - оставляем только border для визуального разделения */}
+          <div className="p-2 border-b border-gray-200 flex-shrink-0">
+            {/* Заголовки удалены - оставляем минимальную высоту для border */}
           </div>
           
-          {/* УБИРАЕМ лишнюю обертку с flex */}
-          <MillerColumns onProductSelect={handleProductSelect} />
+          <div className="flex-1 min-h-0">
+            <MillerColumns 
+              onProductSelect={handleProductSelect}
+              onWidthChange={handleMillerWidthChange} // передаем обработчик
+            />
+          </div>
         </div>
       </div>
 
-      {/* Табло движений - выезжает справа */}
+      {/* Правая панель - Табло движений */}
       {showMovementBoard && (
-        <div className="w-1/3 float-left transition-all duration-300 h-full">
-          <MovementBoard 
+        <div className="flex-1 transition-all duration-300 h-full min-w-[400px] bg-white border-l border-gray-200">
+          <ProductMovementDashboard // ← ИЗМЕНИЛ КОМПОНЕНТ
             product={selectedProduct}
             onClose={handleCloseMovementBoard}
           />

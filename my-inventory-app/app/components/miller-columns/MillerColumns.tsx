@@ -1,7 +1,7 @@
-// components/miller-columns/MillerColumns.tsx
+//components/miller-columns/MillerColumns.tsx
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react' // ДОБАВЛЯЕМ useState
 import { useMillerColumns } from './hooks/useMillerColumns'
 import { useCreateModals } from './hooks/useCreateModals'
 import { useCreateHandlers } from './hooks/useCreateHandlers'
@@ -14,9 +14,10 @@ import styles from './MillerColumns.module.css'
 
 interface MillerColumnsProps {
   onProductSelect: (product: Product) => void
+  onWidthChange?: (width: number) => void // ДОБАВЛЯЕМ новый пропс
 }
 
-export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
+export default function MillerColumns({ onProductSelect, onWidthChange }: MillerColumnsProps) {
   const {
     columns,
     loading,
@@ -32,6 +33,9 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
     expandColumn
   } = useMillerColumns(onProductSelect)
 
+  // ДОБАВЛЯЕМ: состояние для отслеживания ширины
+  const [totalWidth, setTotalWidth] = useState(0)
+
   const {
     createModal,
     isCreateModalOpen,
@@ -45,6 +49,25 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
     handleCreateSubmit,
     handleProductCreated
   } = useCreateHandlers(columns, selectedItems, handleItemSelect, loadRootCategories)
+
+  // ДОБАВЛЯЕМ: вычисляем ширину при изменении колонок
+  useEffect(() => {
+    const calculateWidth = () => {
+      let width = 0
+      columns.forEach((_, index) => {
+        if (isColumnCollapsed(index)) {
+          width += 80 // свернутая колонка
+        } else {
+          width += 250 // обычная колонка
+        }
+      })
+      const newWidth = Math.max(width, 300) // минимальная ширина 300px
+      setTotalWidth(newWidth)
+      onWidthChange?.(newWidth)
+    }
+
+    calculateWidth()
+  }, [columns, collapsedColumns, isColumnCollapsed, onWidthChange])
 
   // ОТСЛЕЖИВАНИЕ ИЗМЕНЕНИЙ СОСТОЯНИЯ МОДАЛКИ
   useEffect(() => {
@@ -69,11 +92,15 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
   console.log('🎯 MillerColumns RENDER:', {
     columns: columns.map(col => col.length),
     modal: createModal.type,
-    modalOpen: isCreateModalOpen
+    modalOpen: isCreateModalOpen,
+    totalWidth // ДОБАВЛЯЕМ в лог
   })
 
   return (
-    <div className={styles.millerWrapper}>
+    <div 
+      className={styles.millerWrapper}
+      style={{ width: `${totalWidth}px` }} // ДОБАВЛЯЕМ динамическую ширину
+    >
       <div className={styles.millerScroller}>
         {columns.map((columnItems, index) => (
           <Column
@@ -155,6 +182,7 @@ export default function MillerColumns({ onProductSelect }: MillerColumnsProps) {
           <div>Open: {isCreateModalOpen ? 'yes' : 'no'}</div>
           <div>Spine: {createModal.spine?.name || 'none'}</div>
           <div>SpineId: {createModal.spine?.id || 'none'}</div>
+          <div>Width: {totalWidth}px</div> {/* ДОБАВЛЯЕМ информацию о ширине */}
         </div>
       )}
     </div>

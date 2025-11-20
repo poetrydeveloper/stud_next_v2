@@ -1,9 +1,8 @@
 /* components/miller-columns/styles/MillerColumns.collapsed.css */
 /* ЭФФЕКТ СМИНАНИЯ - КОЛОНКА СТАНОВИТСЯ УЗКОЙ */
 .millerColumn.collapsed {
-  width: 80px;
-  background: #f8fafc;
-  position: relative;
+  min-width: 80px;
+  max-width: 80px;
 }
 
 .millerColumn.collapsed .millerList,
