@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import CurrentUnitsSnapshot from './CurrentUnitsSnapshot'
-import CalendarTimeline from './CalendarTimeline'
+import FigmaCalendar from './figma-calendar/Calendar'
 import QuickActionsMenu from './QuickActionsMenu'
 import StockManagement from './StockManagement'
 import CandidatesTable from './CandidatesTable'
@@ -22,6 +22,7 @@ interface ProductUnit {
   updatedAt: string
   productName: string
   productCode: string
+  logs?: any[]
 }
 
 export default function ProductMovementDashboard({ product, onClose }: ProductMovementDashboardProps) {
@@ -38,21 +39,43 @@ export default function ProductMovementDashboard({ product, onClose }: ProductMo
     }
   }, [product])
 
+  // ✅ ДОБАВЛЕНА ОТЛАДКА ДАННЫХ
+  useEffect(() => {
+    if (productUnits.length > 0) {
+      console.log('📊 DEBUG: ProductUnits данные:', productUnits)
+      console.log('📅 DEBUG: Количество units:', productUnits.length)
+      console.log('🔍 DEBUG: Первый unit:', productUnits[0])
+      console.log('📝 DEBUG: Логи первого unit:', productUnits[0]?.logs)
+      console.log('🎯 DEBUG: Статусы всех units:', productUnits.map(u => ({
+        id: u.id,
+        statusCard: u.statusCard,
+        statusProduct: u.statusProduct,
+        createdAt: u.createdAt,
+        logsCount: u.logs?.length || 0
+      })))
+    }
+  }, [productUnits])
+
   const loadProductUnits = async () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await fetch(`/api/product-units/by-product-code?productCode=${product.code}`)
+      
+      console.log('🔄 DEBUG: Загружаем units для product:', product.code)
+      const response = await fetch(`/api/product-units/by-product-code?productCode=${product.code}&includeLogs=true`)
       
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
       
       const data = await response.json()
+      console.log('📦 DEBUG: Ответ API:', data)
+      
       if (data.ok) {
         setProductUnits(data.data)
       } else {
         setError(data.error || 'Ошибка загрузки')
       }
     } catch (error) {
+      console.error('💥 DEBUG: Ошибка загрузки:', error)
       setError('Не удалось загрузить данные')
       setProductUnits([])
     } finally {
@@ -119,6 +142,14 @@ export default function ProductMovementDashboard({ product, onClose }: ProductMo
     } catch (error) {
       setError('Ошибка создания заявки')
     }
+  }
+
+  const handleUnitClick = (unitId: string | number) => {
+    console.log('Unit clicked:', unitId)
+  }
+
+  const handleDayClick = (date: Date) => {
+    console.log('Day clicked:', date)
   }
 
   const getStatusStats = () => {
@@ -188,11 +219,12 @@ export default function ProductMovementDashboard({ product, onClose }: ProductMo
         <CurrentUnitsSnapshot product={product} statusCounts={statusStats} />
         <StockManagement stockInfo={stockInfo} />
         
-        <CalendarTimeline 
-          product={product}
-          selectedMonth={selectedMonth}
-          onMonthChange={setSelectedMonth}
+        <FigmaCalendar 
           productUnits={productUnits}
+          monthAnchor={selectedMonth}
+          onUnitClick={handleUnitClick}
+          onDayClick={handleDayClick}
+          className="border rounded-lg p-4 bg-white"
         />
         
         {stockInfo.needToOrder > 0 && stockInfo.hasCandidates && (

@@ -1,12 +1,14 @@
-// types content placeholder
 // app/components/movement-board/figma-calendar/types.ts
-export type ProductStatus = 'CLEAR' | 'CANDIDATE' | 'IN_REQUEST' | 'IN_STORE' | 'SOLD';
+export type ProductStatus = 'CLEAR' | 'CANDIDATE' | 'IN_REQUEST' | 'IN_DELIVERY' | 'ARRIVED' | 'IN_STORE' | 'SOLD' | 'CREDIT' | 'LOST';
 
 export interface ProductUnit {
   id: string | number;
   serialNumber?: string;
-  status?: string;
-  date?: string; // ISO date string
+  statusCard?: string;
+  statusProduct?: string;
+  createdAt: string;
+  updatedAt: string;
+  logs?: any[];
 }
 
 export interface DayEvent {
@@ -28,4 +30,18 @@ export interface Connection {
   productId: string | number;
   fromStatus: ProductStatus;
   toStatus: ProductStatus;
+}
+
+// ✅ ДОБАВЛЕНО ДЛЯ МЕСЯЧНОЙ ИНФОРМАЦИИ
+export interface MonthInfo {
+  year: number;
+  month: number;
+  monthName: string;
+  totalDays: number;
+}
+
+export interface CalendarData {
+  days: DayData[];
+  connections: Connection[];
+  monthInfo: MonthInfo;
 }

@@ -1,10 +1,12 @@
 # 🕵️‍♂️ ПОЛНЫЙ АНАЛИЗ ПРОЕКТА - СИСТЕМА УПРАВЛЕНИЯ ТОВАРАМИ
 
-Сгенерировано: 27.10.2025, 13:11:47
-Корневая директория: C:\projects\проект_интернет_магазина\stud_next_v2\my-inventory-app\app
+Сгенерировано: 21.11.2025, 15:03:31
+Корневая директория: C:\projects\проект_интернет_магазина\stud_next_v2\my-inventory-app
 
 ## 🗄️ PRISMA СХЕМА
 
+**Файл:** prisma\schema.prisma
+**Модели:** 18 (Supplier, Customer, User, Category, Brand, Product, ProductImage, DisassemblyScenario, ProductUnit, CashDay, CashEvent, Spine, ProductUnitLog, InventorySnapshot, ProductSalesHistory, InventoryForecast, ReorderPoint, StockTrafficLight)
 
 ## 🚀 API ENDPOINTS (0)
 

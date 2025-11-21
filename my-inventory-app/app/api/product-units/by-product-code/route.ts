@@ -7,8 +7,13 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const productCode = searchParams.get('productCode');
     const status = searchParams.get('status');
+    const includeLogs = searchParams.get('includeLogs') === 'true'; // ✅ ДОБАВЛЕНО
 
-    console.log("🔍 GET /api/product-units/by-product-code:", { productCode, status });
+    console.log("🔍 GET /api/product-units/by-product-code:", { 
+      productCode, 
+      status, 
+      includeLogs 
+    });
 
     if (!productCode) {
       return NextResponse.json(
@@ -25,28 +30,56 @@ export async function GET(request: Request) {
       whereClause.statusProduct = status;
     }
 
-    const units = await prisma.productUnit.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        serialNumber: true,
-        statusProduct: true,
-        disassemblyStatus: true,
-        productName: true,
-        productCode: true,
-        product: {
-          select: {
-            name: true,
-            code: true
+    // ✅ БАЗОВЫЙ SELECT ДЛЯ ОСНОВНЫХ ДАННЫХ
+    const baseSelect: any = {
+      id: true,
+      serialNumber: true,
+      statusCard: true,        // ✅ ДОБАВЛЕНО ДЛЯ КАЛЕНДАРЯ
+      statusProduct: true,
+      disassemblyStatus: true,
+      productName: true,
+      productCode: true,
+      createdAt: true,         // ✅ ДОБАВЛЕНО ДЛЯ КАЛЕНДАРЯ
+      updatedAt: true,         // ✅ ДОБАВЛЕНО ДЛЯ КАЛЕНДАРЯ
+      product: {
+        select: {
+          name: true,
+          code: true,
+          brand: {             // ✅ ДОБАВЛЕНО ДЛЯ ИНФОРМАЦИИ
+            select: {
+              name: true
+            }
           }
         }
-      },
+      }
+    };
+
+    // ✅ ДОБАВЛЯЕМ ЛОГИ ЕСЛИ НУЖНО
+    if (includeLogs) {
+      baseSelect.logs = {
+        select: {
+          id: true,
+          type: true,
+          message: true,
+          meta: true,
+          createdAt: true
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 50 // ✅ ОГРАНИЧИВАЕМ КОЛИЧЕСТВО ЛОГОВ
+      };
+    }
+
+    const units = await prisma.productUnit.findMany({
+      where: whereClause,
+      select: baseSelect,
       orderBy: { createdAt: 'desc' }
     });
 
     console.log("✅ GET /api/product-units/by-product-code успешно:", {
       productCode,
-      unitsCount: units.length
+      unitsCount: units.length,
+      withLogs: includeLogs,
+      logsCount: includeLogs ? units.reduce((sum, unit) => sum + (unit.logs?.length || 0), 0) : 0
     });
 
     return NextResponse.json({ 

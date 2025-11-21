@@ -1,6 +1,6 @@
 # 🕵️‍♂️ ПОЛНЫЙ АНАЛИЗ NEXT.JS APP ROUTER ПРОЕКТА
 
-Сгенерировано: 21.11.2025, 09:21:06
+Сгенерировано: 21.11.2025, 15:06:30
 Структура: App Router (Next.js 13+)
 
 ## 🗄️ PRISMA СХЕМА
@@ -150,14 +150,14 @@
 
 ## ⚛️ REACT КОМПОНЕНТЫ
 
-**Всего компонентов:** 29
+**Всего компонентов:** 40
 
 ### 📦 PRODUCT UNIT КОМПОНЕНТЫ (1)
 - **CurrentUnitsSnapshot** - React компонент
 
 ### 📊 INVENTORY КОМПОНЕНТЫ (0)
 
-### 🔧 ДРУГИЕ КОМПОНЕНТЫ (24)
+### 🔧 ДРУГИЕ КОМПОНЕНТЫ (35)
 - **CategoryCell**
 - **Column**
 - **MillerColumns**
@@ -168,11 +168,12 @@
 - **ProductCell**
 - **cellComponents**
 - **createButtons**
-- ... и еще 14 компонентов
+- ... и еще 25 компонентов
 
 ## 🛠️ БИБЛИОТЕКИ И СЕРВИСЫ
 
-### 📁 app/lib/ (5)
+### 📁 app/lib/ (6)
+- **unitCloneHelper.ts** - Работа с БД
 - **CategoryMigrationService.ts** - Работа с БД
 - **NodeIndexService.ts** - Работа с БД
 - **SpineProductMigrationService.ts** - Работа с БД

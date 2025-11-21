@@ -7,7 +7,7 @@ import {
   copyProductDataToUnit,
   updateSpineBrandData
 } from "@/app/api/product-units/helpers";
-import { UnitCloneHelper } from "@/app/lib/helper_product_units/unitCloneHelper"; // ✅ ИМПОРТИРУЕМ СУЩЕСТВУЮЩИЙ
+import { UnitCloneHelper } from "@/app/lib/helper_product_units/unitCloneHelper"; 
 
 export async function POST(req: Request) {
   console.log("=== API: CREATE PRODUCT UNIT ===");
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
 
     const serialNumber = await generateSerialNumber(prisma, productId, undefined);
 
-    // Создаем Product Unit
+    // 🎯 ИЗМЕНЕНИЕ: УЛУЧШЕННОЕ ЛОГИРОВАНИЕ ПРИ СОЗДАНИИ
     const unitData = {
       productId: product.id,
       spineId: product.spineId,
@@ -68,8 +68,18 @@ export async function POST(req: Request) {
       requestPricePerUnit: requestPricePerUnit || null,
       logs: {
         create: {
-          type: "SYSTEM",
-          message: `Unit автоматически создан из продукта ${product.name}`,
+          type: "UNIT_CREATED",
+          message: `Unit создан со статусом CLEAR${supplierId ? ' от поставщика' : ''}${requestPricePerUnit ? `, цена: ${requestPricePerUnit} ₽` : ''}`,
+          meta: {
+            initialStatus: "CLEAR",
+            supplierId: supplierId,
+            requestPricePerUnit: requestPricePerUnit,
+            source: "product_creation",
+            productId: product.id,
+            productCode: product.code,
+            productName: product.name,
+            spineId: product.spineId
+          }
         },
       },
     };
