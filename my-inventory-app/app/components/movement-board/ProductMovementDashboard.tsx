@@ -1,4 +1,4 @@
-// components/movement-board/ProductMovementDashboard.tsx - КОМПАКТНАЯ ВЕРСИЯ БЕЗ ХУКОВ
+// components/movement-board/ProductMovementDashboard.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -31,7 +31,6 @@ export default function ProductMovementDashboard({ product, onClose }: ProductMo
   const [error, setError] = useState<string | null>(null)
   const [selectedMonth, setSelectedMonth] = useState(new Date())
 
-  // ЗАГРУЗКА ДАННЫХ
   useEffect(() => {
     if (product?.code) {
       loadProductUnits()
@@ -77,7 +76,6 @@ export default function ProductMovementDashboard({ product, onClose }: ProductMo
     }
   }
 
-  // ОБРАБОТЧИКИ ДЕЙСТВИЙ
   const handleCreateUnit = async () => {
     try {
       const response = await fetch('/api/product-units/create', {
@@ -123,7 +121,6 @@ export default function ProductMovementDashboard({ product, onClose }: ProductMo
     }
   }
 
-  // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
   const getStatusStats = () => {
     const stats = { CLEAR: 0, CANDIDATE: 0, SPROUTED: 0, IN_REQUEST: 0, IN_DELIVERY: 0, ARRIVED: 0, IN_STORE: 0, SOLD: 0, CREDIT: 0, LOST: 0 }
     productUnits.forEach(unit => {
@@ -149,19 +146,17 @@ export default function ProductMovementDashboard({ product, onClose }: ProductMo
     }
   }
 
-  // КОМПАКТНЫЙ ЗАГРУЗЧИК
   if (loading) {
     return (
       <div className="h-full bg-white border-l border-gray-200 flex items-center justify-center p-2">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mx-auto"></div>
           <p className="mt-1 text-xs text-gray-600">Загрузка...</p>
         </div>
       </div>
     )
   }
 
-  // КОМПАКТНАЯ ОШИБКА
   if (error) {
     return (
       <div className="h-full bg-white border-l border-gray-200 flex flex-col p-2">
@@ -189,14 +184,15 @@ export default function ProductMovementDashboard({ product, onClose }: ProductMo
     <div className="h-full bg-white border-l border-gray-200 flex flex-col">
       <CompactHeader product={product} onClose={onClose} />
       
-      {/* ОСНОВНОЙ КОНТЕНТ С КОМПАКТНЫМИ ОТСТУПАМИ */}
       <div className="flex-1 overflow-y-auto p-2 space-y-2">
         <CurrentUnitsSnapshot product={product} statusCounts={statusStats} />
         <StockManagement stockInfo={stockInfo} />
+        
         <CalendarTimeline 
           product={product}
           selectedMonth={selectedMonth}
           onMonthChange={setSelectedMonth}
+          productUnits={productUnits}
         />
         
         {stockInfo.needToOrder > 0 && stockInfo.hasCandidates && (
@@ -220,7 +216,6 @@ export default function ProductMovementDashboard({ product, onClose }: ProductMo
   )
 }
 
-// КОМПАКТНЫЙ ХЕДЕР
 function CompactHeader({ product, onClose }: { product: any; onClose: () => void }) {
   return (
     <div className="p-2 border-b border-gray-200 flex-shrink-0 bg-white">

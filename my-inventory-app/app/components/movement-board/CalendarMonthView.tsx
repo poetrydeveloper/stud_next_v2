@@ -1,4 +1,4 @@
-// components/movement-board/CalendarMonthView.tsx - КОМПАКТНЫЙ
+// components/movement-board/CalendarMonthView.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -7,55 +7,65 @@ interface CalendarMonthViewProps {
   selectedMonth: Date
   productCode: string
   loading: boolean
+  productUnits: any[]
 }
 
 interface CalendarDay {
   date: Date
   isCurrentMonth: boolean
   units: {
-    CLEAR: number
-    CANDIDATE: number
-    IN_REQUEST: number
-    IN_STORE: number
-    SOLD: number
+    CLEAR: any[]
+    CANDIDATE: any[]
+    IN_REQUEST: any[]
+    IN_STORE: any[]
+    SOLD: any[]
   }
 }
 
 export default function CalendarMonthView({ 
   selectedMonth, 
   productCode, 
-  loading 
+  loading,
+  productUnits
 }: CalendarMonthViewProps) {
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([])
 
   useEffect(() => {
-    generateCalendarData(selectedMonth)
-  }, [selectedMonth, productCode])
+    generateCalendarData(selectedMonth, productUnits)
+  }, [selectedMonth, productCode, productUnits])
 
-  const generateCalendarData = (month: Date) => {
+  const generateCalendarData = (month: Date, units: any[]) => {
     const year = month.getFullYear()
     const monthIndex = month.getMonth()
     const firstDay = new Date(year, monthIndex, 1)
-    const lastDay = new Date(year, monthIndex + 1, 0)
     
     const days: CalendarDay[] = []
     const startDay = new Date(firstDay)
     startDay.setDate(startDay.getDate() - firstDay.getDay())
     
-    for (let i = 0; i < 42; i++) {
+    const totalDays = 42 // 6 weeks
+    
+    for (let i = 0; i < totalDays; i++) {
       const currentDate = new Date(startDay)
       currentDate.setDate(startDay.getDate() + i)
+      
+      const dayUnits = units.filter(unit => {
+        const unitDate = new Date(unit.createdAt)
+        return unitDate.toDateString() === currentDate.toDateString()
+      })
+      
+      const unitsByStatus = {
+        CLEAR: dayUnits.filter(unit => unit.statusCard === 'CLEAR'),
+        CANDIDATE: dayUnits.filter(unit => unit.statusCard === 'CANDIDATE'),
+        IN_REQUEST: dayUnits.filter(unit => unit.statusCard === 'IN_REQUEST'),
+        IN_STORE: dayUnits.filter(unit => unit.statusProduct === 'IN_STORE'),
+        SOLD: dayUnits.filter(unit => unit.statusProduct === 'SOLD')
+      }
       
       days.push({
         date: new Date(currentDate),
         isCurrentMonth: currentDate.getMonth() === monthIndex,
-        units: {
-          CLEAR: Math.random() > 0.7 ? Math.floor(Math.random() * 3) : 0,
-          CANDIDATE: Math.random() > 0.8 ? Math.floor(Math.random() * 2) : 0,
-          IN_REQUEST: Math.random() > 0.9 ? Math.floor(Math.random() * 2) : 0,
-          IN_STORE: Math.random() > 0.6 ? Math.floor(Math.random() * 4) : 0,
-          SOLD: Math.random() > 0.5 ? Math.floor(Math.random() * 5) : 0
-        }
+        units: unitsByStatus
       })
     }
     
@@ -63,63 +73,109 @@ export default function CalendarMonthView({
   }
 
   const getStatusIconsForDay = (units: CalendarDay['units']) => {
-    const icons = []
-    if (units.CLEAR > 0) icons.push({ count: units.CLEAR, icon: '○', color: 'text-gray-400' })
-    if (units.CANDIDATE > 0) icons.push({ count: units.CANDIDATE, icon: '◐', color: 'text-purple-500' })
-    if (units.IN_REQUEST > 0) icons.push({ count: units.IN_REQUEST, icon: '●', color: 'text-yellow-500' })
-    if (units.IN_STORE > 0) icons.push({ count: units.IN_STORE, icon: '□', color: 'text-green-500' })
-    if (units.SOLD > 0) icons.push({ count: units.SOLD, icon: '◧', color: 'text-yellow-300' })
-    return icons.slice(0, 2) // Ограничиваем 2 иконками на ячейку
+    return Object.entries(units)
+      .filter(([_, unitArray]) => unitArray.length > 0)
+      .map(([status, unitArray]) => ({
+        status,
+        count: unitArray.length,
+        icon: getStatusIcon(status),
+        color: getStatusColor(status)
+      }))
+      .slice(0, 2) // Максимум 2 иконки на день
   }
 
   const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-20">
-        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+      <div className="flex items-center justify-center h-12">
+        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded">
-      {/* Заголовки дней недели */}
-      <div className="grid grid-cols-7 gap-0.5 mb-1">
+    <div className="bg-white">
+      {/* Заголовки дней недели - компактные */}
+      <div className="grid grid-cols-7 gap-0 mb-1">
         {dayNames.map(day => (
-          <div key={day} className="text-center text-xs text-gray-500 py-0.5">
+          <div key={day} className="text-center text-[10px] text-gray-500 py-0.5">
             {day}
           </div>
         ))}
       </div>
 
-      {/* Дни календаря - КОМПАКТНЫЕ */}
+      {/* Дни календаря - суперкомпактные */}
       <div className="grid grid-cols-7 gap-0.5">
-        {calendarDays.map((day, index) => (
-          <div
-            key={index}
-            className={`min-h-8 p-0.5 border rounded text-xs ${
-              day.isCurrentMonth 
-                ? 'bg-white border-gray-200' 
-                : 'bg-gray-50 border-gray-100 text-gray-400'
-            } ${day.date.toDateString() === new Date().toDateString() ? 'border-blue-300 bg-blue-50' : ''}`}
-          >
-            {/* Число */}
-            <div className={`text-xs text-center ${day.isCurrentMonth ? 'text-gray-700' : 'text-gray-400'}`}>
-              {day.date.getDate()}
-            </div>
+        {calendarDays.map((day, index) => {
+          const statusIcons = getStatusIconsForDay(day.units)
+          const isToday = day.date.toDateString() === new Date().toDateString()
+          const hasEvents = statusIcons.length > 0
 
-            {/* Иконки статусов - ТОЛЬКО ЦИФРЫ */}
-            <div className="flex justify-center gap-0.5 mt-0.5">
-              {getStatusIconsForDay(day.units).map((status, idx) => (
-                <div key={idx} className={`text-xs font-medium ${status.color}`} title={`${status.icon}: ${status.count}`}>
-                  {status.count}
+          return (
+            <div
+              key={index}
+              className={`
+                min-h-6 p-0.5 border rounded-sm flex flex-col items-center justify-center
+                text-[10px] leading-none
+                ${
+                  day.isCurrentMonth 
+                    ? 'bg-white border-gray-200 text-gray-700' 
+                    : 'bg-gray-50 border-gray-100 text-gray-400'
+                }
+                ${isToday ? 'border-blue-500 bg-blue-50 font-medium' : ''}
+                ${hasEvents ? 'cursor-pointer hover:bg-gray-50' : ''}
+              `}
+            >
+              {/* Число */}
+              <div className="text-center mb-0.5">
+                {day.date.getDate()}
+              </div>
+
+              {/* Иконки статусов - очень компактные */}
+              {statusIcons.length > 0 && (
+                <div className="flex justify-center items-center gap-0.5 w-full">
+                  {statusIcons.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className={`text-[8px] ${item.color}`}
+                      title={`${getStatusLabel(item.status)}: ${item.count}`}
+                    >
+                      {item.icon}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
+}
+
+function getStatusIcon(status: string): string {
+  const icons: Record<string, string> = {
+    CLEAR: '○', CANDIDATE: '◐', IN_REQUEST: '●', 
+    IN_STORE: '□', SOLD: '◧'
+  }
+  return icons[status] || '○'
+}
+
+function getStatusColor(status: string): string {
+  const colors: Record<string, string> = {
+    CLEAR: 'text-gray-400', CANDIDATE: 'text-purple-500', 
+    IN_REQUEST: 'text-yellow-500', IN_STORE: 'text-green-500', 
+    SOLD: 'text-yellow-300'
+  }
+  return colors[status] || 'text-gray-400'
+}
+
+function getStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    CLEAR: 'Создан', CANDIDATE: 'Кандидат', 
+    IN_REQUEST: 'В заявке', IN_STORE: 'В магазине', 
+    SOLD: 'Продан'
+  }
+  return labels[status] || status
 }
