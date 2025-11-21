@@ -1,0 +1,12 @@
+export const StatusColors = {
+  CLEAR: "#9CA3AF",
+  CANDIDATE: "#7C3AED",
+  SPROUTED: "#6366F1",
+  IN_REQUEST: "#EAB308",
+  IN_DELIVERY: "#F59E0B",
+  ARRIVED: "#4ADE80",
+  IN_STORE: "#16A34A",
+  SOLD: "#EF4444",
+  CREDIT: "#EC4899",
+  LOST: "#6B7280",
+}

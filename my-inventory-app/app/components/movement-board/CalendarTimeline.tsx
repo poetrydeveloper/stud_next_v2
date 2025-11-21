@@ -1,58 +1,46 @@
-// components/movement-board/CalendarTimeline.tsx
 'use client'
 
-import { useState } from 'react'
-import CalendarNavigation from './CalendarNavigation'
-import CalendarMonthView from './CalendarMonthView'
+import { useMemo } from "react"
+import { normalizeLogs } from "./calendar/normalizeLogs"
+import { buildCalendar } from "./calendar/buildCalendar"
+import CalendarLegend from "./calendar/CalendarLegend"
+import CalendarDay from "./calendar/CalendarDay"
 
-interface CalendarTimelineProps {
-  product: any
-  selectedMonth: Date
-  onMonthChange: (date: Date) => void
-  productUnits: any[]
-}
+export default function CalendarTimeline({
+  product,
+  productUnits,
+  selectedMonth,
+  onMonthChange
+}: any) {
 
-export default function CalendarTimeline({ 
-  product, 
-  selectedMonth, 
-  onMonthChange,
-  productUnits
-}: CalendarTimelineProps) {
-  const [loading, setLoading] = useState(false)
-  
-  const handleMonthChange = async (newDate: Date) => {
-    setLoading(true)
-    onMonthChange(newDate)
-    setTimeout(() => setLoading(false), 200)
-  }
+  const { days, lines } = useMemo(() => {
+    const events = normalizeLogs(productUnits)
+    return buildCalendar(selectedMonth, events)
+  }, [productUnits, selectedMonth])
 
   return (
-    <div className="bg-white border border-gray-200 rounded p-2">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="font-semibold text-gray-800 text-xs">Календарь движений</h3>
-      </div>
-      
-      <CalendarNavigation 
-        selectedMonth={selectedMonth}
-        onMonthChange={handleMonthChange}
-        loading={loading}
-      />
-      
-      <CalendarMonthView 
-        selectedMonth={selectedMonth}
-        productCode={product.code}
-        loading={loading}
-        productUnits={productUnits}
-      />
+    <div className="relative bg-white p-4 border rounded-lg">
 
-      {/* Компактная легенда */}
-      <div className="mt-2 pt-2 border-t border-gray-100">
-        <div className="flex flex-wrap justify-center gap-1 text-[10px]">
-          {['CLEAR', 'CANDIDATE', 'IN_REQUEST', 'IN_STORE', 'SOLD'].map((status) => (
-            <div key={status} className="flex items-center gap-0.5 px-1.5 py-0.5">
-              <span className={getStatusColor(status)}>{getStatusIcon(status)}</span>
-              <span className="text-gray-600">{getStatusLabel(status)}</span>
-            </div>
+      <CalendarLegend />
+
+      <div className="overflow-x-auto relative">
+        <svg className="absolute inset-0 w-full h-full pointer-events-none">
+          {lines.map((line, i) => (
+            <line
+              key={i}
+              x1={getXForDate(line.from)}
+              y1={getYForDate(line.from)}
+              x2={getXForDate(line.to)}
+              y2={getYForDate(line.to)}
+              stroke={line.color}
+              strokeWidth="2"
+            />
+          ))}
+        </svg>
+
+        <div className="grid grid-cols-7 gap-2 relative z-10">
+          {days.map((day: any, index: number) => (
+            <CalendarDay key={index} day={day} />
           ))}
         </div>
       </div>
@@ -60,28 +48,6 @@ export default function CalendarTimeline({
   )
 }
 
-function getStatusIcon(status: string): string {
-  const icons: Record<string, string> = {
-    CLEAR: '○', CANDIDATE: '◐', IN_REQUEST: '●', 
-    IN_STORE: '□', SOLD: '◧'
-  }
-  return icons[status] || '○'
-}
-
-function getStatusColor(status: string): string {
-  const colors: Record<string, string> = {
-    CLEAR: 'text-gray-400', CANDIDATE: 'text-purple-500', 
-    IN_REQUEST: 'text-yellow-500', IN_STORE: 'text-green-500', 
-    SOLD: 'text-yellow-300'
-  }
-  return colors[status] || 'text-gray-400'
-}
-
-function getStatusLabel(status: string): string {
-  const labels: Record<string, string> = {
-    CLEAR: 'Создан', CANDIDATE: 'Кандидат', 
-    IN_REQUEST: 'В заявке', IN_STORE: 'В магазине', 
-    SOLD: 'Продан'
-  }
-  return labels[status] || status
-}
+// Вычисление позиции точки в SVG:
+function getXForDate(date: Date) { return date.getDate() * 20 }
+function getYForDate(date: Date) { return date.getDay() * 30 }

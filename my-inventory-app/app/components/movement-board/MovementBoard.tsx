@@ -1,5 +1,5 @@
 'use client'
-
+import CalendarTimeline from './CalendarTimeline'
 import { useEffect, useState } from 'react'
 import ProductInfo from './ProductInfo'
 import Timeline from './Timeline'
