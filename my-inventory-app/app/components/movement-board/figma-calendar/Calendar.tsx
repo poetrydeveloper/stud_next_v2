@@ -5,7 +5,9 @@ import React, { useMemo, useState } from 'react'
 import CalendarDay from './CalendarDay'
 import CalendarLegend from './CalendarLegend'
 import ConnectionLines from './ConnectionLines'
+import ProductDetails from './ProductDetails'
 import { buildCalendarData } from './adapter'
+import { useTooltip } from './useTooltip'
 import type { ProductUnit, CalendarData } from './types'
 
 interface Props {
@@ -17,62 +19,56 @@ interface Props {
 }
 
 export default function FigmaCalendar({ productUnits = [], monthAnchor, onUnitClick, onDayClick, className }: Props) {
-  console.log('🎯 FIGMA-CALENDAR: Начало рендера')
-  console.log('📊 FIGMA-CALENDAR: Получены productUnits:', productUnits?.length)
-  
-  // ДЕТАЛЬНАЯ ОТЛАДКА ДАННЫХ
-  if (productUnits && productUnits.length > 0) {
-    console.log('🔍 FIGMA-CALENDAR: Первые 3 units:', productUnits.slice(0, 3).map(u => ({
-      id: u.id,
-      statusCard: u.statusCard,
-      statusProduct: u.statusProduct,
-      createdAt: u.createdAt,
-      logsCount: u.logs?.length || 0,
-      hasLogs: !!u.logs
-    })))
-  }
+  const [currentDate, setCurrentDate] = useState(monthAnchor || new Date())
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const [hoveredProductIds, setHoveredProductIds] = useState<Set<string>>(new Set())
+  const { tooltip, showTooltip, hideTooltip } = useTooltip()
 
   const calendarData: CalendarData = useMemo(() => {
-    console.log('🔄 FIGMA-CALENDAR: Начинаем построение календаря...')
-    
     if (!productUnits || productUnits.length === 0) {
-      console.log('⚠️ FIGMA-CALENDAR: Нет данных для построения')
       return { days: [], connections: [], monthInfo: { year: 0, month: 0, monthName: '', totalDays: 0 } }
     }
-
-    try {
-      const result = buildCalendarData(productUnits, monthAnchor)
-      console.log('✅ FIGMA-CALENDAR: Успешно построено:', {
-        daysCount: result.days.length,
-        connectionsCount: result.connections.length,
-        monthInfo: result.monthInfo
-      })
-      return result
-    } catch (error) {
-      console.error('💥 FIGMA-CALENDAR: Ошибка построения:', error)
-      return { days: [], connections: [], monthInfo: { year: 0, month: 0, monthName: '', totalDays: 0 } }
-    }
-  }, [productUnits, monthAnchor])
+    return buildCalendarData(productUnits, currentDate)
+  }, [productUnits, currentDate])
 
   const { days, connections, monthInfo } = calendarData
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
 
-  const handleDayClick = (d: Date) => {
-    setSelectedDate(prev => (prev && prev.getTime() === d.getTime() ? null : d))
-    onDayClick?.(d)
+  const handleDayClick = (date: Date) => {
+    const newSelectedDate = selectedDate?.getTime() === date.getTime() ? null : date
+    setSelectedDate(newSelectedDate)
+    onDayClick?.(date)
   }
 
-  // ФУНКЦИИ ДЛЯ НАВИГАЦИИ ПО МЕСЯЦАМ
+  const handleDayHover = (day: any) => {
+    if (day.events.length === 0) return
+    
+    const productIds = new Set<string>()
+    day.events.forEach((event: any) => {
+      event.productIds.forEach((id: any) => productIds.add(id.toString()))
+    })
+    
+    setHoveredProductIds(productIds)
+  }
+
+  const handleDayLeave = () => {
+    setHoveredProductIds(new Set())
+  }
+
   const navigateMonth = (direction: 'prev' | 'next') => {
-    const newMonthAnchor = new Date(monthInfo.year, monthInfo.month + (direction === 'next' ? 1 : -1), 1)
-    // Здесь можно добавить логику для смены месяца
-    console.log('📅 Навигация:', direction, newMonthAnchor)
+    const newDate = new Date(currentDate)
+    if (direction === 'next') {
+      newDate.setMonth(newDate.getMonth() + 1)
+    } else {
+      newDate.setMonth(newDate.getMonth() - 1)
+    }
+    setCurrentDate(newDate)
+    setSelectedDate(null)
   }
 
-  // ЕСЛИ ДАННЫХ НЕТ - ПОКАЗЫВАЕМ СООБЩЕНИЕ
+  // ЕСЛИ ДАННЫХ НЕТ
   if (!productUnits || productUnits.length === 0) {
     return (
-      <div className={`border rounded-lg p-6 bg-white text-center ${className}`}>
+      <div className={`bg-white rounded-xl border p-6 text-center ${className}`}>
         <div className="text-gray-500 mb-2">
           <div className="text-2xl">📅</div>
           <div className="text-sm font-medium">Нет данных для календаря</div>
@@ -84,125 +80,138 @@ export default function FigmaCalendar({ productUnits = [], monthAnchor, onUnitCl
     )
   }
 
-  // ЕСЛИ ДНИ НЕ ПОСТРОИЛИСЬ - ПОКАЗЫВАЕМ ИНФОРМАЦИЮ О ДАННЫХ
-  if (days.length === 0) {
-    return (
-      <div className={`border rounded-lg p-4 bg-white ${className}`}>
-        <CalendarLegend />
-        
-        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
-          <div className="text-yellow-800 text-sm font-medium mb-2">
-            📊 Данные есть, но календарь не построился
-          </div>
-          
-          <div className="text-xs text-yellow-700 space-y-1">
-            <div>• Всего units: <strong>{productUnits.length}</strong></div>
-            <div>• Units со статусами:</div>
-            <div className="ml-4">
-              {Array.from(new Set(productUnits.map(u => u.statusCard || u.statusProduct))).map(status => (
-                <div key={status}>- {status}: {productUnits.filter(u => u.statusCard === status || u.statusProduct === status).length}</div>
-              ))}
-            </div>
-            <div>• Units с логами: <strong>{productUnits.filter(u => u.logs && u.logs.length > 0).length}</strong></div>
-          </div>
-          
-          <div className="mt-3 text-xs text-yellow-600">
-            Проверьте консоль для детальной отладки
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className={className}>
-      {/* ЗАГОЛОВОК И ЛЕГЕНДА */}
-      <div className="mb-4">
-        <CalendarLegend />
+    <div className={`container max-w-7xl mx-auto ${className}`}>
+      {/* Header */}
+      <div className="header mb-6">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Product Unit Tracker</h1>
+        <p className="text-gray-600">Track product status changes with visual connections</p>
       </div>
 
-      {/* СТАТУС-БАР */}
-      <div className="mb-4 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
-        <div className="flex justify-between text-blue-800">
-          <span>Дней: <strong>{days.filter(d => d.events.length > 0).length}</strong></span>
-          <span>Связей: <strong>{connections.length}</strong></span>
-          <span>Units: <strong>{productUnits.length}</strong></span>
+      {/* Legend */}
+      <div className="card bg-white rounded-xl border mb-6">
+        <div className="card-header p-5 border-b">
+          <div className="card-title text-lg font-semibold text-gray-900">Status Legend</div>
+        </div>
+        <div className="card-content p-5">
+          <CalendarLegend />
         </div>
       </div>
 
-      {/* КАЛЕНДАРЬ */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
-        
-        {/* ЗАГОЛОВОК МЕСЯЦА */}
-        <div className="flex items-center justify-between mb-4">
-          <button 
-            onClick={() => navigateMonth('prev')}
-            className="p-2 hover:bg-gray-100 rounded text-gray-600"
-            title="Предыдущий месяц"
-          >
-            ←
-          </button>
-          
-          <div className="text-center">
-            <div className="font-semibold text-gray-800 text-lg capitalize">
-              {monthInfo.monthName} {monthInfo.year}
+      {/* Main Grid */}
+      <div className="main-grid grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Calendar - 2/3 ширины */}
+        <div className="lg:col-span-2">
+          <div className="card bg-white rounded-xl border">
+            <div className="card-header p-5 border-b">
+              <div className="calendar-header flex justify-between items-center">
+                <div className="card-title text-lg font-semibold text-gray-900">
+                  {monthInfo.monthName} {monthInfo.year}
+                </div>
+                <div className="nav-buttons flex gap-2">
+                  <button 
+                    onClick={() => navigateMonth('prev')}
+                    className="btn px-4 py-2 border border-gray-300 bg-white rounded-lg text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    ←
+                  </button>
+                  <button 
+                    onClick={() => navigateMonth('next')}
+                    className="btn px-4 py-2 border border-gray-300 bg-white rounded-lg text-sm hover:bg-gray-50 transition-colors"
+                  >
+                    →
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="text-xs text-gray-500 mt-1">
-              {days.filter(d => d.events.length > 0).length} дней с событиями
+
+            <div className="card-content p-5">
+              {/* Weekday Headers */}
+              <div className="weekday-header grid grid-cols-7 gap-1 mb-2">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                  <div key={day} className="weekday w-20 h-8 flex items-center justify-center text-xs text-gray-500 font-medium">
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              {/* Calendar Grid */}
+              <div className="calendar-grid-container relative">
+                <ConnectionLines
+                  connections={connections}
+                  calendarDays={days}
+                  highlightedProductIds={hoveredProductIds}
+                />
+                
+                <div className="calendar-grid grid grid-cols-7 gap-1 relative z-10">
+                  {days.map((day, index) => {
+                    const isSelected = selectedDate?.toDateString() === day.date.toDateString()
+                    const isHighlighted = day.events.some((event: any) =>
+                      event.productIds.some((id: any) => hoveredProductIds.has(id.toString()))
+                    )
+
+                    return (
+                      <CalendarDay
+                        key={index}
+                        day={day}
+                        isSelected={isSelected}
+                        isHighlighted={isHighlighted}
+                        onClick={handleDayClick}
+                        onMouseEnter={() => handleDayHover(day)}
+                        onMouseLeave={handleDayLeave}
+                        onStatusHover={showTooltip}
+                        onStatusLeave={hideTooltip}
+                      />
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="info-text mt-4 pt-4 border-t border-gray-200">
+                <p className="text-xs text-gray-500">
+                  Hover over days with events to highlight product chains. Click to view details.
+                </p>
+              </div>
             </div>
           </div>
-          
-          <button 
-            onClick={() => navigateMonth('next')}
-            className="p-2 hover:bg-gray-100 rounded text-gray-600"
-            title="Следующий месяц"
-          >
-            →
-          </button>
         </div>
 
-        {/* ДНИ НЕДЕЛИ */}
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(day => (
-            <div key={day} className="text-center text-xs text-gray-500 font-medium py-2">
-              {day}
+        {/* Product Details - 1/3 ширины */}
+        <div className="lg:col-span-1">
+          <div className="card bg-white rounded-xl border">
+            <div className="card-header p-5 border-b">
+              <div className="card-title text-lg font-semibold text-gray-900">
+                {selectedDate 
+                  ? selectedDate.toLocaleDateString("en-US", {
+                      weekday: "long",
+                      month: "long", 
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : "Product Details"
+                }
+              </div>
             </div>
-          ))}
-        </div>
-
-        {/* СЕТКА ДНЕЙ */}
-        <div className="grid grid-cols-7 gap-1">
-          {days.map((day, idx) => (
-            <div key={idx} className={`min-h-[80px] ${!day.isCurrentMonth ? 'opacity-40' : ''}`}>
-              <CalendarDay 
-                day={day} 
-                isSelected={selectedDate ? selectedDate.getTime() === day.date.getTime() : false} 
-                onClick={handleDayClick} 
-                compact={true}
+            <div className="card-content p-5">
+              <ProductDetails 
+                products={productUnits}
+                selectedDate={selectedDate}
               />
             </div>
-          ))}
-        </div>
-
-        {/* ПОДСКАЗКА ЕСЛИ МАЛО ДАННЫХ */}
-        {days.filter(d => d.events.length > 0).length <= 3 && (
-          <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded text-center">
-            <div className="text-xs text-gray-600">
-              📅 Добавьте больше товарных единиц с разными датами для лучшего отображения
-            </div>
           </div>
-        )}
+        </div>
       </div>
 
-      {/* ИНФОРМАЦИЯ О ВЫБРАННОМ ДНЕ */}
-      {selectedDate && (
-        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
-          <div className="text-sm font-medium text-blue-800 mb-2">
-            📅 Выбран день: {selectedDate.toLocaleDateString('ru-RU')}
-          </div>
-          <div className="text-xs text-blue-700">
-            События: {days.find(d => d.date.getTime() === selectedDate.getTime())?.events.length || 0}
-          </div>
+      {/* Tooltip */}
+      {tooltip.show && (
+        <div 
+          className="tooltip fixed bg-gray-900 text-white px-3 py-2 rounded-lg text-xs pointer-events-none z-50"
+          style={{
+            left: tooltip.x,
+            top: tooltip.y,
+          }}
+        >
+          {tooltip.text}
         </div>
       )}
     </div>

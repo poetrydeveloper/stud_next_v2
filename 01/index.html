@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Unit Tracker Calendar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 16px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .card-content {
+            padding: 24px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-item span {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .weekday-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .weekday {
+            width: 80px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .calendar-grid-container {
+            position: relative;
+        }
+
+        .calendar-grid {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            z-index: 1;
+        }
+
+        .connection-lines {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .calendar-day {
+            width: 80px;
+            height: 80px;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #e2e8f0;
+            background: white;
+        }
+
+        .calendar-day.other-month {
+            background: #f8fafc;
+        }
+
+        .calendar-day.other-month .day-number {
+            color: #cbd5e1;
+        }
+
+        .calendar-day.today {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+        }
+
+        .calendar-day.today .day-number {
+            color: #1d4ed8;
+            font-weight: 600;
+        }
+
+        .calendar-day.selected {
+            box-shadow: 0 0 0 2px #60a5fa;
+        }
+
+        .calendar-day.highlighted {
+            box-shadow: 0 0 0 2px #a78bfa;
+        }
+
+        .calendar-day:hover {
+            background: #f8fafc;
+        }
+
+        .day-number {
+            font-size: 12px;
+            color: #334155;
+            width: 100%;
+            text-align: center;
+        }
+
+        .status-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            width: 100%;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 4px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 3px;
+        }
+
+        .status-count {
+            font-size: 10px;
+            color: #334155;
+        }
+
+        .info-text {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .product-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .product-item {
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 8px;
+        }
+
+        .product-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #0f172a;
+        }
+
+        .product-id {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .product-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .product-timeline {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .timeline-label {
+            font-size: 11px;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .timeline-items {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            font-size: 10px;
+            white-space: nowrap;
+        }
+
+        .timeline-item.active {
+            background: #dbeafe;
+            border: 1px solid #93c5fd;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        svg {
+            display: block;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: #1e293b;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            pointer-events: none;
+            z-index: 1000;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Product Unit Tracker</h1>
+            <p>Track product status changes with visual connections</p>
+        </div>
+
+        <!-- Legend -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Status Legend</div>
+            </div>
+            <div class="card-content">
+                <div class="legend" id="legend"></div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Calendar -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="calendar-header">
+                        <div class="card-title" id="monthYear"></div>
+                        <div class="nav-buttons">
+                            <button class="btn" id="prevMonth">←</button>
+                            <button class="btn" id="nextMonth">→</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <!-- Weekday Headers -->
+                    <div class="weekday-header">
+                        <div class="weekday">Sun</div>
+                        <div class="weekday">Mon</div>
+                        <div class="weekday">Tue</div>
+                        <div class="weekday">Wed</div>
+                        <div class="weekday">Thu</div>
+                        <div class="weekday">Fri</div>
+                        <div class="weekday">Sat</div>
+                    </div>
+
+                    <!-- Calendar Grid -->
+                    <div class="calendar-grid-container">
+                        <svg class="connection-lines" id="connectionLines"></svg>
+                        <div class="calendar-grid" id="calendarGrid"></div>
+                    </div>
+
+                    <div class="info-text">
+                        Hover over days with events to highlight product chains. Click to view details.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Details -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title" id="detailsTitle">Product Details</div>
+                </div>
+                <div class="card-content">
+                    <div id="productDetails"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Data
+        const mockProductUnits = [
+            {
+                id: "unit-001",
+                name: "Product A",
+                statusHistory: [
+                    { status: "CLEAR", date: new Date(2025, 10, 3) },
+                    { status: "CANDIDATE", date: new Date(2025, 10, 5) },
+                    { status: "IN_REQUEST", date: new Date(2025, 10, 8) },
+                    { status: "IN_STORE", date: new Date(2025, 10, 12) },
+                    { status: "SOLD", date: new Date(2025, 10, 18) },
+                ],
+            },
+            {
+                id: "unit-002",
+                name: "Product B",
+                statusHistory: [
+                    { status: "CLEAR", date: new Date(2025, 10, 6) },
+                    { status: "IN_REQUEST", date: new Date(2025, 10, 10) },
+                    { status: "IN_STORE", date: new Date(2025, 10, 15) },
+                ],
+            },
+            {
+                id: "unit-003",
+                name: "Product C",
+                statusHistory: [
+                    { status: "CLEAR", date: new Date(2025, 10, 10) },
+                    { status: "CANDIDATE", date: new Date(2025, 10, 12) },
+                    { status: "IN_STORE", date: new Date(2025, 10, 20) },
+                    { status: "SOLD", date: new Date(2025, 10, 25) },
+                ],
+            },
+            {
+                id: "unit-004",
+                name: "Product D",
+                statusHistory: [
+                    { status: "CLEAR", date: new Date(2025, 10, 15) },
+                    { status: "CANDIDATE", date: new Date(2025, 10, 17) },
+                    { status: "IN_REQUEST", date: new Date(2025, 10, 19) },
+                ],
+            },
+            {
+                id: "unit-005",
+                name: "Product E",
+                statusHistory: [
+                    { status: "CLEAR", date: new Date(2025, 10, 21) },
+                    { status: "IN_STORE", date: new Date(2025, 10, 23) },
+                    { status: "SOLD", date: new Date(2025, 10, 27) },
+                ],
+            },
+        ];
+
+        const statusConfig = {
+            CLEAR: { label: "Created", color: "#9CA3AF" },
+            CANDIDATE: { label: "Candidate", color: "#9333EA" },
+            IN_REQUEST: { label: "In Request", color: "#EAB308" },
+            IN_STORE: { label: "In Store", color: "#22C55E" },
+            SOLD: { label: "Sold", color: "#EAB308" },
+        };
+
+        const monthNames = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+
+        // State
+        let currentYear = 2025;
+        let currentMonth = 10; // November
+        let selectedDate = null;
+        let hoveredProductIds = new Set();
+
+        // Helper Functions
+        function getStatusIcon(status, size = 10) {
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, "svg");
+            svg.setAttribute("width", size);
+            svg.setAttribute("height", size);
+            svg.setAttribute("viewBox", "0 0 16 16");
+            svg.setAttribute("fill", "none");
+
+            switch (status) {
+                case "CLEAR":
+                    const circle1 = document.createElementNS(svgNS, "circle");
+                    circle1.setAttribute("cx", "8");
+                    circle1.setAttribute("cy", "8");
+                    circle1.setAttribute("r", "6");
+                    circle1.setAttribute("stroke", statusConfig.CLEAR.color);
+                    circle1.setAttribute("stroke-width", "2");
+                    svg.appendChild(circle1);
+                    break;
+
+                case "CANDIDATE":
+                    const circle2 = document.createElementNS(svgNS, "circle");
+                    circle2.setAttribute("cx", "8");
+                    circle2.setAttribute("cy", "8");
+                    circle2.setAttribute("r", "7");
+                    circle2.setAttribute("fill", "#9CA3AF");
+                    const path = document.createElementNS(svgNS, "path");
+                    path.setAttribute("d", "M 8 1 A 7 7 0 0 1 8 15 Z");
+                    path.setAttribute("fill", statusConfig.CANDIDATE.color);
+                    svg.appendChild(circle2);
+                    svg.appendChild(path);
+                    break;
+
+                case "IN_REQUEST":
+                    const circle3 = document.createElementNS(svgNS, "circle");
+                    circle3.setAttribute("cx", "8");
+                    circle3.setAttribute("cy", "8");
+                    circle3.setAttribute("r", "7");
+                    circle3.setAttribute("fill", statusConfig.IN_REQUEST.color);
+                    svg.appendChild(circle3);
+                    break;
+
+                case "IN_STORE":
+                    const rect1 = document.createElementNS(svgNS, "rect");
+                    rect1.setAttribute("x", "2");
+                    rect1.setAttribute("y", "2");
+                    rect1.setAttribute("width", "12");
+                    rect1.setAttribute("height", "12");
+                    rect1.setAttribute("stroke", statusConfig.IN_STORE.color);
+                    rect1.setAttribute("stroke-width", "2");
+                    svg.appendChild(rect1);
+                    break;
+
+                case "SOLD":
+                    const rect2 = document.createElementNS(svgNS, "rect");
+                    rect2.setAttribute("x", "2");
+                    rect2.setAttribute("y", "2");
+                    rect2.setAttribute("width", "12");
+                    rect2.setAttribute("height", "12");
+                    rect2.setAttribute("fill", statusConfig.SOLD.color);
+                    svg.appendChild(rect2);
+                    break;
+            }
+
+            return svg;
+        }
+
+        function generateCalendarDays(year, month) {
+            const firstDay = new Date(year, month, 1);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+            const days = [];
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            for (let i = 0; i < 42; i++) {
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + i);
+
+                const events = getEventsForDate(currentDate);
+
+                days.push({
+                    date: currentDate,
+                    events,
+                    isCurrentMonth: currentDate.getMonth() === month,
+                    isToday: currentDate.toDateString() === today.toDateString(),
+                });
+            }
+
+            return days;
+        }
+
+        function getEventsForDate(date) {
+            const dateStr = date.toDateString();
+            const eventMap = new Map();
+
+            mockProductUnits.forEach((unit) => {
+                unit.statusHistory.forEach((history) => {
+                    if (history.date.toDateString() === dateStr) {
+                        const existing = eventMap.get(history.status);
+                        if (existing) {
+                            existing.count++;
+                            existing.productIds.push(unit.id);
+                        } else {
+                            eventMap.set(history.status, {
+                                status: history.status,
+                                count: 1,
+                                productIds: [unit.id],
+                            });
+                        }
+                    }
+                });
+            });
+
+            return Array.from(eventMap.values());
+        }
+
+        function generateConnections() {
+            const connections = [];
+
+            mockProductUnits.forEach((unit) => {
+                for (let i = 0; i < unit.statusHistory.length - 1; i++) {
+                    const current = unit.statusHistory[i];
+                    const next = unit.statusHistory[i + 1];
+
+                    connections.push({
+                        fromDate: current.date,
+                        toDate: next.date,
+                        productId: unit.id,
+                        fromStatus: current.status,
+                        toStatus: next.status,
+                    });
+                }
+            });
+
+            return connections;
+        }
+
+        function getDayPosition(date, calendarDays) {
+            const index = calendarDays.findIndex(
+                (day) => day.date.toDateString() === date.toDateString()
+            );
+
+            if (index === -1) return null;
+
+            return {
+                row: Math.floor(index / 7),
+                col: index % 7,
+            };
+        }
+
+        // Render Functions
+        function renderLegend() {
+            const legend = document.getElementById("legend");
+            legend.innerHTML = "";
+
+            Object.keys(statusConfig).forEach((status) => {
+                const item = document.createElement("div");
+                item.className = "legend-item";
+
+                const icon = getStatusIcon(status, 12);
+                const label = document.createElement("span");
+                label.textContent = statusConfig[status].label;
+
+                item.appendChild(icon);
+                item.appendChild(label);
+                legend.appendChild(item);
+            });
+        }
+
+        function renderCalendar() {
+            const calendarDays = generateCalendarDays(currentYear, currentMonth);
+            const connections = generateConnections();
+
+            // Update month/year
+            document.getElementById("monthYear").textContent = 
+                `${monthNames[currentMonth]} ${currentYear}`;
+
+            // Render days
+            const grid = document.getElementById("calendarGrid");
+            grid.innerHTML = "";
+
+            calendarDays.forEach((day) => {
+                const dayEl = document.createElement("div");
+                dayEl.className = "calendar-day";
+
+                if (!day.isCurrentMonth) dayEl.classList.add("other-month");
+                if (day.isToday) dayEl.classList.add("today");
+                if (selectedDate && day.date.toDateString() === selectedDate.toDateString()) {
+                    dayEl.classList.add("selected");
+                }
+
+                const isHighlighted = day.events.some((event) =>
+                    event.productIds.some((id) => hoveredProductIds.has(id))
+                );
+                if (isHighlighted) dayEl.classList.add("highlighted");
+
+                // Day number
+                const dayNumber = document.createElement("div");
+                dayNumber.className = "day-number";
+                dayNumber.textContent = day.date.getDate();
+                dayEl.appendChild(dayNumber);
+
+                // Status list
+                if (day.events.length > 0) {
+                    const statusList = document.createElement("div");
+                    statusList.className = "status-list";
+
+                    day.events.slice(0, 4).forEach((event) => {
+                        const statusItem = document.createElement("div");
+                        statusItem.className = "status-item";
+
+                        const icon = getStatusIcon(event.status, 10);
+                        const count = document.createElement("span");
+                        count.className = "status-count";
+                        count.textContent = event.count;
+
+                        statusItem.appendChild(icon);
+                        statusItem.appendChild(count);
+
+                        // Tooltip
+                        statusItem.addEventListener("mouseenter", (e) => {
+                            showTooltip(e, `${statusConfig[event.status].label}: ${event.count}`);
+                        });
+                        statusItem.addEventListener("mouseleave", hideTooltip);
+
+                        statusList.appendChild(statusItem);
+                    });
+
+                    dayEl.appendChild(statusList);
+                }
+
+                // Events
+                dayEl.addEventListener("click", () => {
+                    selectedDate = day.date;
+                    renderCalendar();
+                    renderProductDetails();
+                });
+
+                dayEl.addEventListener("mouseenter", () => {
+                    if (day.events.length > 0) {
+                        hoveredProductIds.clear();
+                        day.events.forEach((event) => {
+                            event.productIds.forEach((id) => hoveredProductIds.add(id));
+                        });
+                        renderCalendar();
+                    }
+                });
+
+                dayEl.addEventListener("mouseleave", () => {
+                    hoveredProductIds.clear();
+                    renderCalendar();
+                });
+
+                grid.appendChild(dayEl);
+            });
+
+            // Render connections
+            renderConnections(connections, calendarDays);
+        }
+
+        function renderConnections(connections, calendarDays) {
+            const svg = document.getElementById("connectionLines");
+            svg.innerHTML = "";
+
+            const cellSize = 80;
+            const gap = 4;
+            const totalCellSize = cellSize + gap;
+            const offset = cellSize / 2;
+
+            // Set SVG size
+            svg.setAttribute("width", totalCellSize * 7);
+            svg.setAttribute("height", totalCellSize * 6);
+
+            const svgNS = "http://www.w3.org/2000/svg";
+
+            connections.forEach((connection, idx) => {
+                const fromPos = getDayPosition(connection.fromDate, calendarDays);
+                const toPos = getDayPosition(connection.toDate, calendarDays);
+
+                if (!fromPos || !toPos) return;
+
+                const x1 = fromPos.col * totalCellSize + offset;
+                const y1 = fromPos.row * totalCellSize + offset;
+                const x2 = toPos.col * totalCellSize + offset;
+                const y2 = toPos.row * totalCellSize + offset;
+
+                const isHighlighted = hoveredProductIds.has(connection.productId);
+                const color = statusConfig[connection.toStatus].color;
+
+                const isDashed = connection.fromStatus === "CLEAR" || 
+                                connection.fromStatus === "CANDIDATE";
+
+                const midX = x1 + (x2 - x1) / 2;
+
+                // Path
+                const path = document.createElementNS(svgNS, "path");
+                path.setAttribute("d", `M ${x1} ${y1} L ${midX} ${y1} L ${midX} ${y2} L ${x2} ${y2}`);
+                path.setAttribute("stroke", color);
+                path.setAttribute("stroke-width", isHighlighted ? 2 : 1);
+                path.setAttribute("stroke-dasharray", isDashed ? "3,3" : "none");
+                path.setAttribute("opacity", isHighlighted ? 0.9 : 0.3);
+                path.setAttribute("fill", "none");
+
+                svg.appendChild(path);
+
+                // Arrow
+                if (isHighlighted) {
+                    const polygon = document.createElementNS(svgNS, "polygon");
+                    const points = x2 > midX 
+                        ? `${x2},${y2} ${x2-5},${y2-3} ${x2-5},${y2+3}`
+                        : `${x2},${y2} ${x2+5},${y2-3} ${x2+5},${y2+3}`;
+                    polygon.setAttribute("points", points);
+                    polygon.setAttribute("fill", color);
+                    polygon.setAttribute("opacity", 0.9);
+
+                    svg.appendChild(polygon);
+                }
+            });
+        }
+
+        function renderProductDetails() {
+            const detailsEl = document.getElementById("productDetails");
+            const titleEl = document.getElementById("detailsTitle");
+
+            if (!selectedDate) {
+                titleEl.textContent = "Product Details";
+                detailsEl.innerHTML = '<div class="empty-state">Select a date to view product details</div>';
+                return;
+            }
+
+            titleEl.textContent = selectedDate.toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+            });
+
+            const productsOnDate = mockProductUnits.filter((product) =>
+                product.statusHistory.some(
+                    (history) => history.date.toDateString() === selectedDate.toDateString()
+                )
+            );
+
+            if (productsOnDate.length === 0) {
+                detailsEl.innerHTML = '<div class="empty-state">No product activity on this date</div>';
+                return;
+            }
+
+            detailsEl.innerHTML = "";
+            const productList = document.createElement("div");
+            productList.className = "product-list";
+
+            productsOnDate.forEach((product) => {
+                const statusOnDate = product.statusHistory.find(
+                    (history) => history.date.toDateString() === selectedDate.toDateString()
+                );
+
+                if (!statusOnDate) return;
+
+                const item = document.createElement("div");
+                item.className = "product-item";
+
+                const header = document.createElement("div");
+                header.className = "product-header";
+
+                const info = document.createElement("div");
+                const name = document.createElement("div");
+                name.className = "product-name";
+                name.textContent = product.name;
+                const id = document.createElement("div");
+                id.className = "product-id";
+                id.textContent = product.id;
+                info.appendChild(name);
+                info.appendChild(id);
+
+                const badge = document.createElement("div");
+                badge.className = "product-badge";
+                badge.appendChild(getStatusIcon(statusOnDate.status, 10));
+                const badgeText = document.createElement("span");
+                badgeText.textContent = statusConfig[statusOnDate.status].label;
+                badge.appendChild(badgeText);
+
+                header.appendChild(info);
+                header.appendChild(badge);
+                item.appendChild(header);
+
+                // Timeline
+                const timeline = document.createElement("div");
+                timeline.className = "product-timeline";
+
+                const timelineLabel = document.createElement("div");
+                timelineLabel.className = "timeline-label";
+                timelineLabel.textContent = "Status History:";
+                timeline.appendChild(timelineLabel);
+
+                const timelineItems = document.createElement("div");
+                timelineItems.className = "timeline-items";
+
+                product.statusHistory.forEach((history) => {
+                    const timelineItem = document.createElement("div");
+                    timelineItem.className = "timeline-item";
+                    if (history.date.toDateString() === selectedDate.toDateString()) {
+                        timelineItem.classList.add("active");
+                    }
+
+                    timelineItem.appendChild(getStatusIcon(history.status, 8));
+                    const dateSpan = document.createElement("span");
+                    dateSpan.textContent = history.date.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                    });
+                    timelineItem.appendChild(dateSpan);
+
+                    timelineItems.appendChild(timelineItem);
+                });
+
+                timeline.appendChild(timelineItems);
+                item.appendChild(timeline);
+
+                productList.appendChild(item);
+            });
+
+            detailsEl.appendChild(productList);
+        }
+
+        function showTooltip(event, text) {
+            const tooltip = document.getElementById("tooltip");
+            tooltip.textContent = text;
+            tooltip.classList.add("show");
+            tooltip.style.left = event.pageX + 10 + "px";
+            tooltip.style.top = event.pageY + 10 + "px";
+        }
+
+        function hideTooltip() {
+            const tooltip = document.getElementById("tooltip");
+            tooltip.classList.remove("show");
+        }
+
+        // Event Listeners
+        document.getElementById("prevMonth").addEventListener("click", () => {
+            if (currentMonth === 0) {
+                currentMonth = 11;
+                currentYear--;
+            } else {
+                currentMonth--;
+            }
+            selectedDate = null;
+            renderCalendar();
+            renderProductDetails();
+        });
+
+        document.getElementById("nextMonth").addEventListener("click", () => {
+            if (currentMonth === 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else {
+                currentMonth++;
+            }
+            selectedDate = null;
+            renderCalendar();
+            renderProductDetails();
+        });
+
+        // Initialize
+        renderLegend();
+        renderCalendar();
+        renderProductDetails();
+    </script>
+</body>
+</html>

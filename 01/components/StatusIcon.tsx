@@ -1,30 +1,13 @@
-// app/components/movement-board/figma-calendar/StatusIcon.tsx
-import React from 'react'
-import { ProductStatus } from './types'
-
-export const statusConfig = {
-  CLEAR: { label: "Created", color: "#9CA3AF" },
-  CANDIDATE: { label: "Candidate", color: "#9333EA" },
-  IN_REQUEST: { label: "In Request", color: "#EAB308" },
-  IN_STORE: { label: "In Store", color: "#22C55E" },
-  SOLD: { label: "Sold", color: "#EAB308" },
-};
-
-export function getStatusLabel(status: ProductStatus): string {
-  return statusConfig[status]?.label || status
-}
-
-export function getStatusColor(status: ProductStatus): string {
-  return statusConfig[status]?.color || "#9CA3AF"
-}
+//components/StatusIcon
+import { ProductStatus } from "../types/calendar";
 
 interface StatusIconProps {
-  status: ProductStatus
-  size?: number
+  status: ProductStatus;
+  size?: number;
 }
 
-export function StatusIcon({ status, size = 10 }: StatusIconProps) {
-  const iconSize = size
+export function StatusIcon({ status, size = 8 }: StatusIconProps) {
+  const iconSize = size;
   
   switch (status) {
     case "CLEAR":
@@ -32,7 +15,7 @@ export function StatusIcon({ status, size = 10 }: StatusIconProps) {
         <svg width={iconSize} height={iconSize} viewBox="0 0 16 16" fill="none">
           <circle cx="8" cy="8" r="6" stroke="#9CA3AF" strokeWidth="2" fill="none" />
         </svg>
-      )
+      );
     
     case "CANDIDATE":
       return (
@@ -40,21 +23,21 @@ export function StatusIcon({ status, size = 10 }: StatusIconProps) {
           <circle cx="8" cy="8" r="7" fill="#9CA3AF" />
           <path d="M 8 1 A 7 7 0 0 1 8 15 Z" fill="#9333EA" />
         </svg>
-      )
+      );
     
     case "IN_REQUEST":
       return (
         <svg width={iconSize} height={iconSize} viewBox="0 0 16 16" fill="none">
           <circle cx="8" cy="8" r="7" fill="#EAB308" />
         </svg>
-      )
+      );
     
     case "IN_STORE":
       return (
         <svg width={iconSize} height={iconSize} viewBox="0 0 16 16" fill="none">
           <rect x="2" y="2" width="12" height="12" stroke="#22C55E" strokeWidth="2" fill="none" />
         </svg>
-      )
+      );
     
     case "SOLD":
       return (
@@ -62,13 +45,43 @@ export function StatusIcon({ status, size = 10 }: StatusIconProps) {
           <rect x="2" y="2" width="12" height="12" fill="#EAB308" />
           <path d="M 2 2 L 14 14 M 14 2 L 2 14" stroke="#000" strokeWidth="1.5" />
         </svg>
-      )
+      );
     
     default:
-      return (
-        <svg width={iconSize} height={iconSize} viewBox="0 0 16 16" fill="none">
-          <circle cx="8" cy="8" r="6" stroke="#9CA3AF" strokeWidth="2" fill="none" />
-        </svg>
-      )
+      return null;
+  }
+}
+
+export function getStatusColor(status: ProductStatus): string {
+  switch (status) {
+    case "CLEAR":
+      return "#9CA3AF";
+    case "CANDIDATE":
+      return "#9333EA";
+    case "IN_REQUEST":
+      return "#EAB308";
+    case "IN_STORE":
+      return "#22C55E";
+    case "SOLD":
+      return "#EAB308";
+    default:
+      return "#9CA3AF";
+  }
+}
+
+export function getStatusLabel(status: ProductStatus): string {
+  switch (status) {
+    case "CLEAR":
+      return "Created";
+    case "CANDIDATE":
+      return "Candidate";
+    case "IN_REQUEST":
+      return "In Request";
+    case "IN_STORE":
+      return "In Store";
+    case "SOLD":
+      return "Sold";
+    default:
+      return status;
   }
 }
